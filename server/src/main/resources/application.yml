@@ -20,6 +20,13 @@ spring:
       appdbuser: ${SAFETICS_DB_APP_USER:safetics_app}
       appdbpassword: ${SAFETICS_DB_APP_PASSWORD:safetics_app_dev}
 
+# Опис API і Swagger UI вимкнені за замовчуванням, вмикаються в профілі dev
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 management:
   endpoints:
     web:

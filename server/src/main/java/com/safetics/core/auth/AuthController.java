@@ -1,7 +1,8 @@
 package com.safetics.core.auth;
 
-import java.util.Map;
 import java.util.UUID;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +16,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.safetics.core.auth.AuthDtos.ErrorResponse;
 import com.safetics.core.auth.AuthDtos.LoginRequest;
 import com.safetics.core.auth.AuthDtos.RefreshRequest;
 import com.safetics.core.auth.AuthDtos.SessionView;
 import com.safetics.core.auth.AuthDtos.SwitchCompanyRequest;
 import com.safetics.core.auth.AuthDtos.TokenResponse;
 import com.safetics.core.auth.AuthService.LoginResult;
+
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Вхід. Два варіанти для різних клієнтів:
@@ -33,6 +39,7 @@ import com.safetics.core.auth.AuthService.LoginResult;
  */
 @RestController
 @RequestMapping("/api/v1/auth")
+@Tag(name = "auth")
 public class AuthController {
 
     private final AuthService auth;
@@ -46,28 +53,31 @@ public class AuthController {
     // ---------------------------------------------------------------- веб (cookie)
 
     @PostMapping("/login")
-    public ResponseEntity<SessionView> login(@RequestBody LoginRequest request) {
+    @SecurityRequirements
+    public ResponseEntity<SessionView> login(@Valid @RequestBody LoginRequest request) {
         return withCookies(auth.login(request.phone(), request.password(), request.companyId()));
     }
 
     @PostMapping("/refresh")
+    @SecurityRequirements
     public ResponseEntity<SessionView> refresh(
-            @CookieValue(name = AuthCookies.REFRESH, required = false) String refreshToken) {
+            @Parameter(hidden = true) @CookieValue(name = AuthCookies.REFRESH, required = false) String refreshToken) {
         return withCookies(auth.refresh(refreshToken));
     }
 
     @PostMapping("/switch-company")
     public ResponseEntity<SessionView> switchCompany(
-            @AuthenticationPrincipal Jwt jwt,
-            @RequestBody SwitchCompanyRequest request,
-            @CookieValue(name = AuthCookies.REFRESH, required = false) String refreshToken) {
+            @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody SwitchCompanyRequest request,
+            @Parameter(hidden = true) @CookieValue(name = AuthCookies.REFRESH, required = false) String refreshToken) {
         UUID userId = UUID.fromString(jwt.getSubject());
         return withCookies(auth.switchCompany(userId, request.companyId(), refreshToken));
     }
 
     @PostMapping("/logout")
+    @SecurityRequirements
     public ResponseEntity<Void> logout(
-            @CookieValue(name = AuthCookies.REFRESH, required = false) String refreshToken) {
+            @Parameter(hidden = true) @CookieValue(name = AuthCookies.REFRESH, required = false) String refreshToken) {
         auth.revoke(refreshToken);
         boolean secure = properties.secureCookies();
         return ResponseEntity.noContent()
@@ -77,7 +87,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public SessionView me(@AuthenticationPrincipal Jwt jwt) {
+    public SessionView me(@Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
         String company = jwt.getClaimAsString(TenantContextFilter.COMPANY_CLAIM);
         return auth.session(UUID.fromString(jwt.getSubject()), company == null ? null : UUID.fromString(company));
     }
@@ -85,20 +95,22 @@ public class AuthController {
     // ---------------------------------------------------------------- бот і мобільний (Bearer)
 
     @PostMapping("/token")
-    public TokenResponse token(@RequestBody LoginRequest request) {
+    @SecurityRequirements
+    public TokenResponse token(@Valid @RequestBody LoginRequest request) {
         return toTokenResponse(auth.login(request.phone(), request.password(), request.companyId()));
     }
 
     @PostMapping("/token/refresh")
-    public TokenResponse tokenRefresh(@RequestBody RefreshRequest request) {
+    @SecurityRequirements
+    public TokenResponse tokenRefresh(@Valid @RequestBody RefreshRequest request) {
         return toTokenResponse(auth.refresh(request.refreshToken()));
     }
 
     // ---------------------------------------------------------------- допоміжне
 
     @ExceptionHandler(AuthException.class)
-    public ResponseEntity<Map<String, String>> handle(AuthException e) {
-        return ResponseEntity.status(e.status()).body(Map.of("error", e.code()));
+    public ResponseEntity<ErrorResponse> handle(AuthException e) {
+        return ResponseEntity.status(e.status()).body(new ErrorResponse(e.code()));
     }
 
     private ResponseEntity<SessionView> withCookies(LoginResult result) {

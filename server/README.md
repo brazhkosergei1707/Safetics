@@ -18,6 +18,8 @@ curl localhost:8080/actuator/health
 
 Профіль `dev` додає ключ для JWT і демо-дані (`src/main/resources/db/dev`). Без профілю застосунок не стартує, поки не задано `SAFETICS_JWT_SECRET`: так демо-користувачі ніколи не потраплять на сервер.
 
+У профілі `dev` також працює опис API: Swagger UI — http://localhost:8080/swagger-ui.html, JSON — `/v3/api-docs`. З нього веб генерує типи (`npm run api:generate` у `web/`). Без профілю `dev` опис вимкнений.
+
 Демо-користувачі (пароль `safetics-dev`):
 
 | Телефон | Хто | Компанії |
@@ -33,7 +35,10 @@ curl localhost:8080/actuator/health
 
 Тести піднімають окремий PostgreSQL у Docker (спільна основа — `AbstractIntegrationTest`):
 - `TenantIsolationTest` — на рівні бази: компанія A не бачить і не змінює дані компанії B;
-- `AuthApiTest` — через HTTP: вхід, cookie і Bearer, вибір компанії, дозволи, оновлення і вихід.
+- `AuthApiTest` — через HTTP: вхід, cookie і Bearer, вибір компанії, дозволи, оновлення і вихід;
+- `OpenApiDocsTest` — опис API на місці, обов'язкові поля позначені як required.
+
+Обов'язкові поля відповідей позначаються `@NotNull`: тоді в згенерованому TypeScript вони не стають необов'язковими.
 
 ## Як влаштована мультитенантність
 

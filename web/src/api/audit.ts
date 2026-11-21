@@ -1,18 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { apiGet } from './client'
+import { api, type Schemas, unwrap } from './client'
 
-export interface AuditEntry {
-  id: number
-  userId: string | null
-  entity: string
-  entityId: string
-  action: string
-  createdAt: string
-}
+export type AuditEntry = Schemas['AuditEntry']
 
 export function useAuditLog() {
   return useQuery({
     queryKey: ['audit-log'],
-    queryFn: () => apiGet<AuditEntry[]>('/api/v1/audit-log?limit=100'),
+    queryFn: () => unwrap(api.GET('/api/v1/audit-log', { params: { query: { limit: 100 } } })),
   })
 }

@@ -1,25 +1,8 @@
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ApiError, apiGet, apiPost } from './client'
+import { ApiError, api, type Schemas, unwrap } from './client'
 
-export interface UserView {
-  id: string
-  fullName: string
-  phone: string
-}
-
-export interface CompanyView {
-  id: string
-  name: string
-  role: string | null
-}
-
-/** company === null: користувач працює в кількох компаніях і ще не обрав одну. */
-export interface SessionView {
-  user: UserView
-  company: CompanyView | null
-  companies: CompanyView[]
-  permissions: string[]
-}
+export type SessionView = Schemas['SessionView']
+export type CompanyView = Schemas['CompanyView']
 
 const SESSION_KEY = ['session'] as const
 
@@ -35,7 +18,7 @@ function replaceSession(client: QueryClient, session: SessionView | null) {
 export function useSession() {
   return useQuery({
     queryKey: SESSION_KEY,
-    queryFn: () => apiGet<SessionView>('/api/v1/auth/me'),
+    queryFn: () => unwrap(api.GET('/api/v1/auth/me')),
     retry: (count, error) => !(error instanceof ApiError && error.status === 401) && count < 1,
     staleTime: 60_000,
   })
@@ -44,8 +27,7 @@ export function useSession() {
 export function useLogin() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (input: { phone: string; password: string }) =>
-      apiPost<SessionView>('/api/v1/auth/login', input),
+    mutationFn: (body: Schemas['LoginRequest']) => unwrap(api.POST('/api/v1/auth/login', { body })),
     onSuccess: (session) => replaceSession(client, session),
   })
 }
@@ -54,7 +36,7 @@ export function useSwitchCompany() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: (companyId: string) =>
-      apiPost<SessionView>('/api/v1/auth/switch-company', { companyId }),
+      unwrap(api.POST('/api/v1/auth/switch-company', { body: { companyId } })),
     onSuccess: (session) => replaceSession(client, session),
   })
 }
@@ -62,7 +44,7 @@ export function useSwitchCompany() {
 export function useLogout() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: () => apiPost<void>('/api/v1/auth/logout'),
+    mutationFn: () => unwrap(api.POST('/api/v1/auth/logout')),
     onSettled: () => replaceSession(client, null),
   })
 }

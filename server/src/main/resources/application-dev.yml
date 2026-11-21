@@ -9,3 +9,10 @@ safetics:
     # Лише для розробки. На AWS ключ задається змінною SAFETICS_JWT_SECRET.
     jwt-secret: ZGV2LW9ubHktc2VjcmV0LWNoYW5nZS1tZS1zYWZldGljcy0yMDI2LWxvbmctZW5vdWdo
     secure-cookies: false
+
+# http://localhost:8080/swagger-ui.html, опис: /v3/api-docs (з нього npm run api:generate у web/)
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

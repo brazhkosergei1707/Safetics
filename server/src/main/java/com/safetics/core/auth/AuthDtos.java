@@ -4,43 +4,55 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/** Запити й відповіді API входу. */
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+/**
+ * Запити й відповіді API входу.
+ *
+ * <p>{@code @NotNull} у відповідях позначає поле як обов'язкове в OpenAPI, тож у згенерованому
+ * TypeScript воно не буде необов'язковим. Поля без анотації можуть бути null.
+ */
 public final class AuthDtos {
 
     private AuthDtos() {
     }
 
     /** Телефон у міжнародному форматі (+380…); companyId — необов'язковий, якщо компаній кілька. */
-    public record LoginRequest(String phone, String password, UUID companyId) {
+    public record LoginRequest(@NotBlank String phone, @NotBlank String password, UUID companyId) {
     }
 
-    public record RefreshRequest(String refreshToken) {
+    public record RefreshRequest(@NotBlank String refreshToken) {
     }
 
-    public record SwitchCompanyRequest(UUID companyId) {
+    public record SwitchCompanyRequest(@NotNull UUID companyId) {
     }
 
-    public record UserView(UUID id, String fullName, String phone) {
+    public record UserView(@NotNull UUID id, @NotNull String fullName, @NotNull String phone) {
     }
 
     /** role — код ролі користувача в цій компанії (owner, manager…), лише для показу. */
-    public record CompanyView(UUID id, String name, String role) {
+    public record CompanyView(@NotNull UUID id, @NotNull String name, String role) {
     }
 
     /** company == null: користувач працює в кількох компаніях і ще не обрав одну. */
     public record SessionView(
-            UserView user,
+            @NotNull UserView user,
             CompanyView company,
-            List<CompanyView> companies,
-            List<String> permissions) {
+            @NotNull List<CompanyView> companies,
+            @NotNull List<String> permissions) {
     }
 
     /** Для Telegram-бота і мобільного застосунку: токени в тілі відповіді, а не в cookie. */
     public record TokenResponse(
-            String accessToken,
-            Instant accessTokenExpiresAt,
-            String refreshToken,
-            Instant refreshTokenExpiresAt,
-            SessionView session) {
+            @NotNull String accessToken,
+            @NotNull Instant accessTokenExpiresAt,
+            @NotNull String refreshToken,
+            @NotNull Instant refreshTokenExpiresAt,
+            @NotNull SessionView session) {
+    }
+
+    /** Тіло помилки: invalid_credentials, invalid_refresh_token, not_a_member. */
+    public record ErrorResponse(@NotNull String error) {
     }
 }

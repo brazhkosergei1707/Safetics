@@ -4,6 +4,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.validation.constraints.NotNull;
+
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,16 +13,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Журнал змін поточної компанії. Перший ендпоінт з перевіркою дозволу: потрібен {@code audit.view}.
  * Фільтр за компанією в SQL не потрібен: RLS сам віддає лише рядки компанії з токена.
  */
 @RestController
 @RequestMapping("/api/v1/audit-log")
+@Tag(name = "audit")
 public class AuditLogController {
 
-    public record AuditEntry(long id, UUID userId, String entity, String entityId, String action,
-                             OffsetDateTime createdAt) {
+    /** userId == null: зміну зробила система, а не людина. */
+    public record AuditEntry(@NotNull long id, UUID userId, @NotNull String entity, @NotNull String entityId,
+                             @NotNull String action, @NotNull OffsetDateTime createdAt) {
     }
 
     private final JdbcClient db;

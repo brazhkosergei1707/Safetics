@@ -31,18 +31,38 @@ docker compose up -d
 | `npm run build` | Перевірка типів і збірка в `dist/` |
 | `npm run lint` | Перевірка коду (oxlint) |
 | `npm run preview` | Перегляд зібраної версії |
+| `npm run api:generate` | Оновити типи API з бекенду (сервер має працювати з профілем `dev`) |
 
 ## Структура
 
 ```
 src/
-├── api/        клієнт API і хуки запитів (пізніше — згенерований з OpenAPI)
+├── api/        клієнт API (openapi-fetch), хуки запитів, schema.d.ts — згенеровані типи
 ├── i18n/       переклади; uk.ts типізований за en.ts, пропущений ключ = помилка збірки
 ├── layout/     каркас: бокове меню, шапка з вибором мови
 ├── pages/      сторінки
 ├── App.tsx     маршрути і тема Ant Design
 └── main.tsx    точка входу
 ```
+
+## Типи API
+
+Типи запитів і відповідей не пишуться руками. Сервер публікує опис API (OpenAPI 3.1), з нього генерується `src/api/schema.d.ts`:
+
+```bash
+cd ../server && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+cd ../web && npm run api:generate
+```
+
+Скрипт зберігає опис у `openapi.json` (у git, щоб у diff було видно зміни API) і генерує типи. Після зміни DTO на сервері запустіть генерацію знову: якщо поле змінилося, `npm run build` покаже всі місця, які треба виправити.
+
+Виклики — через `api` з `src/api/client.ts`:
+
+```ts
+const session = await unwrap(api.GET('/api/v1/auth/me'))
+```
+
+Swagger UI для ручної перевірки: http://localhost:8080/swagger-ui.html
 
 ## На AWS
 

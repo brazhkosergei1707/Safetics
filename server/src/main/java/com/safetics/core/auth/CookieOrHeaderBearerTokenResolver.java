@@ -41,6 +41,9 @@ final class CookieOrHeaderBearerTokenResolver implements BearerTokenResolver {
 
     static boolean isPublic(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        return SecurityConfig.PUBLIC_AUTH_PATHS.contains(path) || Set.of("/actuator/health", "/error").contains(path);
+        return SecurityConfig.PUBLIC_AUTH_PATHS.contains(path)
+                || Set.of("/actuator/health", "/error", "/swagger-ui.html").contains(path)
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-ui/");
     }
 }
