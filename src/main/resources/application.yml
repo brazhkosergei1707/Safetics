@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: safetics
+
+  # Застосунок підключається під роллю safetics_app: без SUPERUSER і без BYPASSRLS,
+  # тому Row-Level Security діє на кожен запит.
+  datasource:
+    url: ${SAFETICS_DB_URL:jdbc:postgresql://localhost:5433/safetics}
+    username: ${SAFETICS_DB_APP_USER:safetics_app}
+    password: ${SAFETICS_DB_APP_PASSWORD:safetics_app_dev}
+    hikari:
+      # TenantAwareDataSource розрахований на autoCommit=true (див. коментар у класі)
+      auto-commit: true
+
+  # Міграції виконуються під власником схеми; V1 створює роль застосунку.
+  flyway:
+    user: ${SAFETICS_DB_OWNER_USER:safetics_owner}
+    password: ${SAFETICS_DB_OWNER_PASSWORD:safetics_owner_dev}
+    placeholders:
+      appdbuser: ${SAFETICS_DB_APP_USER:safetics_app}
+      appdbpassword: ${SAFETICS_DB_APP_PASSWORD:safetics_app_dev}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
