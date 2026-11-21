@@ -14,11 +14,14 @@ export type Schemas = components['schemas']
 export class ApiError extends Error {
   readonly status: number
   readonly code?: string
+  /** Помилки полів: {"attributes.dip": "too_large", "code": "required"} */
+  readonly fields: Record<string, string>
 
-  constructor(status: number, code?: string) {
+  constructor(status: number, code?: string, fields: Record<string, string> = {}) {
     super(code ?? `HTTP ${status}`)
     this.status = status
     this.code = code
+    this.fields = fields
   }
 }
 
@@ -54,14 +57,14 @@ export const api = createClient<paths>({
   fetch: fetchWithRefresh,
 })
 
-/** Повертає дані або кидає ApiError зі статусом і кодом помилки сервера ({"error": "..."}). */
+/** Повертає дані або кидає ApiError зі статусом, кодом і помилками полів ({"error": "...", "fields": {...}}). */
 export async function unwrap<T>(
   call: Promise<{ data?: T; error?: unknown; response: Response }>,
 ): Promise<T> {
   const { data, error, response } = await call
   if (!response.ok) {
-    const code = (error as { error?: string } | undefined)?.error
-    throw new ApiError(response.status, code)
+    const body = error as { error?: string; fields?: Record<string, string> } | undefined
+    throw new ApiError(response.status, body?.error, body?.fields ?? {})
   }
   return data as T
 }

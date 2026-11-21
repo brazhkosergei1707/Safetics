@@ -1,5 +1,6 @@
 import {
   AlertOutlined,
+  AppstoreOutlined,
   AuditOutlined,
   DashboardOutlined,
   FileTextOutlined,
@@ -24,6 +25,9 @@ export function AppLayout() {
 
   const items = [
     { key: '/', icon: <DashboardOutlined />, label: t('nav.dashboard') },
+    ...(hasPermission(session, 'asset.view')
+      ? [{ key: '/assets', icon: <AppstoreOutlined />, label: t('nav.assets') }]
+      : []),
     { key: '/reports', icon: <FileTextOutlined />, label: t('nav.reports') },
     { key: '/stock', icon: <InboxOutlined />, label: t('nav.stock') },
     { key: '/hse', icon: <AlertOutlined />, label: t('nav.hse') },

@@ -34,6 +34,12 @@ public final class TenantContext {
         return Optional.ofNullable(CURRENT.get());
     }
 
+    /** Компанія поточного запиту; без неї операції з даними компанії неможливі. */
+    public static UUID requireCompanyId() {
+        return current().map(Tenant::companyId)
+                .orElseThrow(() -> new IllegalStateException("No company selected in the current context"));
+    }
+
     public static Scope enter(UUID companyId, UUID userId) {
         Tenant previous = CURRENT.get();
         CURRENT.set(new Tenant(companyId, userId));

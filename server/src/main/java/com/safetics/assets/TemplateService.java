@@ -1,0 +1,73 @@
+package com.safetics.assets;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+
+import com.safetics.assets.AssetDtos.AssetTypeRequest;
+import com.safetics.assets.AssetDtos.InstallTemplateResponse;
+import com.safetics.core.audit.AuditService;
+import com.safetics.core.web.ApiException;
+
+import tools.jackson.databind.json.JsonMapper;
+
+/**
+ * Галузеві шаблони: JSON-файли в {@code resources/templates}. Встановлення копіює типи об'єктів
+ * у компанію; далі компанія змінює свою копію, а повторне встановлення наявні типи не перезаписує.
+ */
+@Service
+public class TemplateService {
+
+    private static final Pattern KEY = Pattern.compile("^[a-z0-9-]{1,50}$");
+
+    /** Вміст файлу шаблону. Пізніше сюди додадуться послуги, коди операцій, чек-листи. */
+    public record TemplateDefinition(String key, Map<String, String> name, List<AssetTypeRequest> assetTypes) {
+    }
+
+    private final JsonMapper json;
+    private final AssetTypeService types;
+    private final AuditService audit;
+
+    public TemplateService(JsonMapper json, AssetTypeService types, AuditService audit) {
+        this.json = json;
+        this.types = types;
+        this.audit = audit;
+    }
+
+    public TemplateDefinition load(String key) {
+        if (key == null || !KEY.matcher(key).matches()) {
+            throw ApiException.validation("templateKey", "unknown_template");
+        }
+        ClassPathResource resource = new ClassPathResource("templates/" + key + ".json");
+        if (!resource.exists()) {
+            throw ApiException.validation("templateKey", "unknown_template");
+        }
+        try (InputStream in = resource.getInputStream()) {
+            return json.readValue(in, TemplateDefinition.class);
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot read template " + key, e);
+        }
+    }
+
+    public InstallTemplateResponse install(String key) {
+        TemplateDefinition template = load(key);
+        List<String> installed = new ArrayList<>();
+        List<String> skipped = new ArrayList<>();
+        for (AssetTypeRequest type : template.assetTypes()) {
+            if (types.findByCode(type.code()).isPresent()) {
+                skipped.add(type.code());
+            } else {
+                types.create(type, key);
+                installed.add(type.code());
+            }
+        }
+        audit.record("template", key, "install", Map.of("installed", installed, "skipped", skipped));
+        return new InstallTemplateResponse(installed, skipped);
+    }
+}
