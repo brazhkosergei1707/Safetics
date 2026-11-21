@@ -11,18 +11,29 @@ Spring Boot 4.1, Java 21, PostgreSQL 17, Flyway. Модульний монолі
 ## Запуск
 
 ```bash
-docker compose up -d          # PostgreSQL на localhost:5433
-mvn spring-boot:run           # Flyway накатить міграції, застосунок стартує на :8080
+docker compose up -d
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 curl localhost:8080/actuator/health
 ```
+
+Профіль `dev` додає ключ для JWT і демо-дані (`src/main/resources/db/dev`). Без профілю застосунок не стартує, поки не задано `SAFETICS_JWT_SECRET`: так демо-користувачі ніколи не потраплять на сервер.
+
+Демо-користувачі (пароль `safetics-dev`):
+
+| Телефон | Хто | Компанії |
+| --- | --- | --- |
+| +380500000001 | Demo Owner | власник «Demo Drilling» |
+| +380500000002 | Multi Company | менеджер «Demo Drilling», власник «Agua Perfuração» — показує вибір компанії |
 
 ## Тести
 
 ```bash
-mvn test
+./mvnw test
 ```
 
-`TenantIsolationTest` піднімає окремий PostgreSQL у Docker і перевіряє, що компанія A не бачить і не змінює дані компанії B.
+Тести піднімають окремий PostgreSQL у Docker (спільна основа — `AbstractIntegrationTest`):
+- `TenantIsolationTest` — на рівні бази: компанія A не бачить і не змінює дані компанії B;
+- `AuthApiTest` — через HTTP: вхід, cookie і Bearer, вибір компанії, дозволи, оновлення і вихід.
 
 ## Як влаштована мультитенантність
 
@@ -32,7 +43,23 @@ mvn test
   - `safetics_app` — застосунок, без `SUPERUSER` і `BYPASSRLS`. Цю роль створює міграція `V1`.
 - `TenantContext` зберігає поточну компанію і користувача для потоку.
 - `TenantAwareDataSource` при кожному отриманні з'єднання з пулу пише їх у сесію PostgreSQL (`app.company_id`, `app.user_id`). Без контексту RLS не віддає жодного рядка.
-- Наступний крок: JWT-фільтр, який заповнює `TenantContext` з токена.
+- `TenantContextFilter` заповнює `TenantContext` з перевіреного JWT (`sub` — користувач, `cid` — компанія).
+
+## Вхід
+
+| Ендпоінт | Для кого | Що робить |
+| --- | --- | --- |
+| `POST /api/v1/auth/login` | веб | телефон + пароль → httpOnly-cookie `sft_access` (15 хв) і `sft_refresh` (30 днів), у тілі — сесія |
+| `POST /api/v1/auth/refresh` | веб | нова пара cookie; старий токен оновлення відкликається |
+| `POST /api/v1/auth/switch-company` | веб | вибір компанії, якщо їх кілька |
+| `POST /api/v1/auth/logout` | веб | відкликає токен оновлення, видаляє cookie |
+| `GET /api/v1/auth/me` | усі | поточна сесія: користувач, компанія, список компаній, дозволи |
+| `POST /api/v1/auth/token`, `/token/refresh` | бот, мобільний | те саме, але токени в тілі; далі `Authorization: Bearer` |
+
+- Дозволи ролі потрапляють у токен (`perms`) і перевіряються так: `@PreAuthorize("hasAuthority('audit.view')")`. Назви ролей у коді не перевіряються.
+- Зміна ролі діє з наступним оновленням токена (до 15 хвилин).
+- CSRF-токен не потрібен: cookie мають SameSite=Lax, а API приймає лише JSON.
+- Приклад захищеного ендпоінта: `GET /api/v1/audit-log` (потрібен `audit.view`).
 
 ## Структура пакетів (план)
 

@@ -11,46 +11,17 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.postgresql.PostgreSQLContainer;
+
+import com.safetics.AbstractIntegrationTest;
 
 /**
  * Головна гарантія мультитенантності: компанія A не бачить і не змінює дані компанії B.
- * Застосунок працює під роллю safetics_app (без BYPASSRLS), фікстури вставляються суперкористувачем.
+ * Перевірка на рівні бази, без HTTP. Те саме через API перевіряє AuthApiTest.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TenantIsolationTest {
-
-    private static final String APP_DB_USER = "safetics_app";
-    private static final String APP_DB_PASSWORD = "test_app_password";
-
-    /**
-     * Стартує в статичному блоці, а не через @Container: при PER_CLASS Spring піднімає контекст
-     * раніше, ніж розширення Testcontainers встигає запустити контейнер. Зупиняє його Ryuk
-     * після завершення JVM.
-     */
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
-
-    static {
-        postgres.start();
-    }
-
-    @DynamicPropertySource
-    static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", () -> APP_DB_USER);
-        registry.add("spring.datasource.password", () -> APP_DB_PASSWORD);
-        registry.add("spring.flyway.user", postgres::getUsername);
-        registry.add("spring.flyway.password", postgres::getPassword);
-        registry.add("spring.flyway.placeholders.appdbuser", () -> APP_DB_USER);
-        registry.add("spring.flyway.placeholders.appdbpassword", () -> APP_DB_PASSWORD);
-    }
+class TenantIsolationTest extends AbstractIntegrationTest {
 
     /** Застосунок: з'єднання через TenantAwareDataSource під safetics_app. */
     @Autowired
@@ -63,8 +34,7 @@ class TenantIsolationTest {
 
     @BeforeAll
     void insertFixtures() {
-        JdbcClient admin = JdbcClient.create(
-                new DriverManagerDataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword()));
+        JdbcClient admin = admin();
 
         companyA = insertReturningId(admin, "insert into company (name) values ('Drilling A') returning id");
         companyB = insertReturningId(admin, "insert into company (name) values ('Drilling B') returning id");

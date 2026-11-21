@@ -4,18 +4,27 @@ import ukUA from 'antd/locale/uk_UA'
 import { useTranslation } from 'react-i18next'
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { AppLayout } from './layout/AppLayout'
+import { RequireAuth } from './layout/RequireAuth'
+import { AuditLogPage } from './pages/AuditLogPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { LoginPage } from './pages/LoginPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
 
 const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage /> },
   {
     path: '/',
-    element: <AppLayout />,
+    element: (
+      <RequireAuth>
+        <AppLayout />
+      </RequireAuth>
+    ),
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'reports', element: <PlaceholderPage titleKey="nav.reports" /> },
       { path: 'stock', element: <PlaceholderPage titleKey="nav.stock" /> },
       { path: 'hse', element: <PlaceholderPage titleKey="nav.hse" /> },
+      { path: 'audit-log', element: <AuditLogPage /> },
     ],
   },
 ])
