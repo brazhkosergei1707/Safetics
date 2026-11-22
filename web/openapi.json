@@ -4154,6 +4154,92 @@
         }
       }
     },
+    "/api/v1/reports/summary": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "operationId": "summary",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assetId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "month"
+            }
+          },
+          {
+            "name": "depthStep",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          },
+          {
+            "name": "includeDrafts",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{projectId}/shift-board": {
       "get": {
         "tags": [
@@ -8055,6 +8141,276 @@
           "action",
           "createdAt",
           "id"
+        ]
+      },
+      "CategoryMinutes": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "productive",
+              "contractor_npt",
+              "client_standby",
+              "other"
+            ]
+          },
+          "minutes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "category",
+          "minutes"
+        ]
+      },
+      "CodeMinutes": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "minutes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "billable",
+          "category",
+          "code",
+          "minutes",
+          "name"
+        ]
+      },
+      "DepthBand": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "number"
+          },
+          "to": {
+            "type": "number"
+          },
+          "meters": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "from",
+          "meters",
+          "to"
+        ]
+      },
+      "ItemQuantity": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "code",
+          "itemId",
+          "name",
+          "quantity",
+          "unit"
+        ]
+      },
+      "SummaryRow": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "shifts": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reportsSubmitted": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reportsDraft": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reportsMissing": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "billableMinutes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nonBillableMinutes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryMinutes"
+            }
+          },
+          "byCode": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodeMinutes"
+            }
+          },
+          "meters": {
+            "type": "number"
+          },
+          "coreLength": {
+            "type": "number"
+          },
+          "recovery": {
+            "type": "number"
+          },
+          "depthBands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DepthBand"
+            }
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnitQuantity"
+            }
+          },
+          "completedServices": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "consumables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemQuantity"
+            }
+          }
+        },
+        "required": [
+          "billableMinutes",
+          "byCode",
+          "categories",
+          "completedServices",
+          "consumables",
+          "coreLength",
+          "depthBands",
+          "meters",
+          "nonBillableMinutes",
+          "quantities",
+          "reportsDraft",
+          "reportsMissing",
+          "reportsSubmitted",
+          "shifts"
+        ]
+      },
+      "SummaryView": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string",
+            "enum": [
+              "month",
+              "half_year",
+              "year"
+            ]
+          },
+          "from": {
+            "type": "string",
+            "format": "date"
+          },
+          "to": {
+            "type": "string",
+            "format": "date"
+          },
+          "depthStep": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "includeDrafts": {
+            "type": "boolean"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SummaryRow"
+            }
+          },
+          "total": {
+            "$ref": "#/components/schemas/SummaryRow"
+          }
+        },
+        "required": [
+          "depthStep",
+          "from",
+          "includeDrafts",
+          "period",
+          "rows",
+          "to",
+          "total"
+        ]
+      },
+      "UnitQuantity": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "quantity",
+          "unit"
         ]
       },
       "BoardAsset": {

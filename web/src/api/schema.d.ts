@@ -1380,6 +1380,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/shift-board": {
         parameters: {
             query?: never;
@@ -2657,6 +2673,86 @@ export interface components {
             };
             /** Format: date-time */
             createdAt: string;
+        };
+        CategoryMinutes: {
+            /** @enum {string} */
+            category: "productive" | "contractor_npt" | "client_standby" | "other";
+            /** Format: int64 */
+            minutes: number;
+        };
+        CodeMinutes: {
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            category: string;
+            billable: boolean;
+            /** Format: int64 */
+            minutes: number;
+        };
+        DepthBand: {
+            from: number;
+            to: number;
+            meters: number;
+        };
+        ItemQuantity: {
+            /** Format: uuid */
+            itemId: string;
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            unit: string;
+            quantity: number;
+        };
+        SummaryRow: {
+            /** Format: uuid */
+            assetId?: string;
+            assetCode?: string;
+            assetName?: string;
+            /** Format: date */
+            periodStart?: string;
+            /** Format: date */
+            periodEnd?: string;
+            /** Format: int64 */
+            shifts: number;
+            /** Format: int64 */
+            reportsSubmitted: number;
+            /** Format: int64 */
+            reportsDraft: number;
+            /** Format: int64 */
+            reportsMissing: number;
+            /** Format: int64 */
+            billableMinutes: number;
+            /** Format: int64 */
+            nonBillableMinutes: number;
+            categories: components["schemas"]["CategoryMinutes"][];
+            byCode: components["schemas"]["CodeMinutes"][];
+            meters: number;
+            coreLength: number;
+            recovery?: number;
+            depthBands: components["schemas"]["DepthBand"][];
+            quantities: components["schemas"]["UnitQuantity"][];
+            /** Format: int64 */
+            completedServices: number;
+            consumables: components["schemas"]["ItemQuantity"][];
+        };
+        SummaryView: {
+            /** @enum {string} */
+            period: "month" | "half_year" | "year";
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            /** Format: int32 */
+            depthStep: number;
+            includeDrafts: boolean;
+            rows: components["schemas"]["SummaryRow"][];
+            total: components["schemas"]["SummaryRow"];
+        };
+        UnitQuantity: {
+            unit: string;
+            quantity: number;
         };
         BoardAsset: {
             /** Format: uuid */
@@ -5512,6 +5608,34 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["WorkShiftView"];
+                };
+            };
+        };
+    };
+    summary: {
+        parameters: {
+            query: {
+                projectId?: string;
+                assetId?: string;
+                from: string;
+                to: string;
+                period?: string;
+                depthStep?: number;
+                includeDrafts?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SummaryView"];
                 };
             };
         };
