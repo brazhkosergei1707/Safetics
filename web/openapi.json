@@ -172,6 +172,76 @@
         }
       }
     },
+    "/api/v1/shifts/{id}/report": {
+      "get": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "report",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftReportView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "saveReport",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/shifts/{id}/crew": {
       "put": {
         "tags": [
@@ -1348,6 +1418,88 @@
         }
       }
     },
+    "/api/v1/shifts/{id}/report/submit": {
+      "post": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "submitReport",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shifts/{id}/report/reopen": {
+      "post": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "reopenReport",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/services/{id}/start": {
       "post": {
         "tags": [
@@ -1835,6 +1987,47 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/WorkShiftView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/shifts/generate": {
+      "post": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "generate",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateShiftsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateShiftsResponse"
                 }
               }
             }
@@ -4863,6 +5056,583 @@
           "syncService"
         ]
       },
+      "ConsumableRequest": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "itemId",
+          "quantity"
+        ]
+      },
+      "IntervalRequest": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "depthFrom": {
+            "type": "number"
+          },
+          "depthTo": {
+            "type": "number"
+          },
+          "coreSize": {
+            "type": "string"
+          },
+          "coreLength": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "depthFrom",
+          "depthTo",
+          "serviceId"
+        ]
+      },
+      "MeterRequest": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startValue": {
+            "type": "number"
+          },
+          "endValue": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "assetId",
+          "endValue",
+          "startValue"
+        ]
+      },
+      "QuantityRequest": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "quantity",
+          "serviceId"
+        ]
+      },
+      "ShiftReportRequest": {
+        "type": "object",
+        "properties": {
+          "notes": {
+            "type": "string"
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeEntryRequest"
+            }
+          },
+          "intervals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntervalRequest"
+            }
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityRequest"
+            }
+          },
+          "consumables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumableRequest"
+            }
+          },
+          "meters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MeterRequest"
+            }
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "consumables",
+          "intervals",
+          "meters",
+          "quantities",
+          "times",
+          "version"
+        ]
+      },
+      "TimeEntryRequest": {
+        "type": "object",
+        "properties": {
+          "startMinute": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "endMinute": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "activityCodeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "taskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "activityCodeId",
+          "endMinute",
+          "startMinute"
+        ]
+      },
+      "CodeTotal": {
+        "type": "object",
+        "properties": {
+          "activityCode": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "minutes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "activityCode",
+          "billable",
+          "category",
+          "minutes",
+          "name"
+        ]
+      },
+      "ConsumableView": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemCode": {
+            "type": "string"
+          },
+          "itemName": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "itemCode",
+          "itemId",
+          "itemName",
+          "quantity",
+          "unit"
+        ]
+      },
+      "IntervalStart": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceCode": {
+            "type": "string"
+          },
+          "depthFrom": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "depthFrom",
+          "serviceCode",
+          "serviceId"
+        ]
+      },
+      "IntervalView": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceCode": {
+            "type": "string"
+          },
+          "depthFrom": {
+            "type": "number"
+          },
+          "depthTo": {
+            "type": "number"
+          },
+          "meters": {
+            "type": "number"
+          },
+          "coreSize": {
+            "type": "string"
+          },
+          "coreLength": {
+            "type": "number"
+          },
+          "recovery": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "depthFrom",
+          "depthTo",
+          "meters",
+          "serviceCode",
+          "serviceId"
+        ]
+      },
+      "MeterView": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "startValue": {
+            "type": "number"
+          },
+          "endValue": {
+            "type": "number"
+          },
+          "previousEnd": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "assetCode",
+          "assetId"
+        ]
+      },
+      "QuantityView": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceCode": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "quantity",
+          "serviceCode",
+          "serviceId"
+        ]
+      },
+      "ReportIssue": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "params"
+        ]
+      },
+      "ReportTotals": {
+        "type": "object",
+        "properties": {
+          "billableMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nonBillableMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "byCode": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodeTotal"
+            }
+          },
+          "meters": {
+            "type": "number"
+          },
+          "coreLength": {
+            "type": "number"
+          },
+          "recovery": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "billableMinutes",
+          "byCode",
+          "coreLength",
+          "meters",
+          "nonBillableMinutes"
+        ]
+      },
+      "ShiftReportView": {
+        "type": "object",
+        "properties": {
+          "shiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reportId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "draft",
+              "submitted"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeEntryView"
+            }
+          },
+          "intervals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntervalView"
+            }
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityView"
+            }
+          },
+          "consumables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConsumableView"
+            }
+          },
+          "meters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MeterView"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/ReportTotals"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportIssue"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportIssue"
+            }
+          },
+          "prefill": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntervalStart"
+            }
+          },
+          "canEdit": {
+            "type": "boolean"
+          },
+          "canReopen": {
+            "type": "boolean"
+          },
+          "reportTaskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "submittedByName": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "canEdit",
+          "canReopen",
+          "consumables",
+          "date",
+          "durationMinutes",
+          "errors",
+          "intervals",
+          "meters",
+          "prefill",
+          "quantities",
+          "shiftId",
+          "startsAt",
+          "status",
+          "times",
+          "totals",
+          "version",
+          "warnings"
+        ]
+      },
+      "TimeEntryView": {
+        "type": "object",
+        "properties": {
+          "startMinute": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "endMinute": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "activityCodeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "activityCode": {
+            "type": "string"
+          },
+          "activityName": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string"
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "taskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "taskNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "taskTitle": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "activityCode",
+          "activityCodeId",
+          "activityName",
+          "billable",
+          "category",
+          "endMinute",
+          "startMinute"
+        ]
+      },
       "CrewEntry": {
         "type": "object",
         "properties": {
@@ -6437,6 +7207,18 @@
           "title"
         ]
       },
+      "ReportActionRequest": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
       "CompleteServiceRequest": {
         "type": "object",
         "properties": {
@@ -6574,6 +7356,39 @@
           "assetId",
           "date",
           "shiftCode"
+        ]
+      },
+      "GenerateShiftsRequest": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "format": "date"
+          },
+          "to": {
+            "type": "string",
+            "format": "date"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ]
+      },
+      "GenerateShiftsResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "created"
         ]
       },
       "ServiceCreateRequest": {

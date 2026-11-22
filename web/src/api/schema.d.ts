@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shifts/{id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["report"];
+        put: operations["saveReport"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/shifts/{id}/crew": {
         parameters: {
             query?: never;
@@ -404,6 +420,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shifts/{id}/report/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["submitReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shifts/{id}/report/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reopenReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/services/{id}/start": {
         parameters: {
             query?: never;
@@ -558,6 +606,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/shifts/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["generate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1649,6 +1713,178 @@ export interface components {
             templateKey?: string;
             archived: boolean;
         };
+        ConsumableRequest: {
+            /** Format: uuid */
+            itemId: string;
+            quantity: number;
+            comment?: string;
+        };
+        IntervalRequest: {
+            /** Format: uuid */
+            serviceId: string;
+            depthFrom: number;
+            depthTo: number;
+            coreSize?: string;
+            coreLength?: number;
+            comment?: string;
+        };
+        MeterRequest: {
+            /** Format: uuid */
+            assetId: string;
+            startValue: number;
+            endValue: number;
+        };
+        QuantityRequest: {
+            /** Format: uuid */
+            serviceId: string;
+            quantity: number;
+            comment?: string;
+        };
+        ShiftReportRequest: {
+            notes?: string;
+            times: components["schemas"]["TimeEntryRequest"][];
+            intervals: components["schemas"]["IntervalRequest"][];
+            quantities: components["schemas"]["QuantityRequest"][];
+            consumables: components["schemas"]["ConsumableRequest"][];
+            meters: components["schemas"]["MeterRequest"][];
+            /** Format: int32 */
+            version: number;
+        };
+        TimeEntryRequest: {
+            /** Format: int32 */
+            startMinute: number;
+            /** Format: int32 */
+            endMinute: number;
+            /** Format: uuid */
+            activityCodeId: string;
+            /** Format: uuid */
+            taskId?: string;
+            comment?: string;
+        };
+        CodeTotal: {
+            activityCode: string;
+            name: {
+                [key: string]: string;
+            };
+            category: string;
+            billable: boolean;
+            /** Format: int32 */
+            minutes: number;
+        };
+        ConsumableView: {
+            /** Format: uuid */
+            itemId: string;
+            itemCode: string;
+            itemName: {
+                [key: string]: string;
+            };
+            unit: string;
+            quantity: number;
+            comment?: string;
+        };
+        IntervalStart: {
+            /** Format: uuid */
+            serviceId: string;
+            serviceCode: string;
+            depthFrom: number;
+        };
+        IntervalView: {
+            /** Format: uuid */
+            serviceId: string;
+            serviceCode: string;
+            depthFrom: number;
+            depthTo: number;
+            meters: number;
+            coreSize?: string;
+            coreLength?: number;
+            recovery?: number;
+            comment?: string;
+        };
+        MeterView: {
+            /** Format: uuid */
+            assetId: string;
+            assetCode: string;
+            startValue?: number;
+            endValue?: number;
+            previousEnd?: number;
+        };
+        QuantityView: {
+            /** Format: uuid */
+            serviceId: string;
+            serviceCode: string;
+            unit?: string;
+            quantity: number;
+            comment?: string;
+        };
+        ReportIssue: {
+            code: string;
+            params: {
+                [key: string]: string;
+            };
+        };
+        ReportTotals: {
+            /** Format: int32 */
+            billableMinutes: number;
+            /** Format: int32 */
+            nonBillableMinutes: number;
+            byCode: components["schemas"]["CodeTotal"][];
+            meters: number;
+            coreLength: number;
+            recovery?: number;
+        };
+        ShiftReportView: {
+            /** Format: uuid */
+            shiftId: string;
+            /** Format: uuid */
+            reportId?: string;
+            /** @enum {string} */
+            status: "new" | "draft" | "submitted";
+            /** Format: date */
+            date: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: int32 */
+            durationMinutes: number;
+            notes?: string;
+            times: components["schemas"]["TimeEntryView"][];
+            intervals: components["schemas"]["IntervalView"][];
+            quantities: components["schemas"]["QuantityView"][];
+            consumables: components["schemas"]["ConsumableView"][];
+            meters: components["schemas"]["MeterView"][];
+            totals: components["schemas"]["ReportTotals"];
+            errors: components["schemas"]["ReportIssue"][];
+            warnings: components["schemas"]["ReportIssue"][];
+            prefill: components["schemas"]["IntervalStart"][];
+            canEdit: boolean;
+            canReopen: boolean;
+            /** Format: uuid */
+            reportTaskId?: string;
+            /** Format: date-time */
+            submittedAt?: string;
+            submittedByName?: string;
+            /** Format: int32 */
+            version: number;
+        };
+        TimeEntryView: {
+            /** Format: int32 */
+            startMinute: number;
+            /** Format: int32 */
+            endMinute: number;
+            /** Format: uuid */
+            activityCodeId: string;
+            activityCode: string;
+            activityName: {
+                [key: string]: string;
+            };
+            category: string;
+            billable: boolean;
+            /** Format: uuid */
+            taskId?: string;
+            /** Format: int64 */
+            taskNumber?: number;
+            taskTitle?: string;
+            comment?: string;
+        };
         CrewEntry: {
             /** Format: uuid */
             personnelId: string;
@@ -2153,6 +2389,10 @@ export interface components {
             status: string;
             statusCategory: string;
         };
+        ReportActionRequest: {
+            /** Format: int32 */
+            version: number;
+        };
         CompleteServiceRequest: {
             closingValues?: {
                 [key: string]: unknown;
@@ -2203,6 +2443,18 @@ export interface components {
             /** Format: date */
             date: string;
             shiftCode: string;
+        };
+        GenerateShiftsRequest: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            /** Format: uuid */
+            assetId?: string;
+        };
+        GenerateShiftsResponse: {
+            /** Format: int32 */
+            created: number;
         };
         ServiceCreateRequest: {
             /** Format: uuid */
@@ -2575,6 +2827,54 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TaskTypeView"];
+                };
+            };
+        };
+    };
+    report: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiftReportView"];
+                };
+            };
+        };
+    };
+    saveReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShiftReportRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiftReportView"];
                 };
             };
         };
@@ -3371,6 +3671,58 @@ export interface operations {
             };
         };
     };
+    submitReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportActionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiftReportView"];
+                };
+            };
+        };
+    };
+    reopenReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportActionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiftReportView"];
+                };
+            };
+        };
+    };
     start: {
         parameters: {
             query?: never;
@@ -3680,6 +4032,32 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["WorkShiftView"];
+                };
+            };
+        };
+    };
+    generate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateShiftsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GenerateShiftsResponse"];
                 };
             };
         };

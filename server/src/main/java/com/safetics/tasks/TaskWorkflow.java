@@ -480,6 +480,36 @@ public class TaskWorkflow {
         });
     }
 
+    /**
+     * Задача документа (змінний рапорт) → статус за кодом, інакше перший статус категорії. Від імені
+     * системи (права перевіряє документ). Заблоковану задачу: failIfBlocked — помилка «blocked»,
+     * інакше лишається як є. Закриту не чіпає. Повертає, чи статус змінено.
+     */
+    @Transactional
+    public boolean moveToStatus(UUID taskId, String code, String category, boolean failIfBlocked) {
+        return asSystem(() -> {
+            TaskView existing = get(taskId);
+            if (CLOSED.contains(existing.statusCategory())) {
+                return false;
+            }
+            TaskTypeView type = types.get(existing.typeId());
+            Optional<TaskStatusDefinition> target = type.statuses().stream().filter(s -> s.code().equals(code)).findFirst()
+                    .or(() -> type.statuses().stream().filter(s -> category.equals(s.category())).findFirst());
+            if (target.isEmpty() || target.get().code().equals(existing.status())) {
+                return false;
+            }
+            String to = target.get().category();
+            if (("active".equals(to) || "done".equals(to)) && existing.openBlockers() > 0) {
+                if (failIfBlocked) {
+                    throw ApiException.conflict("blocked");
+                }
+                return false;
+            }
+            applyStatus(existing, type, projects.get(existing.projectId()), target.get(), null);
+            return true;
+        });
+    }
+
     /** Нова зміна → правила shift_created задачі обладнання (змінний рапорт, далі — чек-лист). */
     @Transactional
     public void runShiftCreated(UUID taskId, ShiftContext shift) {

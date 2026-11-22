@@ -1,13 +1,14 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { App, Button, Checkbox, Descriptions, Divider, Drawer, Empty, Flex, Form, InputNumber, List, Select, Spin, Tag, Typography } from 'antd'
 import dayjs from 'dayjs'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { applyFieldErrors, errorMessage } from '../../api/formErrors'
 import { type Project, useProjectPersonnel } from '../../api/projects'
 import { useUpdateCrew, useWorkShift } from '../../api/shifts'
 import { CATEGORY_COLORS, type TaskType } from '../../api/tasks'
 import { localized } from '../../i18n/localized'
+import { ShiftReportDrawer } from './ShiftReportDrawer'
 
 interface CrewRow {
   personnelId?: string
@@ -40,6 +41,7 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
   const update = useUpdateCrew()
   const current = shift.data
   const crew = Form.useWatch('crew', form)
+  const [reportOpen, setReportOpen] = useState(false)
 
   useEffect(() => {
     if (!current) return
@@ -128,6 +130,10 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
             ]}
           />
 
+          <Button type="primary" ghost style={{ marginTop: 12 }} onClick={() => setReportOpen(true)}>
+            {t('reports.open')}
+          </Button>
+
           <Divider titlePlacement="start">{t('shifts.tasks')}</Divider>
           {current.tasks.length === 0 ? (
             <Typography.Text type="secondary">{t('shifts.noTasks')}</Typography.Text>
@@ -202,6 +208,12 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
           </Form>
         </>
       )}
+      <ShiftReportDrawer
+        project={project}
+        shiftId={reportOpen ? shiftId : undefined}
+        title={current ? `${current.assetCode} · ${dayjs(current.date).format('DD.MM.YYYY')} · ${current.shiftName}` : undefined}
+        onClose={() => setReportOpen(false)}
+      />
     </Drawer>
   )
 }

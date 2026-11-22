@@ -123,9 +123,11 @@ class ShiftApiTest extends AbstractIntegrationTest {
         assertThat(today.get("state")).isEqualTo("running");
         assertThat((List<?>) today.get("crew")).as("попередньої зміни немає").isEmpty();
         List<?> shiftTasks = (List<?>) today.get("tasks");
-        assertThat(shiftTasks).hasSize(1);
-        Map<?, ?> report = (Map<?, ?>) shiftTasks.getFirst();
-        assertThat(report.get("typeCode")).isEqualTo("shift_report");
+        assertThat(shiftTasks).as("чек-лист і рапорт").hasSize(2);
+        Map<?, ?> report = shiftTasks.stream().<Map<?, ?>>map(x -> (Map<?, ?>) x)
+                .filter(x -> "shift_report".equals(x.get("typeCode"))).findFirst().orElseThrow();
+        assertThat(shiftTasks.stream().<Map<?, ?>>map(x -> (Map<?, ?>) x).map(x -> (Object) x.get("typeCode")))
+                .contains("shift_checklist");
         assertThat(report.get("title").toString()).startsWith("Shift report: RIG-SH · ");
         String shiftId = today.get("id").toString();
 
@@ -144,7 +146,8 @@ class ShiftApiTest extends AbstractIntegrationTest {
         assertThat(tomorrow.status()).isEqualTo(201);
         assertThat(tomorrow.str("state")).isEqualTo("upcoming");
         assertThat((List<?>) tomorrow.at("crew")).hasSize(2);
-        String tomorrowReport = ((Map<?, ?>) ((List<?>) tomorrow.at("tasks")).getFirst()).get("id").toString();
+        String tomorrowReport = ((List<?>) tomorrow.at("tasks")).stream().<Map<?, ?>>map(x -> (Map<?, ?>) x)
+                .filter(x -> "shift_report".equals(x.get("typeCode"))).findFirst().orElseThrow().get("id").toString();
         assertThat(admin.get("/api/v1/tasks/" + tomorrowReport).str("assigneeId")).isEqualTo(driverUserId.toString());
         assertThat(admin.post("/api/v1/projects/" + project + "/shifts", next).str("error")).isEqualTo("shift_exists");
     }

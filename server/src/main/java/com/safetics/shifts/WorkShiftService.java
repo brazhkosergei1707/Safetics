@@ -170,6 +170,47 @@ public class WorkShiftService {
         return get(id);
     }
 
+    /**
+     * Зміни за період за графіком, що діяв у кожен день (для внесення минулих даних): усе основне
+     * обладнання або одне, наявні зміни пропускаються, задачі зміни створюються. До 62 днів, не
+     * пізніше сьогодні, у межах дат проєкту.
+     */
+    @Transactional
+    public int generate(UUID projectId, LocalDate from, LocalDate to, UUID assetId) {
+        ProjectView project = openProject(projectId);
+        requireEditor(project);
+        LocalDate today = projects.today(project);
+        if (from.isAfter(to)) {
+            throw ApiException.validation("from", "after_to");
+        }
+        if (to.isAfter(today)) {
+            throw ApiException.validation("to", "in_future");
+        }
+        if (from.plusDays(MAX_BOARD_DAYS).isBefore(to)) {
+            throw ApiException.validation("to", "too_large");
+        }
+        LocalDate start = from.isBefore(project.startDate()) ? project.startDate() : from;
+        LocalDate end = project.endDate() != null && project.endDate().isBefore(to) ? project.endDate() : to;
+        int created = 0;
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            List<UUID> assets = db.sql("""
+                            select asset_id from equipment_assignment
+                            where project_id = ? and exclusive and start_date <= ? and (end_date is null or end_date >= ?)
+                            """)
+                    .params(projectId, date, date).query(UUID.class).list();
+            for (Shift shift : scheduleOn(projectId, date)) {
+                for (UUID asset : assets) {
+                    if ((assetId == null || assetId.equals(asset)) && create(project, asset, date, shift, "manual") != null) {
+                        created++;
+                    }
+                }
+            }
+        }
+        audit.record("project", projectId, "generate_shifts", Map.of("from", from.toString(), "to", to.toString(),
+                "created", created));
+        return created;
+    }
+
     /** Бригада зміни повністю замінюється. Бурильник зміни — один; змінився — задачі зміни переходять до нього. */
     @Transactional
     public WorkShiftView updateCrew(UUID id, CrewUpdateRequest request) {
@@ -178,6 +219,11 @@ public class WorkShiftService {
         requireEditor(project);
         if (request.version() != shift.version()) {
             throw ApiException.conflict("stale_version");
+        }
+        Boolean submitted = db.sql("select exists (select 1 from shift_report where shift_id = ? and status = 'submitted')")
+                .param(id).query(Boolean.class).single();
+        if (Boolean.TRUE.equals(submitted)) {
+            throw ApiException.conflict("report_submitted");
         }
         Map<String, String> errors = new LinkedHashMap<>();
         Set<UUID> seen = new HashSet<>();

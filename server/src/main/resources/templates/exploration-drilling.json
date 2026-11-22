@@ -551,12 +551,71 @@
         {
           "trigger": "shift_created",
           "action": "create_subtask",
-          "taskType": "shift_report",
+          "taskType": "shift_checklist",
           "title": "{type}: {asset} · {shift}",
           "assignTo": "shift_lead",
           "dueInDays": 1
+        },
+        {
+          "trigger": "shift_created",
+          "action": "create_subtask",
+          "taskType": "shift_report",
+          "title": "{type}: {asset} · {shift}",
+          "assignTo": "shift_lead",
+          "dueInDays": 1,
+          "blockedBy": 0
         }
       ]
+    },
+    {
+      "code": "shift_checklist",
+      "name": {
+        "en": "Pre-start checklist",
+        "uk": "Чек-лист зміни",
+        "pt": "Checklist pré-operacional"
+      },
+      "statuses": [
+        {
+          "code": "expected",
+          "label": {
+            "en": "Expected",
+            "uk": "Очікується",
+            "pt": "Aguardado"
+          },
+          "category": "new",
+          "color": "default"
+        },
+        {
+          "code": "passed",
+          "label": {
+            "en": "Passed",
+            "uk": "Пройдено",
+            "pt": "Aprovado"
+          },
+          "category": "done",
+          "color": "green"
+        },
+        {
+          "code": "failed",
+          "label": {
+            "en": "Failed",
+            "uk": "Не пройдено",
+            "pt": "Reprovado"
+          },
+          "category": "done",
+          "color": "red"
+        },
+        {
+          "code": "cancelled",
+          "label": {
+            "en": "Cancelled",
+            "uk": "Скасовано",
+            "pt": "Cancelado"
+          },
+          "category": "cancelled"
+        }
+      ],
+      "subjectKind": "asset"
     },
     {
       "code": "shift_report",

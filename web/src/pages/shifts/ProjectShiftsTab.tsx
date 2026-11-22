@@ -1,10 +1,11 @@
 import { LeftOutlined, PlusOutlined, RightOutlined, TeamOutlined } from '@ant-design/icons'
-import { App, Button, DatePicker, Empty, Flex, Table, Tag, Tooltip, Typography } from 'antd'
+import { App, Button, DatePicker, Empty, Flex, Form, Modal, Select, Table, Tag, Tooltip, Typography } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { errorMessage } from '../../api/formErrors'
 import type { Project, Shift } from '../../api/projects'
+import { useGenerateShifts } from '../../api/shiftReports'
 import { type WorkShift, useCreateShift, useShiftBoard } from '../../api/shifts'
 import { CATEGORY_COLORS, type TaskType, useTaskTypes } from '../../api/tasks'
 import { localized } from '../../i18n/localized'
@@ -39,6 +40,9 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
   const create = useCreateShift(project.id)
   const [shiftId, setShiftId] = useState<string>()
   const [taskDrawer, setTaskDrawer] = useState<TaskDrawerState>({ open: false })
+  const generate = useGenerateShifts(project.id)
+  const [generating, setGenerating] = useState(false)
+  const [generateForm] = Form.useForm<{ range: [Dayjs, Dayjs]; assetId?: string }>()
 
   const typeList = useMemo(() => types.data ?? [], [types.data])
   const typeByCode = useMemo(() => new Map(typeList.map((tt) => [tt.code, tt])), [typeList])
@@ -160,6 +164,17 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
           <DatePicker value={end} onChange={(d) => d && setEnd(d)} allowClear={false} format="DD.MM.YYYY" />
           <Button icon={<RightOutlined />} onClick={() => setEnd(end.add(DAYS, 'day'))} />
           <Button onClick={() => setEnd(dayjs())}>{t('shifts.today')}</Button>
+          {rights.full && (
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => {
+                generateForm.resetFields()
+                setGenerating(true)
+              }}
+            >
+              {t('shifts.generate')}
+            </Button>
+          )}
         </Flex>
       </Flex>
 
@@ -222,6 +237,45 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
         onOpenTask={(id) => setTaskDrawer({ open: true, taskId: id })}
         onAddChild={(parent, childType) => setTaskDrawer({ open: true, parentId: parent.id, newType: childType })}
       />
+      <Modal
+        open={generating}
+        title={t('shifts.generate')}
+        onCancel={() => setGenerating(false)}
+        onOk={() => generateForm.submit()}
+        okText={t('shifts.generateOk')}
+        cancelText={t('common.cancel')}
+        confirmLoading={generate.isPending}
+        destroyOnHidden
+      >
+        <Typography.Paragraph type="secondary">{t('shifts.generateHint')}</Typography.Paragraph>
+        <Form
+          form={generateForm}
+          layout="vertical"
+          onFinish={(v) =>
+            generate.mutate(
+              { from: v.range[0].format(DATE), to: v.range[1].format(DATE), assetId: v.assetId },
+              {
+                onSuccess: (r) => {
+                  message.success(t('shifts.generated', { count: r.created }))
+                  setGenerating(false)
+                  setEnd(v.range[1])
+                },
+                onError: (e) => message.error(errorMessage(e, t)),
+              },
+            )
+          }
+        >
+          <Form.Item name="range" label={t('shifts.period')} rules={[{ required: true, message: t('validation.required') }]}>
+            <DatePicker.RangePicker
+              format="DD.MM.YYYY"
+              disabledDate={(d) => d.isAfter(dayjs(), 'day') || d.isBefore(dayjs(project.startDate), 'day')}
+            />
+          </Form.Item>
+          <Form.Item name="assetId" label={t('shifts.equipment')}>
+            <Select allowClear placeholder={t('shifts.allEquipment')} options={rows.map((r) => ({ value: r.assetId, label: r.code }))} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   )
 }

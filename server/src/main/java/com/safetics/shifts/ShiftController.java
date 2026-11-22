@@ -22,6 +22,11 @@ import com.safetics.shifts.ShiftDtos.CrewUpdateRequest;
 import com.safetics.shifts.ShiftDtos.ShiftBoardView;
 import com.safetics.shifts.ShiftDtos.WorkShiftCreateRequest;
 import com.safetics.shifts.ShiftDtos.WorkShiftView;
+import com.safetics.shifts.ShiftReportDtos.GenerateShiftsRequest;
+import com.safetics.shifts.ShiftReportDtos.GenerateShiftsResponse;
+import com.safetics.shifts.ShiftReportDtos.ReportActionRequest;
+import com.safetics.shifts.ShiftReportDtos.ShiftReportRequest;
+import com.safetics.shifts.ShiftReportDtos.ShiftReportView;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -33,9 +38,37 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ShiftController {
 
     private final WorkShiftService shifts;
+    private final ShiftReportService reports;
 
-    public ShiftController(WorkShiftService shifts) {
+    public ShiftController(WorkShiftService shifts, ShiftReportService reports) {
         this.shifts = shifts;
+        this.reports = reports;
+    }
+
+    @PostMapping("/projects/{projectId}/shifts/generate")
+    public GenerateShiftsResponse generate(@PathVariable("projectId") UUID projectId,
+                                           @Valid @RequestBody GenerateShiftsRequest request) {
+        return new GenerateShiftsResponse(shifts.generate(projectId, request.from(), request.to(), request.assetId()));
+    }
+
+    @GetMapping("/shifts/{id}/report")
+    public ShiftReportView report(@PathVariable("id") UUID id) {
+        return reports.get(id);
+    }
+
+    @PutMapping("/shifts/{id}/report")
+    public ShiftReportView saveReport(@PathVariable("id") UUID id, @Valid @RequestBody ShiftReportRequest request) {
+        return reports.save(id, request);
+    }
+
+    @PostMapping("/shifts/{id}/report/submit")
+    public ShiftReportView submitReport(@PathVariable("id") UUID id, @Valid @RequestBody ReportActionRequest request) {
+        return reports.submit(id, request.version());
+    }
+
+    @PostMapping("/shifts/{id}/report/reopen")
+    public ShiftReportView reopenReport(@PathVariable("id") UUID id, @Valid @RequestBody ReportActionRequest request) {
+        return reports.reopen(id, request.version());
     }
 
     @GetMapping("/projects/{projectId}/shift-board")
