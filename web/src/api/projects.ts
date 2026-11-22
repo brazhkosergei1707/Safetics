@@ -202,7 +202,7 @@ export function useDeletePersonnelAssignment(projectId: string) {
 }
 
 export function useAssignEquipment(projectId: string) {
-  const invalidate = useInvalidate('project-equipment')
+  const invalidate = useInvalidate('project-equipment', 'available-equipment')
   return useMutation({
     mutationFn: (body: Schemas['EquipmentAssignmentRequest']) =>
       unwrap(api.POST('/api/v1/projects/{id}/equipment-assignments', { params: { path: { id: projectId } }, body })),
@@ -241,4 +241,20 @@ export function useDeleteEquipmentAssignment(projectId: string) {
 export function formatPeriod(start: string, end?: string | null): string {
   const fmt = (d: string) => d.split('-').reverse().join('.')
   return `${fmt(start)} – ${end ? fmt(end) : '…'}`
+}
+
+export type AvailableEquipment = Schemas['AvailableEquipmentView']
+
+/** Обладнання для вибору на дати: вільне / зайняте. */
+export function useAvailableEquipment(projectId: string, startDate: string | undefined, endDate: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['available-equipment', projectId, startDate, endDate],
+    queryFn: () =>
+      unwrap(
+        api.GET('/api/v1/projects/{id}/available-equipment', {
+          params: { path: { id: projectId }, query: { startDate, endDate } },
+        }),
+      ),
+    enabled,
+  })
 }

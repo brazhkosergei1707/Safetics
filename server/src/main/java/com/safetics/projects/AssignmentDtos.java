@@ -86,4 +86,22 @@ public final class AssignmentDtos {
 
     public record AssignmentDatesRequest(@NotNull LocalDate startDate, LocalDate endDate) {
     }
+
+    /**
+     * Обладнання для вибору при призначенні на проєкт на вказані дати. available = false — основне
+     * обладнання вже стоїть на іншому проєкті (busyProjectCode — якщо той проєкт вам видно, busyUntil —
+     * до якої дати; null — безстроково) або будь-яке обладнання вже стоїть на цьому проєкті (onThisProject).
+     */
+    public record AvailableEquipmentView(
+            @NotNull UUID assetId,
+            @NotNull String assetCode,
+            String assetName,
+            @NotNull String typeCode,
+            @NotNull Map<String, String> typeName,
+            @NotNull @Schema(allowableValues = {"primary", "auxiliary"}) String category,
+            @NotNull boolean available,
+            @NotNull boolean onThisProject,
+            String busyProjectCode,
+            LocalDate busyUntil) {
+    }
 }

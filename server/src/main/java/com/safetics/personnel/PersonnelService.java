@@ -192,7 +192,7 @@ public class PersonnelService {
         if (person.loginRole() != null) {
             throw ApiException.conflict("already_has_access");
         }
-        if (AccountService.PORTAL_ROLES.contains(request.role())) {
+        if (!AccountService.STAFF_ROLES.contains(request.role())) {
             throw ApiException.validation("role", "invalid_option");
         }
         accounts.requireNotMoreThanOwn(request.role());

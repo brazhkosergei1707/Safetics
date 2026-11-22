@@ -1,0 +1,324 @@
+{
+  "key": "tire-service",
+  "name": {
+    "en": "Tire service",
+    "uk": "Шиномонтаж",
+    "pt": "Borracharia"
+  },
+  "assetTypes": [
+    {
+      "code": "service_bay",
+      "name": {
+        "en": "Service bay",
+        "uk": "Шиномонтажний пост",
+        "pt": "Box de serviço"
+      },
+      "category": "primary",
+      "fields": [
+        {
+          "key": "number",
+          "label": {
+            "en": "Bay number",
+            "uk": "Номер поста",
+            "pt": "Número do box"
+          },
+          "type": "string"
+        },
+        {
+          "key": "liftCapacity",
+          "label": {
+            "en": "Lift capacity",
+            "uk": "Вантажопідйомність підйомника",
+            "pt": "Capacidade do elevador"
+          },
+          "type": "number",
+          "unit": "t",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "idle",
+          "label": {
+            "en": "Idle",
+            "uk": "Простоює",
+            "pt": "Parado"
+          },
+          "color": "default"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": [
+        "tire_changer",
+        "wheel_balancer"
+      ]
+    },
+    {
+      "code": "tire_changer",
+      "name": {
+        "en": "Tire changer",
+        "uk": "Шиномонтажний верстат",
+        "pt": "Desmontadora de pneus"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "manufacturer",
+          "label": {
+            "en": "Manufacturer",
+            "uk": "Виробник",
+            "pt": "Fabricante"
+          },
+          "type": "string"
+        },
+        {
+          "key": "serialNumber",
+          "label": {
+            "en": "Serial number",
+            "uk": "Заводський номер",
+            "pt": "Número de série"
+          },
+          "type": "string"
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "wheel_balancer",
+      "name": {
+        "en": "Wheel balancer",
+        "uk": "Балансувальний верстат",
+        "pt": "Balanceadora"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "manufacturer",
+          "label": {
+            "en": "Manufacturer",
+            "uk": "Виробник",
+            "pt": "Fabricante"
+          },
+          "type": "string"
+        },
+        {
+          "key": "serialNumber",
+          "label": {
+            "en": "Serial number",
+            "uk": "Заводський номер",
+            "pt": "Número de série"
+          },
+          "type": "string"
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "car",
+      "name": {
+        "en": "Car",
+        "uk": "Легковий автомобіль",
+        "pt": "Carro"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "odometer",
+          "label": {
+            "en": "Odometer",
+            "uk": "Пробіг",
+            "pt": "Hodômetro"
+          },
+          "type": "number",
+          "unit": "km",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    }
+  ],
+  "positions": [
+    {
+      "code": "supervisor",
+      "name": {
+        "en": "Senior technician",
+        "uk": "Старший майстер",
+        "pt": "Técnico sênior"
+      },
+      "projectRole": "supervisor",
+      "supervisorCanAdd": false
+    },
+    {
+      "code": "tire_fitter",
+      "name": {
+        "en": "Tire fitter",
+        "uk": "Шиномонтажник",
+        "pt": "Borracheiro"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "storekeeper",
+      "name": {
+        "en": "Storekeeper",
+        "uk": "Комірник",
+        "pt": "Almoxarife"
+      },
+      "projectRole": "storekeeper",
+      "supervisorCanAdd": false
+    }
+  ]
+}

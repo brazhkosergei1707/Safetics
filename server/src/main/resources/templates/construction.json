@@ -1,0 +1,582 @@
+{
+  "key": "construction",
+  "name": {
+    "en": "Construction",
+    "uk": "Будівництво",
+    "pt": "Construção"
+  },
+  "assetTypes": [
+    {
+      "code": "excavator",
+      "name": {
+        "en": "Excavator",
+        "uk": "Екскаватор",
+        "pt": "Escavadeira"
+      },
+      "category": "primary",
+      "fields": [
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "manufacturer",
+          "label": {
+            "en": "Manufacturer",
+            "uk": "Виробник",
+            "pt": "Fabricante"
+          },
+          "type": "string"
+        },
+        {
+          "key": "year",
+          "label": {
+            "en": "Year built",
+            "uk": "Рік випуску",
+            "pt": "Ano de fabricação"
+          },
+          "type": "integer",
+          "min": 1950,
+          "max": 2100
+        },
+        {
+          "key": "serialNumber",
+          "label": {
+            "en": "Serial number",
+            "uk": "Заводський номер",
+            "pt": "Número de série"
+          },
+          "type": "string"
+        },
+        {
+          "key": "engineHours",
+          "label": {
+            "en": "Engine hours",
+            "uk": "Мотогодини",
+            "pt": "Horímetro"
+          },
+          "type": "number",
+          "unit": "h",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "idle",
+          "label": {
+            "en": "Idle",
+            "uk": "Простоює",
+            "pt": "Parado"
+          },
+          "color": "default"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "crane",
+      "name": {
+        "en": "Crane",
+        "uk": "Кран",
+        "pt": "Guindaste"
+      },
+      "category": "primary",
+      "fields": [
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "manufacturer",
+          "label": {
+            "en": "Manufacturer",
+            "uk": "Виробник",
+            "pt": "Fabricante"
+          },
+          "type": "string"
+        },
+        {
+          "key": "year",
+          "label": {
+            "en": "Year built",
+            "uk": "Рік випуску",
+            "pt": "Ano de fabricação"
+          },
+          "type": "integer",
+          "min": 1950,
+          "max": 2100
+        },
+        {
+          "key": "liftCapacity",
+          "label": {
+            "en": "Lift capacity",
+            "uk": "Вантажопідйомність",
+            "pt": "Capacidade de carga"
+          },
+          "type": "number",
+          "unit": "t",
+          "min": 0
+        },
+        {
+          "key": "engineHours",
+          "label": {
+            "en": "Engine hours",
+            "uk": "Мотогодини",
+            "pt": "Horímetro"
+          },
+          "type": "number",
+          "unit": "h",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "idle",
+          "label": {
+            "en": "Idle",
+            "uk": "Простоює",
+            "pt": "Parado"
+          },
+          "color": "default"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "concrete_mixer",
+      "name": {
+        "en": "Concrete mixer truck",
+        "uk": "Бетонозмішувач",
+        "pt": "Caminhão betoneira"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "drumVolume",
+          "label": {
+            "en": "Drum volume",
+            "uk": "Об'єм барабана",
+            "pt": "Volume do tambor"
+          },
+          "type": "number",
+          "unit": "m³",
+          "min": 0
+        },
+        {
+          "key": "odometer",
+          "label": {
+            "en": "Odometer",
+            "uk": "Пробіг",
+            "pt": "Hodômetro"
+          },
+          "type": "number",
+          "unit": "km",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "generator",
+      "name": {
+        "en": "Generator",
+        "uk": "Генератор",
+        "pt": "Gerador"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "power",
+          "label": {
+            "en": "Power",
+            "uk": "Потужність",
+            "pt": "Potência"
+          },
+          "type": "number",
+          "unit": "kW",
+          "min": 0
+        },
+        {
+          "key": "engineHours",
+          "label": {
+            "en": "Engine hours",
+            "uk": "Мотогодини",
+            "pt": "Horímetro"
+          },
+          "type": "number",
+          "unit": "h",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "truck",
+      "name": {
+        "en": "Truck",
+        "uk": "Вантажний автомобіль",
+        "pt": "Caminhão"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "payload",
+          "label": {
+            "en": "Payload",
+            "uk": "Вантажопідйомність",
+            "pt": "Capacidade de carga"
+          },
+          "type": "number",
+          "unit": "t",
+          "min": 0
+        },
+        {
+          "key": "odometer",
+          "label": {
+            "en": "Odometer",
+            "uk": "Пробіг",
+            "pt": "Hodômetro"
+          },
+          "type": "number",
+          "unit": "km",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "car",
+      "name": {
+        "en": "Car",
+        "uk": "Легковий автомобіль",
+        "pt": "Carro"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "odometer",
+          "label": {
+            "en": "Odometer",
+            "uk": "Пробіг",
+            "pt": "Hodômetro"
+          },
+          "type": "number",
+          "unit": "km",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    }
+  ],
+  "positions": [
+    {
+      "code": "supervisor",
+      "name": {
+        "en": "Site manager",
+        "uk": "Виконроб",
+        "pt": "Mestre de obras"
+      },
+      "projectRole": "supervisor",
+      "supervisorCanAdd": false
+    },
+    {
+      "code": "foreman",
+      "name": {
+        "en": "Crew leader",
+        "uk": "Бригадир",
+        "pt": "Encarregado"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "builder",
+      "name": {
+        "en": "Builder",
+        "uk": "Будівельник",
+        "pt": "Pedreiro"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "operator",
+      "name": {
+        "en": "Machine operator",
+        "uk": "Машиніст техніки",
+        "pt": "Operador de máquinas"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "driver",
+      "name": {
+        "en": "Driver",
+        "uk": "Водій",
+        "pt": "Motorista"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "storekeeper",
+      "name": {
+        "en": "Storekeeper",
+        "uk": "Комірник",
+        "pt": "Almoxarife"
+      },
+      "projectRole": "storekeeper",
+      "supervisorCanAdd": false
+    }
+  ]
+}

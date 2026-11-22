@@ -9,6 +9,8 @@ import {
   ProjectOutlined,
   SolutionOutlined,
   TeamOutlined,
+  UserOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons'
 import { Button, Flex, Layout, Menu, Select, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
@@ -26,7 +28,10 @@ export function AppLayout() {
   const switchCompany = useSwitchCompany()
   const logout = useLogout()
 
-  const items = [
+  const platformItem = session?.platformAdmin
+    ? [{ key: '/platform', icon: <GlobalOutlined />, label: t('nav.platform') }]
+    : []
+  const companyItems = [
     { key: '/', icon: <DashboardOutlined />, label: t('nav.dashboard') },
     { key: '/projects', icon: <ProjectOutlined />, label: t('nav.projects') },
     ...(hasPermission(session, 'client.view')
@@ -41,10 +46,15 @@ export function AppLayout() {
     { key: '/reports', icon: <FileTextOutlined />, label: t('nav.reports') },
     { key: '/stock', icon: <InboxOutlined />, label: t('nav.stock') },
     { key: '/hse', icon: <AlertOutlined />, label: t('nav.hse') },
+    ...(hasPermission(session, 'staff.manage')
+      ? [{ key: '/users', icon: <UserOutlined />, label: t('nav.users') }]
+      : []),
     ...(hasPermission(session, 'audit.view')
       ? [{ key: '/audit-log', icon: <AuditOutlined />, label: t('nav.auditLog') }]
       : []),
   ]
+  // Без обраної компанії (адмін платформи) — лише «Компанії»
+  const items = session?.company ? [...companyItems, ...platformItem] : platformItem
 
   const onLogout = () => logout.mutate(undefined, { onSettled: () => navigate('/login', { replace: true }) })
 

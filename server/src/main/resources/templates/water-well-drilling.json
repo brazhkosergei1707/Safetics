@@ -1,0 +1,408 @@
+{
+  "key": "water-well-drilling",
+  "name": {
+    "en": "Water well drilling",
+    "uk": "Буріння на воду",
+    "pt": "Perfuração de poços de água"
+  },
+  "assetTypes": [
+    {
+      "code": "drill_rig",
+      "name": {
+        "en": "Drill rig",
+        "uk": "Бурова установка",
+        "pt": "Sonda"
+      },
+      "category": "primary",
+      "fields": [
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "manufacturer",
+          "label": {
+            "en": "Manufacturer",
+            "uk": "Виробник",
+            "pt": "Fabricante"
+          },
+          "type": "string"
+        },
+        {
+          "key": "year",
+          "label": {
+            "en": "Year built",
+            "uk": "Рік випуску",
+            "pt": "Ano de fabricação"
+          },
+          "type": "integer",
+          "min": 1950,
+          "max": 2100
+        },
+        {
+          "key": "serialNumber",
+          "label": {
+            "en": "Serial number",
+            "uk": "Заводський номер",
+            "pt": "Número de série"
+          },
+          "type": "string"
+        },
+        {
+          "key": "maxDepth",
+          "label": {
+            "en": "Max depth",
+            "uk": "Максимальна глибина",
+            "pt": "Profundidade máxima"
+          },
+          "type": "number",
+          "unit": "m",
+          "min": 0
+        },
+        {
+          "key": "engineHours",
+          "label": {
+            "en": "Engine hours",
+            "uk": "Мотогодини",
+            "pt": "Horímetro"
+          },
+          "type": "number",
+          "unit": "h",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "idle",
+          "label": {
+            "en": "Idle",
+            "uk": "Простоює",
+            "pt": "Parado"
+          },
+          "color": "default"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "car",
+      "name": {
+        "en": "Car",
+        "uk": "Легковий автомобіль",
+        "pt": "Carro"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "odometer",
+          "label": {
+            "en": "Odometer",
+            "uk": "Пробіг",
+            "pt": "Hodômetro"
+          },
+          "type": "number",
+          "unit": "km",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "truck",
+      "name": {
+        "en": "Truck",
+        "uk": "Вантажний автомобіль",
+        "pt": "Caminhão"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "payload",
+          "label": {
+            "en": "Payload",
+            "uk": "Вантажопідйомність",
+            "pt": "Capacidade de carga"
+          },
+          "type": "number",
+          "unit": "t",
+          "min": 0
+        },
+        {
+          "key": "odometer",
+          "label": {
+            "en": "Odometer",
+            "uk": "Пробіг",
+            "pt": "Hodômetro"
+          },
+          "type": "number",
+          "unit": "km",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "water_truck",
+      "name": {
+        "en": "Water truck",
+        "uk": "Водовозка",
+        "pt": "Caminhão-pipa"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "tankVolume",
+          "label": {
+            "en": "Tank volume",
+            "uk": "Об'єм цистерни",
+            "pt": "Volume do tanque"
+          },
+          "type": "number",
+          "unit": "m³",
+          "min": 0
+        },
+        {
+          "key": "odometer",
+          "label": {
+            "en": "Odometer",
+            "uk": "Пробіг",
+            "pt": "Hodômetro"
+          },
+          "type": "number",
+          "unit": "km",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    }
+  ],
+  "positions": [
+    {
+      "code": "supervisor",
+      "name": {
+        "en": "Supervisor",
+        "uk": "Майстер",
+        "pt": "Supervisor"
+      },
+      "projectRole": "supervisor",
+      "supervisorCanAdd": false
+    },
+    {
+      "code": "driller",
+      "name": {
+        "en": "Driller",
+        "uk": "Бурильник",
+        "pt": "Sondador"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "driller_helper",
+      "name": {
+        "en": "Driller's helper",
+        "uk": "Помічник бурильника",
+        "pt": "Auxiliar de sondagem"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "driver",
+      "name": {
+        "en": "Driver",
+        "uk": "Водій",
+        "pt": "Motorista"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "mechanic",
+      "name": {
+        "en": "Mechanic",
+        "uk": "Механік",
+        "pt": "Mecânico"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    }
+  ]
+}

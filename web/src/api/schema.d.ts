@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/v1/users/{userId}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["changeRole"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{id}": {
         parameters: {
             query?: never;
@@ -148,7 +164,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/projects": {
+    "/api/v1/users": {
         parameters: {
             query?: never;
             header?: never;
@@ -156,6 +172,54 @@ export interface paths {
             cookie?: never;
         };
         get: operations["list"];
+        put?: never;
+        post: operations["add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{userId}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{userId}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["disable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_1"];
         put?: never;
         post: operations["create"];
         delete?: never;
@@ -324,6 +388,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/platform/companies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["companies"];
+        put?: never;
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/companies/{id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/companies/{id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["activate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/personnel": {
         parameters: {
             query?: never;
@@ -331,9 +443,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
-        post: operations["create_1"];
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -395,9 +507,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
-        post: operations["create_2"];
+        post: operations["create_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -603,9 +715,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
-        post: operations["create_3"];
+        post: operations["create_4"];
         delete?: never;
         options?: never;
         head?: never;
@@ -651,9 +763,41 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_4"];
+        get: operations["list_5"];
         put?: never;
-        post: operations["create_4"];
+        post: operations["create_5"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/asset-types/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["restore_3"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/asset-types/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archive_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -670,6 +814,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["installTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/available-equipment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["availableEquipment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/platform/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["templates"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -699,7 +875,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_5"];
+        get: operations["list_6"];
         put?: never;
         post?: never;
         delete?: never;
@@ -776,6 +952,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ChangeRoleRequest: {
+            role: string;
+        };
+        CompanyUserView: {
+            /** Format: uuid */
+            userId: string;
+            fullName: string;
+            phone: string;
+            role: string;
+            /** @enum {string} */
+            status: "active" | "invited" | "disabled";
+            portal: boolean;
+        };
         ProjectUpdateRequest: {
             code: string;
             name: string;
@@ -1059,6 +1248,12 @@ export interface components {
             templateKey?: string;
             archived: boolean;
         };
+        AddUserRequest: {
+            phone: string;
+            fullName: string;
+            role: string;
+            password?: string;
+        };
         ProjectCreateRequest: {
             code: string;
             name: string;
@@ -1133,6 +1328,38 @@ export interface components {
             /** Format: date-time */
             grantedAt: string;
         };
+        CreateCompanyRequest: {
+            name: string;
+            legalCode?: string;
+            templateKey: string;
+            adminFullName: string;
+            adminPhone: string;
+            adminPassword?: string;
+        };
+        CompanyAdminView: {
+            /** Format: uuid */
+            userId: string;
+            fullName: string;
+            phone: string;
+        };
+        CreateCompanyResponse: {
+            company: components["schemas"]["PlatformCompanyView"];
+            newAdminAccount: boolean;
+        };
+        PlatformCompanyView: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            legalCode?: string;
+            /** @enum {string} */
+            status: "active" | "suspended" | "archived";
+            templateKey?: string;
+            /** Format: date-time */
+            createdAt: string;
+            admins: components["schemas"]["CompanyAdminView"][];
+            /** Format: int32 */
+            members: number;
+        };
         PersonnelLoginRequest: {
             role: string;
             password?: string;
@@ -1167,6 +1394,7 @@ export interface components {
             company?: components["schemas"]["CompanyView"];
             companies: components["schemas"]["CompanyView"][];
             permissions: string[];
+            platformAdmin: boolean;
         };
         TokenResponse: {
             accessToken: string;
@@ -1210,6 +1438,29 @@ export interface components {
             skipped: string[];
             positions: string[];
         };
+        AvailableEquipmentView: {
+            /** Format: uuid */
+            assetId: string;
+            assetCode: string;
+            assetName?: string;
+            typeCode: string;
+            typeName: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            category: "primary" | "auxiliary";
+            available: boolean;
+            onThisProject: boolean;
+            busyProjectCode?: string;
+            /** Format: date */
+            busyUntil?: string;
+        };
+        TemplateSummary: {
+            key: string;
+            name: {
+                [key: string]: string;
+            };
+        };
         MemberView: {
             /** Format: uuid */
             userId: string;
@@ -1245,6 +1496,32 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    changeRole: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRoleRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CompanyUserView"];
+                };
+            };
+        };
+    };
     get: {
         parameters: {
             query?: never;
@@ -1634,6 +1911,94 @@ export interface operations {
         };
     };
     list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CompanyUserView"][];
+                };
+            };
+        };
+    };
+    add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddUserRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CompanyUserView"];
+                };
+            };
+        };
+    };
+    enable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CompanyUserView"];
+                };
+            };
+        };
+    };
+    disable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CompanyUserView"];
+                };
+            };
+        };
+    };
+    list_1: {
         parameters: {
             query?: {
                 status?: string;
@@ -2033,7 +2398,95 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    companies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlatformCompanyView"][];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCompanyRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CreateCompanyResponse"];
+                };
+            };
+        };
+    };
+    suspend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlatformCompanyView"];
+                };
+            };
+        };
+    };
+    activate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlatformCompanyView"];
+                };
+            };
+        };
+    };
+    list_2: {
         parameters: {
             query?: {
                 q?: string;
@@ -2057,7 +2510,7 @@ export interface operations {
             };
         };
     };
-    create_1: {
+    create_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -2173,7 +2626,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: {
                 q?: string;
@@ -2196,7 +2649,7 @@ export interface operations {
             };
         };
     };
-    create_2: {
+    create_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -2540,7 +2993,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_4: {
         parameters: {
             query?: {
                 typeId?: string;
@@ -2568,7 +3021,7 @@ export interface operations {
             };
         };
     };
-    create_3: {
+    create_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -2636,7 +3089,7 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    list_5: {
         parameters: {
             query?: {
                 includeArchived?: boolean;
@@ -2658,7 +3111,7 @@ export interface operations {
             };
         };
     };
-    create_4: {
+    create_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -2673,6 +3126,50 @@ export interface operations {
         responses: {
             /** @description Created */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssetTypeView"];
+                };
+            };
+        };
+    };
+    restore_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssetTypeView"];
+                };
+            };
+        };
+    };
+    archive_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2706,6 +3203,51 @@ export interface operations {
             };
         };
     };
+    availableEquipment: {
+        parameters: {
+            query?: {
+                startDate?: string;
+                endDate?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AvailableEquipmentView"][];
+                };
+            };
+        };
+    };
+    templates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TemplateSummary"][];
+                };
+            };
+        };
+    };
     assignments: {
         parameters: {
             query?: never;
@@ -2728,7 +3270,7 @@ export interface operations {
             };
         };
     };
-    list_5: {
+    list_6: {
         parameters: {
             query?: never;
             header?: never;

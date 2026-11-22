@@ -99,7 +99,40 @@ class AssignmentApiTest extends AbstractIntegrationTest {
                 dates(start, start.plusDays(9)));
         assertThat(admin.post("/api/v1/projects/" + projectB + "/equipment-assignments",
                 Map.of("assetId", rig, "startDate", start.plusDays(10).toString())).status()).isEqualTo(201);
-        assertThat(admin.get("/api/v1/projects/" + projectA + "/equipment-assignments").list()).hasSize(1);
+        assertThat(admin.get("/api/v1/projects/" + projectA + "/equipment-assignments").list())
+                .filteredOn(a -> "ASG-RIG-1".equals(((Map<?, ?>) a).get("assetCode"))).hasSize(1);
+    }
+
+    @Test
+    void auxiliaryEquipmentCanServeSeveralProjects() {
+        String truck = asset("vehicle", "ASG-TRK-1", Map.of("plate", "AA0001AA"));
+        String rig = asset("drill_rig", "ASG-RIG-2", Map.of("model", "LF70"));
+        assertThat(admin.post("/api/v1/projects/" + projectA + "/equipment-assignments",
+                Map.of("assetId", truck, "startDate", start.toString())).status()).isEqualTo(201);
+        assertThat(admin.post("/api/v1/projects/" + projectB + "/equipment-assignments",
+                Map.of("assetId", truck, "startDate", start.toString())).status())
+                .as("допоміжне — на двох проєктах одночасно").isEqualTo(201);
+        assertThat(admin.post("/api/v1/projects/" + projectA + "/equipment-assignments",
+                Map.of("assetId", truck, "startDate", start.plusDays(5).toString())).str("error"))
+                .as("але не двічі на тому самому").isEqualTo("overlap");
+
+        admin.post("/api/v1/projects/" + projectA + "/equipment-assignments",
+                Map.of("assetId", rig, "startDate", start.toString(), "endDate", start.plusDays(60).toString()));
+        Map<String, Map<?, ?>> available = new HashMap<>();
+        for (Object item : admin.get("/api/v1/projects/" + projectB + "/available-equipment").list()) {
+            available.put((String) ((Map<?, ?>) item).get("assetCode"), (Map<?, ?>) item);
+        }
+        assertThat(available.get("ASG-RIG-2").get("available")).isEqualTo(false);
+        assertThat(available.get("ASG-RIG-2").get("busyProjectCode")).isEqualTo("ASG-A");
+        assertThat(available.get("ASG-RIG-2").get("busyUntil")).isEqualTo(start.plusDays(60).toString());
+        assertThat(available.get("ASG-TRK-1").get("onThisProject")).isEqualTo(true);
+
+        Map<String, Map<?, ?>> later = new HashMap<>();
+        for (Object item : admin.get("/api/v1/projects/" + projectB + "/available-equipment?startDate="
+                + start.plusDays(61)).list()) {
+            later.put((String) ((Map<?, ?>) item).get("assetCode"), (Map<?, ?>) item);
+        }
+        assertThat(later.get("ASG-RIG-2").get("available")).as("після переїзду вільна").isEqualTo(true);
     }
 
     @Test

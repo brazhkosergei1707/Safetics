@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
 import com.safetics.assets.AssetDtos.AssetTypeRequest;
@@ -43,6 +45,29 @@ public class TemplateService {
         this.types = types;
         this.positions = positions;
         this.audit = audit;
+    }
+
+    /** Шаблон у списку вибору: ключ і назва за мовами. */
+    public record TemplateSummary(@jakarta.validation.constraints.NotNull String key,
+                                  @jakarta.validation.constraints.NotNull Map<String, String> name) {
+    }
+
+    /** Усі шаблони з resources/templates, за ключем. */
+    public List<TemplateSummary> list() {
+        try {
+            Resource[] resources = new PathMatchingResourcePatternResolver().getResources("classpath:templates/*.json");
+            List<TemplateSummary> result = new ArrayList<>();
+            for (Resource resource : resources) {
+                try (InputStream in = resource.getInputStream()) {
+                    TemplateDefinition template = json.readValue(in, TemplateDefinition.class);
+                    result.add(new TemplateSummary(template.key(), template.name()));
+                }
+            }
+            result.sort(java.util.Comparator.comparing(TemplateSummary::key));
+            return result;
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot list templates", e);
+        }
     }
 
     public TemplateDefinition load(String key) {

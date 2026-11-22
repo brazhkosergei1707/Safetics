@@ -77,3 +77,36 @@ export function useInstallTemplate() {
       ]),
   })
 }
+
+export type AssetTypeRequest = Schemas['AssetTypeRequest']
+
+export function useSaveAssetType() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }: { id?: string; body: AssetTypeRequest }) =>
+      id
+        ? unwrap(api.PUT('/api/v1/asset-types/{id}', { params: { path: { id } }, body }))
+        : unwrap(api.POST('/api/v1/asset-types', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['asset-types'] }),
+  })
+}
+
+export function useArchiveAssetType() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, restore }: { id: string; restore?: boolean }) =>
+      restore
+        ? unwrap(api.POST('/api/v1/asset-types/{id}/restore', { params: { path: { id } } }))
+        : unwrap(api.POST('/api/v1/asset-types/{id}/archive', { params: { path: { id } } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['asset-types'] }),
+  })
+}
+
+/** Усі типи разом з архівними — для редактора типів. */
+export function useAllAssetTypes(enabled: boolean) {
+  return useQuery({
+    queryKey: ['asset-types', 'all'],
+    queryFn: () => unwrap(api.GET('/api/v1/asset-types', { params: { query: { includeArchived: true } } })),
+    enabled,
+  })
+}

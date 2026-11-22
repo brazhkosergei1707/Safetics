@@ -11,9 +11,11 @@ import { CustomersPage } from './pages/customers/CustomersPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { PersonnelPage } from './pages/personnel/PersonnelPage'
+import { PlatformCompaniesPage } from './pages/platform/PlatformCompaniesPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
 import { ProjectDetailPage } from './pages/projects/ProjectDetailPage'
 import { ProjectsPage } from './pages/projects/ProjectsPage'
+import { UsersPage } from './pages/users/UsersPage'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -30,6 +32,8 @@ const router = createBrowserRouter([
       { path: 'projects/:id', element: <ProjectDetailPage /> },
       { path: 'customers', element: <CustomersPage /> },
       { path: 'personnel', element: <PersonnelPage /> },
+      { path: 'users', element: <UsersPage /> },
+      { path: 'platform', element: <PlatformCompaniesPage /> },
       { path: 'assets', element: <AssetsPage /> },
       { path: 'reports', element: <PlaceholderPage titleKey="nav.reports" /> },
       { path: 'stock', element: <PlaceholderPage titleKey="nav.stock" /> },

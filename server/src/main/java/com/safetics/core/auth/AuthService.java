@@ -40,6 +40,9 @@ public class AuthService {
 
     static final String ISSUER = "safetics";
 
+    /** Authority адміна платформи: створення й призупинення компаній. */
+    public static final String PLATFORM_ADMIN = "platform.admin";
+
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final JdbcClient db;
@@ -190,6 +193,20 @@ public class AuthService {
                 .list());
     }
 
+    /** Дозволи ролі в компанії + platform.admin для адміна платформи (не залежить від компанії). */
+    private List<String> grantedAuthorities(UUID userId, UUID companyId) {
+        List<String> authorities = new java.util.ArrayList<>(permissionsOf(userId, companyId));
+        if (isPlatformAdmin(userId)) {
+            authorities.add(PLATFORM_ADMIN);
+        }
+        return authorities;
+    }
+
+    private boolean isPlatformAdmin(UUID userId) {
+        return Boolean.TRUE.equals(db.sql("select is_platform_admin from app_user where id = ?")
+                .param(userId).query(Boolean.class).optional().orElse(false));
+    }
+
     private List<String> permissionsOf(UUID userId, UUID companyId) {
         if (companyId == null) {
             return List.of();
@@ -216,7 +233,7 @@ public class AuthService {
                 .subject(userId.toString())
                 .issuedAt(now)
                 .expiresAt(accessExpiresAt)
-                .claim("perms", permissionsOf(userId, companyId));
+                .claim("perms", grantedAuthorities(userId, companyId));
         if (companyId != null) {
             claims.claim(TenantContextFilter.COMPANY_CLAIM, companyId.toString());
         }
@@ -238,7 +255,8 @@ public class AuthService {
                 new UserView(user.id(), user.fullName(), user.phone()),
                 current,
                 companies,
-                permissionsOf(user.id(), current == null ? null : current.id()));
+                grantedAuthorities(user.id(), current == null ? null : current.id()),
+                isPlatformAdmin(user.id()));
     }
 
     private static boolean isMember(List<CompanyView> companies, UUID companyId) {

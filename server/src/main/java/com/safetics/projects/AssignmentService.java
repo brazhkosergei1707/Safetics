@@ -24,6 +24,7 @@ import com.safetics.personnel.PersonnelDtos.PositionView;
 import com.safetics.personnel.PersonnelService;
 import com.safetics.personnel.PositionService;
 import com.safetics.projects.AssignmentDtos.AssignmentDatesRequest;
+import com.safetics.projects.AssignmentDtos.AvailableEquipmentView;
 import com.safetics.projects.AssignmentDtos.CrewMemberRequest;
 import com.safetics.projects.AssignmentDtos.EquipmentAssignmentRequest;
 import com.safetics.projects.AssignmentDtos.EquipmentAssignmentView;
@@ -36,9 +37,10 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Призначення людей і обладнання на проєкт. Людина чи обладнання не можуть бути на двох проєктах
- * одночасно — це перевіряє база (exclude), тому перекриття з проєктом, якого користувач не бачить,
- * теж не пройде: відповідь 409 overlap без подробиць про чужий проєкт.
+ * Призначення людей і обладнання на проєкт. Людина чи основне обладнання не можуть бути на двох
+ * проєктах одночасно; допоміжне (водовозка, вантажівка) може, але не двічі на тому самому проєкті.
+ * Це перевіряє база (exclude), тому перекриття з проєктом, якого користувач не бачить, теж не
+ * пройде: відповідь 409 overlap без подробиць про чужий проєкт.
  *
  * <p>Призначення людини з входом дає їй доступ до проєкту. Призначається лише обладнання верхнього
  * рівня: вкладене (насос бурової) їде разом із батьківським.
@@ -177,6 +179,48 @@ public class AssignmentService {
         LocalDate today = projects.today(project);
         return db.sql(EQUIPMENT_SELECT + " where a.project_id = ? order by t.category desc, s.code, a.start_date desc")
                 .param(projectId).query((rs, n) -> mapEquipment(rs, today)).list();
+    }
+
+    /**
+     * Обладнання верхнього рівня на період: вільне чи зайняте. Основне зайняте, якщо на ці дати стоїть
+     * на будь-якому проєкті; допоміжне — лише якщо вже стоїть на цьому проєкті.
+     */
+    public List<AvailableEquipmentView> available(UUID projectId, LocalDate start, LocalDate end) {
+        ProjectView project = projects.get(projectId);
+        LocalDate from = start != null ? start : projects.today(project);
+        return db.sql("""
+                        select s.id, s.code, s.name, t.code as type_code, t.name as type_name, t.category,
+                               b.asset_id is null as available, coalesce(b.same_project, false) as on_this_project,
+                               b.project_code, b.end_date
+                        from asset s
+                                 join asset_type t on t.id = s.asset_type_id
+                                 left join lateral (
+                            select ea.asset_id, ea.end_date, p.code as project_code, ea.project_id = :projectId as same_project
+                            from equipment_assignment ea
+                                     left join project p on p.id = ea.project_id
+                            where ea.asset_id = s.id
+                              and daterange(ea.start_date, ea.end_date, '[]') && daterange(:start, cast(:end as date), '[]')
+                              and (ea.project_id = :projectId or (t.category = 'primary' and ea.exclusive))
+                            order by ea.project_id = :projectId desc, ea.start_date
+                            limit 1) b on true
+                        where s.parent_id is null and s.archived_at is null
+                        order by t.category desc, t.code, s.code
+                        """)
+                .param("projectId", projectId)
+                .param("start", from)
+                .param("end", end)
+                .query((rs, n) -> new AvailableEquipmentView(
+                        rs.getObject("id", UUID.class),
+                        rs.getString("code"),
+                        rs.getString("name"),
+                        rs.getString("type_code"),
+                        json.readValue(rs.getString("type_name"), NAME),
+                        rs.getString("category"),
+                        rs.getBoolean("available"),
+                        rs.getBoolean("on_this_project"),
+                        rs.getString("project_code"),
+                        rs.getObject("end_date", LocalDate.class)))
+                .list();
     }
 
     @Transactional

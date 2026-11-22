@@ -7,9 +7,15 @@ import { ApiError } from './client'
  * "shifts[1].start" → ['shifts', 1, 'start'], "attributes.dip" → ['attributes', 'dip'].
  * Повертає false, якщо в помилці немає полів (тоді показати загальне повідомлення).
  */
-export function applyFieldErrors(form: FormInstance, error: unknown, t: TFunction): boolean {
+export function applyFieldErrors(
+  form: FormInstance,
+  error: unknown,
+  t: TFunction,
+  /** Перейменування полів сервера на поля форми: {password: 'adminPassword'} */
+  rename: Record<string, string> = {},
+): boolean {
   if (!(error instanceof ApiError)) return false
-  const entries = Object.entries(error.fields)
+  const entries = Object.entries(error.fields).map(([key, code]) => [rename[key] ?? key, code] as const)
   if (entries.length === 0) return false
   form.setFields(
     entries.map(([key, code]) => ({

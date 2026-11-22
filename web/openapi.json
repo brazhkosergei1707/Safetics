@@ -20,6 +20,47 @@
     }
   ],
   "paths": {
+    "/api/v1/users/{userId}/role": {
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "changeRole",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyUserView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{id}": {
       "get": {
         "tags": [
@@ -614,12 +655,125 @@
         }
       }
     },
+    "/api/v1/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "list",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CompanyUserView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "add",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyUserView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{userId}/enable": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "enable",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyUserView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{userId}/disable": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "disable",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyUserView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects": {
       "get": {
         "tags": [
           "projects"
         ],
-        "operationId": "list",
+        "operationId": "list_1",
         "parameters": [
           {
             "name": "status",
@@ -1217,12 +1371,125 @@
         }
       }
     },
+    "/api/v1/platform/companies": {
+      "get": {
+        "tags": [
+          "platform"
+        ],
+        "operationId": "companies",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlatformCompanyView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "platform"
+        ],
+        "operationId": "create_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCompanyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCompanyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/companies/{id}/suspend": {
+      "post": {
+        "tags": [
+          "platform"
+        ],
+        "operationId": "suspend",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformCompanyView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/companies/{id}/activate": {
+      "post": {
+        "tags": [
+          "platform"
+        ],
+        "operationId": "activate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformCompanyView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/personnel": {
       "get": {
         "tags": [
           "personnel"
         ],
-        "operationId": "list_1",
+        "operationId": "list_2",
         "parameters": [
           {
             "name": "q",
@@ -1271,7 +1538,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "create_1",
+        "operationId": "create_2",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1433,7 +1700,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "list_2",
+        "operationId": "list_3",
         "parameters": [
           {
             "name": "q",
@@ -1473,7 +1740,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "create_2",
+        "operationId": "create_3",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1937,7 +2204,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list_3",
+        "operationId": "list_4",
         "parameters": [
           {
             "name": "typeId",
@@ -2020,7 +2287,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_3",
+        "operationId": "create_4",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2112,7 +2379,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list_4",
+        "operationId": "list_5",
         "parameters": [
           {
             "name": "includeArchived",
@@ -2144,7 +2411,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_4",
+        "operationId": "create_5",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2158,6 +2425,68 @@
         "responses": {
           "201": {
             "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/asset-types/{id}/restore": {
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "operationId": "restore_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/asset-types/{id}/archive": {
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "operationId": "archive_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
             "content": {
               "*/*": {
                 "schema": {
@@ -2192,6 +2521,81 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/InstallTemplateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/available-equipment": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "availableEquipment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AvailableEquipmentView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/templates": {
+      "get": {
+        "tags": [
+          "platform"
+        ],
+        "operationId": "templates",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateSummary"
+                  }
                 }
               }
             }
@@ -2238,7 +2642,7 @@
         "tags": [
           "members"
         ],
-        "operationId": "list_5",
+        "operationId": "list_6",
         "responses": {
           "200": {
             "description": "OK",
@@ -2400,6 +2804,55 @@
   },
   "components": {
     "schemas": {
+      "ChangeRoleRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "CompanyUserView": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "invited",
+              "disabled"
+            ]
+          },
+          "portal": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "fullName",
+          "phone",
+          "portal",
+          "role",
+          "status",
+          "userId"
+        ]
+      },
       "ProjectUpdateRequest": {
         "type": "object",
         "properties": {
@@ -3291,6 +3744,31 @@
           "statuses"
         ]
       },
+      "AddUserRequest": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fullName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fullName",
+          "phone",
+          "role"
+        ]
+      },
       "ProjectCreateRequest": {
         "type": "object",
         "properties": {
@@ -3521,6 +3999,122 @@
           "userId"
         ]
       },
+      "CreateCompanyRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "legalCode": {
+            "type": "string"
+          },
+          "templateKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "adminFullName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "adminPhone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "adminPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "adminFullName",
+          "adminPhone",
+          "name",
+          "templateKey"
+        ]
+      },
+      "CompanyAdminView": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fullName",
+          "phone",
+          "userId"
+        ]
+      },
+      "CreateCompanyResponse": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "$ref": "#/components/schemas/PlatformCompanyView"
+          },
+          "newAdminAccount": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "company",
+          "newAdminAccount"
+        ]
+      },
+      "PlatformCompanyView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "legalCode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended",
+              "archived"
+            ]
+          },
+          "templateKey": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "admins": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompanyAdminView"
+            }
+          },
+          "members": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "admins",
+          "createdAt",
+          "id",
+          "members",
+          "name",
+          "status"
+        ]
+      },
       "PersonnelLoginRequest": {
         "type": "object",
         "properties": {
@@ -3645,11 +4239,15 @@
             "items": {
               "type": "string"
             }
+          },
+          "platformAdmin": {
+            "type": "boolean"
           }
         },
         "required": [
           "companies",
           "permissions",
+          "platformAdmin",
           "user"
         ]
       },
@@ -3795,6 +4393,77 @@
           "installed",
           "positions",
           "skipped"
+        ]
+      },
+      "AvailableEquipmentView": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "typeName": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "auxiliary"
+            ]
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "onThisProject": {
+            "type": "boolean"
+          },
+          "busyProjectCode": {
+            "type": "string"
+          },
+          "busyUntil": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "assetCode",
+          "assetId",
+          "available",
+          "category",
+          "onThisProject",
+          "typeCode",
+          "typeName"
+        ]
+      },
+      "TemplateSummary": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name"
         ]
       },
       "MemberView": {

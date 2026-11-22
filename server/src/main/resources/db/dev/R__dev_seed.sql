@@ -1,6 +1,7 @@
 -- Демо-дані для локальної розробки. Підключається лише в профілі dev (application-dev.yml).
 -- Пароль усіх користувачів: safetics-dev
 --
+--   +380500000000  Platform Admin — адмін платформи (сторінка «Компанії»), без компанії
 --   +380500000001  Demo Owner    — адмін «Demo Drilling»
 --   +380500000002  Multi Company — менеджер у «Demo Drilling» (доступ лише до проєкту VALE-CRJ),
 --                                  адмін «Agua Perfuração» (вибір компанії)
@@ -22,6 +23,11 @@ values ('d0000000-0000-4000-8000-0000000000a1', '+380500000001', 'Demo Owner', '
        ('d0000000-0000-4000-8000-0000000000a4', '+380500000004', 'Pedro Santos', null,
         '{bcrypt}$2b$10$r7UeoPbrPap0uX2LsjBhGuFZ1lyOPUxk3ppxnBja4wWK3JwMU/7Ma')
 on conflict (id) do nothing;
+
+insert into app_user (id, phone, full_name, password_hash, is_platform_admin)
+values ('d0000000-0000-4000-8000-0000000000a0', '+380500000000', 'Platform Admin',
+        '{bcrypt}$2b$10$r7UeoPbrPap0uX2LsjBhGuFZ1lyOPUxk3ppxnBja4wWK3JwMU/7Ma', true)
+on conflict (id) do update set is_platform_admin = true;
 
 insert into membership (company_id, user_id, role_id)
 select v.company_id::uuid, v.user_id::uuid, r.id

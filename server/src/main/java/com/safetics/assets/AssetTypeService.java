@@ -116,6 +116,18 @@ public class AssetTypeService {
         return get(id);
     }
 
+    /** Архів типу: нові записи цього типу не створюються, наявне обладнання лишається. */
+    public AssetTypeView setArchived(UUID id, boolean archived) {
+        AssetTypeView existing = get(id);
+        if (existing.archived() == archived) {
+            return existing;
+        }
+        db.sql("update asset_type set archived_at = " + (archived ? "now()" : "null") + ", updated_at = now() where id = ?")
+                .param(id).update();
+        audit.record("asset_type", id, archived ? "archive" : "restore", Map.of("code", existing.code()));
+        return get(id);
+    }
+
     /** Перевірка самої схеми типу: ключі полів, типи значень, варіанти enum, статуси. */
     static void validateDefinition(AssetTypeRequest request) {
         Map<String, String> errors = new LinkedHashMap<>();

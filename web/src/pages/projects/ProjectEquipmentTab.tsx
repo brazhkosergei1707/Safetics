@@ -1,9 +1,8 @@
 import { PlusOutlined } from '@ant-design/icons'
-import { App, Button, Flex, Form, Modal, Popconfirm, Select, Table, Tag } from 'antd'
+import { App, Button, Flex, Form, Modal, Popconfirm, Select, Table, Tag, Typography } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAssets } from '../../api/assets'
 import { hasPermission, useSession } from '../../api/auth'
 import { ApiError } from '../../api/client'
 import { applyFieldErrors, errorMessage } from '../../api/formErrors'
@@ -12,6 +11,7 @@ import {
   formatPeriod,
   type Project,
   useAssignEquipment,
+  useAvailableEquipment,
   useDeleteEquipmentAssignment,
   useProjectEquipment,
   useUpdateEquipmentAssignment,
@@ -25,7 +25,10 @@ interface FormValues {
   endDate?: Dayjs
 }
 
-/** Обладнання на проєкті. Одне обладнання — лише на одному проєкті одночасно; вкладене їде з батьківським. */
+/**
+ * Обладнання на проєкті. Основне — лише на одному проєкті одночасно, допоміжне — на кількох;
+ * вкладене їде з батьківським. Дати в формі вибираються першими: від них залежить, що вільне.
+ */
 export function ProjectEquipmentTab({ project }: { project: Project }) {
   const { t, i18n } = useTranslation()
   const { message } = App.useApp()
@@ -33,11 +36,18 @@ export function ProjectEquipmentTab({ project }: { project: Project }) {
   const equipment = useProjectEquipment(project.id)
   const canManage = hasPermission(session, 'project.manage') && project.status === 'active'
   const [editing, setEditing] = useState<{ open: boolean; assignment?: EquipmentAssignment }>({ open: false })
-  const assets = useAssets({}, editing.open && !editing.assignment)
+  const [form] = Form.useForm<FormValues>()
+  const startDate = Form.useWatch('startDate', form)
+  const endDate = Form.useWatch('endDate', form)
+  const available = useAvailableEquipment(
+    project.id,
+    startDate?.format('YYYY-MM-DD'),
+    endDate?.format('YYYY-MM-DD'),
+    editing.open && !editing.assignment && !!startDate,
+  )
   const assign = useAssignEquipment(project.id)
   const update = useUpdateEquipmentAssignment(project.id)
   const remove = useDeleteEquipmentAssignment(project.id)
-  const [form] = Form.useForm<FormValues>()
 
   const open = (assignment?: EquipmentAssignment) => {
     form.resetFields()
@@ -68,7 +78,13 @@ export function ProjectEquipmentTab({ project }: { project: Project }) {
     else assign.mutate({ assetId: values.assetId!, ...dates }, handlers)
   }
 
-  const topLevel = (assets.data?.items ?? []).filter((a) => !a.parentId && !a.archived)
+  /** «Зайнято до 15.12.2026 (TZG-01)», «Уже на цьому проєкті» */
+  const busyLabel = (a: (typeof options)[number]) => {
+    if (a.onThisProject) return t('assignments.onThisProject')
+    const until = a.busyUntil ? dayjs(a.busyUntil).format('DD.MM.YYYY') : t('assignments.indefinitely')
+    return t('assignments.busyUntil', { until, project: a.busyProjectCode ?? t('assignments.otherProject') })
+  }
+  const options = available.data ?? []
 
   return (
     <>
@@ -145,6 +161,7 @@ export function ProjectEquipmentTab({ project }: { project: Project }) {
         destroyOnHidden
       >
         <Form<FormValues> form={form} layout="vertical" onFinish={onFinish} requiredMark="optional">
+          <AssignmentDates />
           {!editing.assignment && (
             <Form.Item
               name="assetId"
@@ -153,13 +170,28 @@ export function ProjectEquipmentTab({ project }: { project: Project }) {
               extra={t('assignments.nestedHint')}
             >
               <Select
-                showSearch={{ optionFilterProp: 'label' }}
-                loading={assets.isPending}
-                options={topLevel.map((a) => ({ value: a.id, label: [a.code, a.name].filter(Boolean).join(' · ') }))}
+                showSearch={{ optionFilterProp: 'title' }}
+                loading={available.isFetching}
+                options={options.map((a) => ({
+                  value: a.assetId,
+                  disabled: !a.available,
+                  title: [a.assetCode, a.assetName].filter(Boolean).join(' · '),
+                  label: (
+                    <Flex justify="space-between" gap={8}>
+                      <span>
+                        {[a.assetCode, a.assetName].filter(Boolean).join(' · ')}{' '}
+                        <Typography.Text type="secondary">
+                          {localized(a.typeName, i18n.language)}
+                          {a.category === 'auxiliary' ? ` · ${t('assets.auxiliary')}` : ''}
+                        </Typography.Text>
+                      </span>
+                      {!a.available && <Typography.Text type="warning">{busyLabel(a)}</Typography.Text>}
+                    </Flex>
+                  ),
+                }))}
               />
             </Form.Item>
           )}
-          <AssignmentDates />
         </Form>
       </Modal>
     </>

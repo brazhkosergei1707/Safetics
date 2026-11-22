@@ -1,5 +1,6 @@
 import { Alert, Button, Card, Flex, List, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { type SessionView, useLogout, useSwitchCompany } from '../api/auth'
 
 /** Показується після входу, якщо користувач працює в кількох компаніях. */
@@ -7,6 +8,7 @@ export function CompanyPickerPage({ session }: { session: SessionView }) {
   const { t } = useTranslation()
   const switchCompany = useSwitchCompany()
   const logout = useLogout()
+  const navigate = useNavigate()
 
   return (
     <Flex justify="center" align="center" style={{ minHeight: '100vh', padding: 16 }}>
@@ -43,6 +45,12 @@ export function CompanyPickerPage({ session }: { session: SessionView }) {
 
         {switchCompany.isError && (
           <Alert type="error" title={t('errors.serverUnavailable')} showIcon style={{ marginTop: 16 }} />
+        )}
+
+        {session.platformAdmin && (
+          <Button onClick={() => navigate('/platform')} style={{ marginTop: 16, display: 'block' }}>
+            {t('nav.platform')}
+          </Button>
         )}
 
         <Button type="link" onClick={() => logout.mutate()} style={{ paddingLeft: 0, marginTop: 16 }}>

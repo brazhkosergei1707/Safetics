@@ -64,6 +64,18 @@ public class AssetTypeController {
         return types.update(id, request);
     }
 
+    @PostMapping("/{id}/archive")
+    @PreAuthorize("hasAuthority('catalog.manage')")
+    public AssetTypeView archive(@PathVariable("id") UUID id) {
+        return types.setArchived(id, true);
+    }
+
+    @PostMapping("/{id}/restore")
+    @PreAuthorize("hasAuthority('catalog.manage')")
+    public AssetTypeView restore(@PathVariable("id") UUID id) {
+        return types.setArchived(id, false);
+    }
+
     /** Встановити типи з галузевого шаблону (exploration-drilling). Наявні типи не змінюються. */
     @PostMapping("/install-template")
     @PreAuthorize("hasAuthority('catalog.manage')")

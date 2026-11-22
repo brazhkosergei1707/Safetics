@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.safetics.projects.AssignmentDtos.AssignmentDatesRequest;
+import com.safetics.projects.AssignmentDtos.AvailableEquipmentView;
 import com.safetics.projects.AssignmentDtos.CrewMemberRequest;
 import com.safetics.projects.AssignmentDtos.EquipmentAssignmentRequest;
 import com.safetics.projects.AssignmentDtos.EquipmentAssignmentView;
@@ -187,6 +188,16 @@ public class ProjectController {
     @GetMapping("/{id}/equipment-assignments")
     public List<EquipmentAssignmentView> equipmentAssignments(@PathVariable("id") UUID id) {
         return assignments.equipment(id);
+    }
+
+    /** Обладнання для вибору: вільне чи зайняте на дати (за замовчуванням — з сьогодні, безстроково). */
+    @GetMapping("/{id}/available-equipment")
+    @PreAuthorize("hasAuthority('project.manage')")
+    public List<AvailableEquipmentView> availableEquipment(
+            @PathVariable("id") UUID id,
+            @RequestParam(name = "startDate", required = false) java.time.LocalDate startDate,
+            @RequestParam(name = "endDate", required = false) java.time.LocalDate endDate) {
+        return assignments.available(id, startDate, endDate);
     }
 
     @PostMapping("/{id}/equipment-assignments")

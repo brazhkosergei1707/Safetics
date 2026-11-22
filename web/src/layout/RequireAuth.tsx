@@ -9,6 +9,7 @@ import { CompanyPickerPage } from '../pages/CompanyPickerPage'
 /**
  * Пропускає далі лише користувача з активною сесією і обраною компанією.
  * Немає сесії → сторінка входу. Кілька компаній і жодна не обрана → вибір компанії.
+ * Адмін платформи на /platform проходить і без компанії.
  */
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
@@ -34,8 +35,17 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />
   }
 
+  // Адмін платформи працює зі сторінкою «Компанії» і без обраної компанії
+  const onPlatformPage = location.pathname.startsWith('/platform')
+  if (onPlatformPage) {
+    return session.data.platformAdmin ? <>{children}</> : <Navigate to="/" replace />
+  }
   if (!session.data.company) {
-    return <CompanyPickerPage session={session.data} />
+    return session.data.platformAdmin && session.data.companies.length === 0 ? (
+      <Navigate to="/platform" replace />
+    ) : (
+      <CompanyPickerPage session={session.data} />
+    )
   }
 
   return <>{children}</>

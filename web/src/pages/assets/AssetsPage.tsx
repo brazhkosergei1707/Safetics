@@ -1,4 +1,4 @@
-import { PlusOutlined } from '@ant-design/icons'
+import { PlusOutlined, SettingOutlined } from '@ant-design/icons'
 import { App, Button, Empty, Flex, Input, Popconfirm, Table, Tabs, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
@@ -17,6 +17,7 @@ import { hasPermission, useSession } from '../../api/auth'
 import { ApiError } from '../../api/client'
 import { localized } from '../../i18n/localized'
 import { AssetFormDrawer } from './AssetFormDrawer'
+import { AssetTypesDrawer } from './AssetTypesDrawer'
 
 /** Скільки полів типу показувати в таблиці; решта — у формі. */
 const VISIBLE_FIELDS = 5
@@ -32,6 +33,7 @@ export function AssetsPage() {
   const [activeTypeId, setActiveTypeId] = useState<string>()
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState<{ open: boolean; asset?: Asset }>({ open: false })
+  const [typesOpen, setTypesOpen] = useState(false)
 
   const canEdit = hasPermission(session, 'asset.edit')
   const canManageTypes = hasPermission(session, 'catalog.manage')
@@ -63,15 +65,17 @@ export function AssetsPage() {
         <Typography.Title level={2}>{t('nav.assets')}</Typography.Title>
         <Empty description={t('assets.noTypes')}>
           {canManageTypes && (
-            <Button
-              type="primary"
-              loading={installTemplate.isPending}
-              onClick={() => installTemplate.mutate('exploration-drilling')}
-            >
-              {t('assets.installTemplate')}
-            </Button>
+            <Flex gap={8} justify="center">
+              <Button icon={<SettingOutlined />} onClick={() => setTypesOpen(true)}>
+                {t('assetTypes.new')}
+              </Button>
+              <Button loading={installTemplate.isPending} onClick={() => installTemplate.mutate('exploration-drilling')}>
+                {t('assets.installTemplate')}
+              </Button>
+            </Flex>
           )}
         </Empty>
+        <AssetTypesDrawer open={typesOpen} onClose={() => setTypesOpen(false)} />
       </>
     )
   }
@@ -82,11 +86,18 @@ export function AssetsPage() {
         <Typography.Title level={2} style={{ margin: 0 }}>
           {t('nav.assets')}
         </Typography.Title>
-        {canEdit && activeType && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing({ open: true })}>
-            {t('assets.add')}
-          </Button>
-        )}
+        <Flex gap={8}>
+          {canManageTypes && (
+            <Button icon={<SettingOutlined />} onClick={() => setTypesOpen(true)}>
+              {t('assetTypes.title')}
+            </Button>
+          )}
+          {canEdit && activeType && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing({ open: true })}>
+              {t('assets.add')}
+            </Button>
+          )}
+        </Flex>
       </Flex>
 
       <Tabs
@@ -122,6 +133,8 @@ export function AssetsPage() {
         pagination={{ pageSize: 50, hideOnSinglePage: true }}
         scroll={{ x: 'max-content' }}
       />
+
+      <AssetTypesDrawer open={typesOpen} onClose={() => setTypesOpen(false)} />
 
       {activeType && (
         <AssetFormDrawer

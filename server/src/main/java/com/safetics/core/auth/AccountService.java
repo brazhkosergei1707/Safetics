@@ -32,6 +32,9 @@ public class AccountService {
     /** Ролі порталу замовника: видаються лише контактним особам замовника. */
     public static final Set<String> PORTAL_ROLES = Set.of("client_rep", "client_manager");
 
+    /** Системні ролі працівників компанії (не портал). */
+    public static final Set<String> STAFF_ROLES = Set.of("admin", "director", "manager", "worker");
+
     static final int MIN_PASSWORD_LENGTH = 8;
 
     private final JdbcClient db;

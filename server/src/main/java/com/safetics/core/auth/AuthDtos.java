@@ -35,12 +35,16 @@ public final class AuthDtos {
     public record CompanyView(@NotNull UUID id, @NotNull String name, String role) {
     }
 
-    /** company == null: користувач працює в кількох компаніях і ще не обрав одну. */
+    /**
+     * company == null: користувач працює в кількох компаніях і ще не обрав одну (або це адмін
+     * платформи без компанії). platformAdmin — може керувати компаніями платформи.
+     */
     public record SessionView(
             @NotNull UserView user,
             CompanyView company,
             @NotNull List<CompanyView> companies,
-            @NotNull List<String> permissions) {
+            @NotNull List<String> permissions,
+            @NotNull boolean platformAdmin) {
     }
 
     /** Для Telegram-бота і мобільного застосунку: токени в тілі відповіді, а не в cookie. */

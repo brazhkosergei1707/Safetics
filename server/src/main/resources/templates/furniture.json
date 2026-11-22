@@ -1,0 +1,313 @@
+{
+  "key": "furniture",
+  "name": {
+    "en": "Furniture manufacturing and installation",
+    "uk": "Виробництво й монтаж меблів",
+    "pt": "Fabricação e montagem de móveis"
+  },
+  "assetTypes": [
+    {
+      "code": "machine",
+      "name": {
+        "en": "Machine",
+        "uk": "Верстат",
+        "pt": "Máquina"
+      },
+      "category": "primary",
+      "fields": [
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "manufacturer",
+          "label": {
+            "en": "Manufacturer",
+            "uk": "Виробник",
+            "pt": "Fabricante"
+          },
+          "type": "string"
+        },
+        {
+          "key": "year",
+          "label": {
+            "en": "Year built",
+            "uk": "Рік випуску",
+            "pt": "Ano de fabricação"
+          },
+          "type": "integer",
+          "min": 1950,
+          "max": 2100
+        },
+        {
+          "key": "serialNumber",
+          "label": {
+            "en": "Serial number",
+            "uk": "Заводський номер",
+            "pt": "Número de série"
+          },
+          "type": "string"
+        },
+        {
+          "key": "purpose",
+          "label": {
+            "en": "Purpose",
+            "uk": "Призначення",
+            "pt": "Finalidade"
+          },
+          "type": "string"
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "idle",
+          "label": {
+            "en": "Idle",
+            "uk": "Простоює",
+            "pt": "Parado"
+          },
+          "color": "default"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "car",
+      "name": {
+        "en": "Car",
+        "uk": "Легковий автомобіль",
+        "pt": "Carro"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "odometer",
+          "label": {
+            "en": "Odometer",
+            "uk": "Пробіг",
+            "pt": "Hodômetro"
+          },
+          "type": "number",
+          "unit": "km",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    },
+    {
+      "code": "truck",
+      "name": {
+        "en": "Truck",
+        "uk": "Вантажний автомобіль",
+        "pt": "Caminhão"
+      },
+      "category": "auxiliary",
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": {
+            "en": "Model",
+            "uk": "Модель",
+            "pt": "Modelo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "payload",
+          "label": {
+            "en": "Payload",
+            "uk": "Вантажопідйомність",
+            "pt": "Capacidade de carga"
+          },
+          "type": "number",
+          "unit": "t",
+          "min": 0
+        },
+        {
+          "key": "odometer",
+          "label": {
+            "en": "Odometer",
+            "uk": "Пробіг",
+            "pt": "Hodômetro"
+          },
+          "type": "number",
+          "unit": "km",
+          "min": 0
+        }
+      ],
+      "statuses": [
+        {
+          "code": "active",
+          "label": {
+            "en": "Active",
+            "uk": "У роботі",
+            "pt": "Em operação"
+          },
+          "color": "green"
+        },
+        {
+          "code": "maintenance",
+          "label": {
+            "en": "Maintenance",
+            "uk": "На ремонті",
+            "pt": "Em manutenção"
+          },
+          "color": "orange"
+        },
+        {
+          "code": "not_admitted",
+          "label": {
+            "en": "Not admitted",
+            "uk": "Не допущено",
+            "pt": "Não liberado"
+          },
+          "color": "red"
+        }
+      ],
+      "allowedChildTypes": []
+    }
+  ],
+  "positions": [
+    {
+      "code": "supervisor",
+      "name": {
+        "en": "Foreman",
+        "uk": "Майстер",
+        "pt": "Mestre"
+      },
+      "projectRole": "supervisor",
+      "supervisorCanAdd": false
+    },
+    {
+      "code": "installer",
+      "name": {
+        "en": "Installer",
+        "uk": "Монтажник",
+        "pt": "Montador"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "carpenter",
+      "name": {
+        "en": "Carpenter",
+        "uk": "Столяр",
+        "pt": "Marceneiro"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "measurer",
+      "name": {
+        "en": "Measurer / designer",
+        "uk": "Замірник / дизайнер",
+        "pt": "Medidor / projetista"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": false
+    },
+    {
+      "code": "driver",
+      "name": {
+        "en": "Driver",
+        "uk": "Водій",
+        "pt": "Motorista"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    }
+  ]
+}
