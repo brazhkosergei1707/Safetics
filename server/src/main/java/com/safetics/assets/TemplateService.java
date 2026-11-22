@@ -14,12 +14,14 @@ import com.safetics.assets.AssetDtos.AssetTypeRequest;
 import com.safetics.assets.AssetDtos.InstallTemplateResponse;
 import com.safetics.core.audit.AuditService;
 import com.safetics.core.web.ApiException;
+import com.safetics.personnel.PersonnelDtos.PositionRequest;
+import com.safetics.personnel.PositionService;
 
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Галузеві шаблони: JSON-файли в {@code resources/templates}. Встановлення копіює типи об'єктів
- * у компанію; далі компанія змінює свою копію, а повторне встановлення наявні типи не перезаписує.
+ * Галузеві шаблони: JSON-файли в {@code resources/templates}. Встановлення копіює типи обладнання
+ * і посади в компанію; далі компанія змінює свою копію, а повторне встановлення наявні типи не перезаписує.
  */
 @Service
 public class TemplateService {
@@ -27,16 +29,19 @@ public class TemplateService {
     private static final Pattern KEY = Pattern.compile("^[a-z0-9-]{1,50}$");
 
     /** Вміст файлу шаблону. Пізніше сюди додадуться послуги, коди операцій, чек-листи. */
-    public record TemplateDefinition(String key, Map<String, String> name, List<AssetTypeRequest> assetTypes) {
+    public record TemplateDefinition(String key, Map<String, String> name, List<AssetTypeRequest> assetTypes,
+                                     List<PositionRequest> positions) {
     }
 
     private final JsonMapper json;
     private final AssetTypeService types;
+    private final PositionService positions;
     private final AuditService audit;
 
-    public TemplateService(JsonMapper json, AssetTypeService types, AuditService audit) {
+    public TemplateService(JsonMapper json, AssetTypeService types, PositionService positions, AuditService audit) {
         this.json = json;
         this.types = types;
+        this.positions = positions;
         this.audit = audit;
     }
 
@@ -67,7 +72,15 @@ public class TemplateService {
                 installed.add(type.code());
             }
         }
-        audit.record("template", key, "install", Map.of("installed", installed, "skipped", skipped));
-        return new InstallTemplateResponse(installed, skipped);
+        List<String> installedPositions = new ArrayList<>();
+        for (PositionRequest position : template.positions() == null ? List.<PositionRequest>of() : template.positions()) {
+            if (positions.findByCode(position.code()).isEmpty()) {
+                positions.create(position, key);
+                installedPositions.add(position.code());
+            }
+        }
+        audit.record("template", key, "install",
+                Map.of("installed", installed, "skipped", skipped, "positions", installedPositions));
+        return new InstallTemplateResponse(installed, skipped, installedPositions);
     }
 }

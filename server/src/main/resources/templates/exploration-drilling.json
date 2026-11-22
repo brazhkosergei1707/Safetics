@@ -287,5 +287,107 @@
       ],
       "allowedChildTypes": []
     }
+  ],
+  "positions": [
+    {
+      "code": "supervisor",
+      "name": {
+        "en": "Supervisor",
+        "uk": "Супервайзер",
+        "pt": "Supervisor"
+      },
+      "projectRole": "supervisor",
+      "supervisorCanAdd": false
+    },
+    {
+      "code": "driller",
+      "name": {
+        "en": "Driller",
+        "uk": "Бурильник",
+        "pt": "Sondador"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "driller_helper",
+      "name": {
+        "en": "Driller's helper",
+        "uk": "Помічник бурильника",
+        "pt": "Auxiliar de sondagem"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "mechanic",
+      "name": {
+        "en": "Mechanic",
+        "uk": "Механік",
+        "pt": "Mecânico"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "storekeeper",
+      "name": {
+        "en": "Storekeeper",
+        "uk": "Комірник",
+        "pt": "Almoxarife"
+      },
+      "projectRole": "storekeeper",
+      "supervisorCanAdd": false
+    },
+    {
+      "code": "driver",
+      "name": {
+        "en": "Driver",
+        "uk": "Водій",
+        "pt": "Motorista"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "cook",
+      "name": {
+        "en": "Cook",
+        "uk": "Кухар",
+        "pt": "Cozinheiro"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "camp_attendant",
+      "name": {
+        "en": "Camp attendant",
+        "uk": "Працівник табору",
+        "pt": "Auxiliar de acampamento"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    },
+    {
+      "code": "hse_officer",
+      "name": {
+        "en": "HSE officer",
+        "uk": "Інженер з охорони праці",
+        "pt": "Técnico de segurança"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": false
+    },
+    {
+      "code": "geotech",
+      "name": {
+        "en": "Geotechnician",
+        "uk": "Геотехнік",
+        "pt": "Técnico de geologia"
+      },
+      "projectRole": "none",
+      "supervisorCanAdd": true
+    }
   ]
 }

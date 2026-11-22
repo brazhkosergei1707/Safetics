@@ -6,6 +6,7 @@ import java.util.UUID;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.safetics.projects.AssignmentDtos.AssignmentDatesRequest;
+import com.safetics.projects.AssignmentDtos.CrewMemberRequest;
+import com.safetics.projects.AssignmentDtos.EquipmentAssignmentRequest;
+import com.safetics.projects.AssignmentDtos.EquipmentAssignmentView;
+import com.safetics.projects.AssignmentDtos.PersonnelAssignmentRequest;
+import com.safetics.projects.AssignmentDtos.PersonnelAssignmentUpdateRequest;
+import com.safetics.projects.AssignmentDtos.PersonnelAssignmentView;
 import com.safetics.projects.ProjectDtos.GrantAccessRequest;
 import com.safetics.projects.ProjectDtos.ProjectAccessView;
 import com.safetics.projects.ProjectDtos.ProjectCreateRequest;
@@ -40,11 +48,14 @@ public class ProjectController {
     private final ProjectService projects;
     private final ShiftScheduleService schedules;
     private final ProjectAccessService access;
+    private final AssignmentService assignments;
 
-    public ProjectController(ProjectService projects, ShiftScheduleService schedules, ProjectAccessService access) {
+    public ProjectController(ProjectService projects, ShiftScheduleService schedules, ProjectAccessService access,
+                             AssignmentService assignments) {
         this.projects = projects;
         this.schedules = schedules;
         this.access = access;
+        this.assignments = assignments;
     }
 
     @GetMapping
@@ -125,5 +136,79 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('project.manage')")
     public List<ProjectAccessView> revokeAccess(@PathVariable("id") UUID id, @PathVariable("userId") UUID userId) {
         return access.revoke(id, userId);
+    }
+
+    // ---------------------------------------------------------------- люди на проєкті
+
+    @GetMapping("/{id}/personnel-assignments")
+    public List<PersonnelAssignmentView> personnelAssignments(@PathVariable("id") UUID id) {
+        return assignments.personnel(id);
+    }
+
+    @PostMapping("/{id}/personnel-assignments")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('project.manage')")
+    public PersonnelAssignmentView assignPersonnel(@PathVariable("id") UUID id,
+                                                   @Valid @RequestBody PersonnelAssignmentRequest request) {
+        return assignments.assignPersonnel(id, request);
+    }
+
+    @PutMapping("/{id}/personnel-assignments/{assignmentId}")
+    @PreAuthorize("hasAuthority('project.manage')")
+    public PersonnelAssignmentView updatePersonnelAssignment(@PathVariable("id") UUID id,
+                                                             @PathVariable("assignmentId") UUID assignmentId,
+                                                             @Valid @RequestBody PersonnelAssignmentUpdateRequest request) {
+        return assignments.updatePersonnelAssignment(id, assignmentId, request);
+    }
+
+    @DeleteMapping("/{id}/personnel-assignments/{assignmentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('project.manage')")
+    public void deletePersonnelAssignment(@PathVariable("id") UUID id, @PathVariable("assignmentId") UUID assignmentId) {
+        assignments.deletePersonnelAssignment(id, assignmentId);
+    }
+
+    /**
+     * Нова людина без входу + призначення. Менеджер (project.manage і personnel.manage) — будь-яка
+     * посада; супервайзер проєкту — лише посади «може додавати супервайзер».
+     */
+    @PostMapping("/{id}/crew")
+    @ResponseStatus(HttpStatus.CREATED)
+    public PersonnelAssignmentView addCrewMember(@PathVariable("id") UUID id,
+                                                 @Valid @RequestBody CrewMemberRequest request,
+                                                 Authentication authentication) {
+        boolean canManage = authentication.getAuthorities().stream().map(a -> a.getAuthority())
+                .filter(a -> a.equals("project.manage") || a.equals("personnel.manage")).distinct().count() == 2;
+        return assignments.addCrewMember(id, request, canManage);
+    }
+
+    // ---------------------------------------------------------------- обладнання на проєкті
+
+    @GetMapping("/{id}/equipment-assignments")
+    public List<EquipmentAssignmentView> equipmentAssignments(@PathVariable("id") UUID id) {
+        return assignments.equipment(id);
+    }
+
+    @PostMapping("/{id}/equipment-assignments")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('project.manage')")
+    public EquipmentAssignmentView assignEquipment(@PathVariable("id") UUID id,
+                                                   @Valid @RequestBody EquipmentAssignmentRequest request) {
+        return assignments.assignEquipment(id, request);
+    }
+
+    @PutMapping("/{id}/equipment-assignments/{assignmentId}")
+    @PreAuthorize("hasAuthority('project.manage')")
+    public EquipmentAssignmentView updateEquipmentAssignment(@PathVariable("id") UUID id,
+                                                             @PathVariable("assignmentId") UUID assignmentId,
+                                                             @Valid @RequestBody AssignmentDatesRequest request) {
+        return assignments.updateEquipmentAssignment(id, assignmentId, request);
+    }
+
+    @DeleteMapping("/{id}/equipment-assignments/{assignmentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('project.manage')")
+    public void deleteEquipmentAssignment(@PathVariable("id") UUID id, @PathVariable("assignmentId") UUID assignmentId) {
+        assignments.deleteEquipmentAssignment(id, assignmentId);
     }
 }

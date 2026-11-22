@@ -7,7 +7,9 @@ import { ApiError } from '../../api/client'
 import { errorMessage } from '../../api/formErrors'
 import { useCloseProject, useProject } from '../../api/projects'
 import { ProjectAccessTab } from './ProjectAccessTab'
+import { ProjectEquipmentTab } from './ProjectEquipmentTab'
 import { ProjectGeneralTab } from './ProjectGeneralTab'
+import { ProjectPeopleTab } from './ProjectPeopleTab'
 import { ShiftSchedulesTab } from './ShiftSchedulesTab'
 
 export function ProjectDetailPage() {
@@ -65,6 +67,10 @@ export function ProjectDetailPage() {
         items={[
           { key: 'general', label: t('projects.tabs.general'), children: <ProjectGeneralTab project={p} /> },
           { key: 'shifts', label: t('projects.tabs.shifts'), children: <ShiftSchedulesTab project={p} /> },
+          { key: 'people', label: t('projects.tabs.people'), children: <ProjectPeopleTab project={p} /> },
+          ...(hasPermission(session, 'asset.view')
+            ? [{ key: 'equipment', label: t('projects.tabs.equipment'), children: <ProjectEquipmentTab project={p} /> }]
+            : []),
           ...(canManage
             ? [{ key: 'access', label: t('projects.tabs.access'), children: <ProjectAccessTab project={p} /> }]
             : []),

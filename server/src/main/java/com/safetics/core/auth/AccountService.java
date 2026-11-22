@@ -1,10 +1,17 @@
 package com.safetics.core.auth;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,14 +49,23 @@ public class AccountService {
     private record Membership(UUID id, String roleCode, String status) {
     }
 
+    private record UserRow(UUID id, String status) {
+    }
+
+    @Transactional
+    public Granted grant(String rawPhone, String fullName, String password, String roleCode) {
+        return grant(rawPhone, fullName, password, roleCode, false);
+    }
+
     /**
      * Дає людині вхід у поточну компанію з системною роллю {@code roleCode}.
      *
-     * @throws ApiException 409 already_member — людина вже є в компанії (активна або з іншою роллю),
-     *                      409 account_blocked, 400 password — для нового облікового запису
+     * @param linkActiveMember якщо людина вже активний учасник компанії — нічого не змінювати і
+     *                         повернути її (щоб прив'язати виконавця до наявного входу); інакше 409
+     * @throws ApiException 409 already_member, 409 account_blocked, 400 password — для нового запису
      */
     @Transactional
-    public Granted grant(String rawPhone, String fullName, String password, String roleCode) {
+    public Granted grant(String rawPhone, String fullName, String password, String roleCode, boolean linkActiveMember) {
         UUID companyId = TenantContext.requireCompanyId();
         String phone = AuthService.normalizePhone(rawPhone);
         if (phone.length() < 8) {
@@ -93,9 +109,11 @@ public class AccountService {
         if (membership.isEmpty()) {
             db.sql("insert into membership (company_id, user_id, role_id) values (?, ?, ?)")
                     .params(companyId, userId, roleId).update();
-        } else if ("disabled".equals(membership.get().status()) && PORTAL_ROLES.contains(membership.get().roleCode())
-                && PORTAL_ROLES.contains(roleCode)) {
-            // Колишній вхід у портал — відновлюється з новою роллю
+        } else if (linkActiveMember && "active".equals(membership.get().status())) {
+            return new Granted(userId, false);
+        } else if ("disabled".equals(membership.get().status())
+                && PORTAL_ROLES.contains(membership.get().roleCode()) == PORTAL_ROLES.contains(roleCode)) {
+            // Колишній вхід (портал → портал, працівник → працівник) відновлюється з новою роллю
             db.sql("update membership set role_id = ?, status = 'active' where id = ?")
                     .params(roleId, membership.get().id()).update();
         } else {
@@ -114,6 +132,40 @@ public class AccountService {
                 .params(userId, companyId).update();
     }
 
-    private record UserRow(UUID id, String status) {
+    /**
+     * Правило «не більше прав, ніж маєш сам»: усі дозволи ролі мають бути в поточного користувача
+     * (з його токена). Інакше 403 role_exceeds_own.
+     */
+    public void requireNotMoreThanOwn(String roleCode) {
+        Set<String> own = currentPermissions();
+        List<String> rolePermissions = db.sql("""
+                        select rp.permission_code
+                        from role r join role_permission rp on rp.role_id = r.id
+                        where r.code = ? and r.company_id is null
+                        """)
+                .param(roleCode).query(String.class).list();
+        if (!own.containsAll(rolePermissions)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "role_exceeds_own", Map.of());
+        }
+    }
+
+    /** Код ролі користувача в поточній компанії, якщо членство активне. */
+    public Optional<String> activeRoleOf(UUID userId) {
+        return db.sql("""
+                        select r.code from membership m join role r on r.id = m.role_id
+                        where m.company_id = ? and m.user_id = ? and m.status = 'active'
+                        """)
+                .params(TenantContext.requireCompanyId(), userId).query(String.class).optional();
+    }
+
+    private static Set<String> currentPermissions() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Set<String> permissions = new HashSet<>();
+        if (authentication != null) {
+            for (GrantedAuthority authority : authentication.getAuthorities()) {
+                permissions.add(authority.getAuthority());
+            }
+        }
+        return permissions;
     }
 }

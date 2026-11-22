@@ -45,8 +45,12 @@ public final class AssetDtos {
     public record InstallTemplateRequest(@NotBlank String templateKey) {
     }
 
-    /** installed — створені типи, skipped — уже були в компанії (не перезаписуються). */
-    public record InstallTemplateResponse(@NotNull List<String> installed, @NotNull List<String> skipped) {
+    /**
+     * installed — створені типи, skipped — уже були в компанії (не перезаписуються);
+     * positions — створені посади (наявні не змінюються).
+     */
+    public record InstallTemplateResponse(@NotNull List<String> installed, @NotNull List<String> skipped,
+                                          @NotNull List<String> positions) {
     }
 
     // ---------------------------------------------------------------- об'єкти

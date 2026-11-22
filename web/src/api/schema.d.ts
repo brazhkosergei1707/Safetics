@@ -20,7 +20,55 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/customers/{id}": {
+    "/api/v1/projects/{id}/personnel-assignments/{assignmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updatePersonnelAssignment"];
+        post?: never;
+        delete: operations["deletePersonnelAssignment"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/equipment-assignments/{assignmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateEquipmentAssignment"];
+        post?: never;
+        delete: operations["deleteEquipmentAssignment"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/positions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updatePosition"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/personnel/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -29,6 +77,22 @@ export interface paths {
         };
         get: operations["get_1"];
         put: operations["update_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_2"];
+        put: operations["update_2"];
         post?: never;
         delete?: never;
         options?: never;
@@ -59,8 +123,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_2"];
-        put: operations["update_2"];
+        get: operations["get_3"];
+        put: operations["update_3"];
         post?: never;
         delete?: never;
         options?: never;
@@ -75,8 +139,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_3"];
-        put: operations["update_3"];
+        get: operations["get_4"];
+        put: operations["update_4"];
         post?: never;
         delete?: never;
         options?: never;
@@ -132,6 +196,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{id}/personnel-assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["personnelAssignments"];
+        put?: never;
+        post: operations["assignPersonnel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/equipment-assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["equipmentAssignments"];
+        put?: never;
+        post: operations["assignEquipment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/crew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addCrewMember"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{id}/close": {
         parameters: {
             query?: never;
@@ -164,7 +276,55 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/customers": {
+    "/api/v1/positions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["positions"];
+        put?: never;
+        post: operations["createPosition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/positions/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["restorePosition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/positions/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archivePosition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/personnel": {
         parameters: {
             query?: never;
             header?: never;
@@ -180,7 +340,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/customers/{id}/restore": {
+    "/api/v1/personnel/{id}/restore": {
         parameters: {
             query?: never;
             header?: never;
@@ -190,6 +350,70 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/personnel/{id}/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["grantLogin"];
+        delete: operations["revokeLogin"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/personnel/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_2"];
+        put?: never;
+        post: operations["create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customers/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["restore_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -221,7 +445,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["archive"];
+        post: operations["archive_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -379,9 +603,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
-        post: operations["create_2"];
+        post: operations["create_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -397,7 +621,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["restore_1"];
+        post: operations["restore_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -413,7 +637,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["archive_1"];
+        post: operations["archive_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -427,9 +651,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
-        post: operations["create_3"];
+        post: operations["create_4"];
         delete?: never;
         options?: never;
         head?: never;
@@ -452,6 +676,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/personnel/{id}/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["assignments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/members": {
         parameters: {
             query?: never;
@@ -459,7 +699,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_4"];
+        get: operations["list_5"];
         put?: never;
         post?: never;
         delete?: never;
@@ -580,6 +820,118 @@ export interface components {
             start: string;
             /** Format: int32 */
             durationMinutes: number;
+        };
+        PersonnelAssignmentUpdateRequest: {
+            /** Format: uuid */
+            positionId: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+        };
+        PersonnelAssignmentView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            personnelId: string;
+            fullName: string;
+            employmentType: string;
+            organization?: string;
+            /** Format: uuid */
+            positionId: string;
+            positionName: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            projectRole: "supervisor" | "storekeeper" | "none";
+            hasLogin: boolean;
+            /** Format: uuid */
+            userId?: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+            active: boolean;
+        };
+        AssignmentDatesRequest: {
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+        };
+        EquipmentAssignmentView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            assetId: string;
+            assetCode: string;
+            assetName?: string;
+            typeCode: string;
+            typeName: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            category: "primary" | "auxiliary";
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+            active: boolean;
+        };
+        PositionRequest: {
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            projectRole?: "supervisor" | "storekeeper" | "none";
+            supervisorCanAdd?: boolean;
+        };
+        PositionView: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            projectRole: "supervisor" | "storekeeper" | "none";
+            supervisorCanAdd: boolean;
+            archived: boolean;
+        };
+        PersonnelRequest: {
+            fullName: string;
+            phone?: string;
+            /** @enum {string} */
+            employmentType?: "staff" | "subcontractor" | "hired";
+            organization?: string;
+            /** Format: uuid */
+            positionId?: string;
+            notes?: string;
+            /** Format: int32 */
+            version?: number;
+        };
+        PersonnelView: {
+            /** Format: uuid */
+            id: string;
+            fullName: string;
+            phone?: string;
+            /** @enum {string} */
+            employmentType: "staff" | "subcontractor" | "hired";
+            organization?: string;
+            /** Format: uuid */
+            positionId?: string;
+            /** Format: uuid */
+            userId?: string;
+            loginRole?: string;
+            notes?: string;
+            /** Format: int32 */
+            version: number;
+            archived: boolean;
         };
         CustomerRequest: {
             name: string;
@@ -736,6 +1088,37 @@ export interface components {
             editable: boolean;
             current: boolean;
         };
+        PersonnelAssignmentRequest: {
+            /** Format: uuid */
+            personnelId: string;
+            /** Format: uuid */
+            positionId?: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+        };
+        EquipmentAssignmentRequest: {
+            /** Format: uuid */
+            assetId: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+        };
+        CrewMemberRequest: {
+            fullName: string;
+            phone?: string;
+            /** @enum {string} */
+            employmentType?: "staff" | "subcontractor" | "hired";
+            organization?: string;
+            /** Format: uuid */
+            positionId: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+        };
         GrantAccessRequest: {
             /** Format: uuid */
             userId: string;
@@ -749,6 +1132,14 @@ export interface components {
             grantedByName?: string;
             /** Format: date-time */
             grantedAt: string;
+        };
+        PersonnelLoginRequest: {
+            role: string;
+            password?: string;
+        };
+        PersonnelLoginResponse: {
+            personnel: components["schemas"]["PersonnelView"];
+            newAccount: boolean;
         };
         PortalAccessRequest: {
             /** @enum {string} */
@@ -817,6 +1208,7 @@ export interface components {
         InstallTemplateResponse: {
             installed: string[];
             skipped: string[];
+            positions: string[];
         };
         MemberView: {
             /** Format: uuid */
@@ -901,7 +1293,177 @@ export interface operations {
             };
         };
     };
+    updatePersonnelAssignment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonnelAssignmentUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelAssignmentView"];
+                };
+            };
+        };
+    };
+    deletePersonnelAssignment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateEquipmentAssignment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentDatesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EquipmentAssignmentView"];
+                };
+            };
+        };
+    };
+    deleteEquipmentAssignment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updatePosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PositionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PositionView"];
+                };
+            };
+        };
+    };
     get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelView"];
+                };
+            };
+        };
+    };
+    update_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonnelRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelView"];
+                };
+            };
+        };
+    };
+    get_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -923,7 +1485,7 @@ export interface operations {
             };
         };
     };
-    update_1: {
+    update_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -975,7 +1537,7 @@ export interface operations {
             };
         };
     };
-    get_2: {
+    get_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -997,7 +1559,7 @@ export interface operations {
             };
         };
     };
-    update_2: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -1023,7 +1585,7 @@ export interface operations {
             };
         };
     };
-    get_3: {
+    get_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -1045,7 +1607,7 @@ export interface operations {
             };
         };
     };
-    update_3: {
+    update_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -1189,6 +1751,128 @@ export interface operations {
             };
         };
     };
+    personnelAssignments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelAssignmentView"][];
+                };
+            };
+        };
+    };
+    assignPersonnel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonnelAssignmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelAssignmentView"];
+                };
+            };
+        };
+    };
+    equipmentAssignments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EquipmentAssignmentView"][];
+                };
+            };
+        };
+    };
+    assignEquipment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EquipmentAssignmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EquipmentAssignmentView"];
+                };
+            };
+        };
+    };
+    addCrewMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrewMemberRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelAssignmentView"];
+                };
+            };
+        };
+    };
     close: {
         parameters: {
             query?: never;
@@ -1259,7 +1943,237 @@ export interface operations {
             };
         };
     };
+    positions: {
+        parameters: {
+            query?: {
+                includeArchived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PositionView"][];
+                };
+            };
+        };
+    };
+    createPosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PositionRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PositionView"];
+                };
+            };
+        };
+    };
+    restorePosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PositionView"];
+                };
+            };
+        };
+    };
+    archivePosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PositionView"];
+                };
+            };
+        };
+    };
     list_1: {
+        parameters: {
+            query?: {
+                q?: string;
+                positionId?: string;
+                includeArchived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelView"][];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonnelRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelView"];
+                };
+            };
+        };
+    };
+    restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelView"];
+                };
+            };
+        };
+    };
+    grantLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonnelLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelLoginResponse"];
+                };
+            };
+        };
+    };
+    revokeLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelView"];
+                };
+            };
+        };
+    };
+    archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelView"];
+                };
+            };
+        };
+    };
+    list_2: {
         parameters: {
             query?: {
                 q?: string;
@@ -1282,7 +2196,7 @@ export interface operations {
             };
         };
     };
-    create_1: {
+    create_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1306,7 +2220,7 @@ export interface operations {
             };
         };
     };
-    restore: {
+    restore_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1378,7 +2292,7 @@ export interface operations {
             };
         };
     };
-    archive: {
+    archive_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1626,7 +2540,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: {
                 typeId?: string;
@@ -1654,7 +2568,7 @@ export interface operations {
             };
         };
     };
-    create_2: {
+    create_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -1678,7 +2592,7 @@ export interface operations {
             };
         };
     };
-    restore_1: {
+    restore_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1700,7 +2614,7 @@ export interface operations {
             };
         };
     };
-    archive_1: {
+    archive_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1722,7 +2636,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_4: {
         parameters: {
             query?: {
                 includeArchived?: boolean;
@@ -1744,7 +2658,7 @@ export interface operations {
             };
         };
     };
-    create_3: {
+    create_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -1792,7 +2706,29 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    assignments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PersonnelAssignmentView"][];
+                };
+            };
+        };
+    };
+    list_5: {
         parameters: {
             query?: never;
             header?: never;

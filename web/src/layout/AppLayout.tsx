@@ -7,6 +7,7 @@ import {
   InboxOutlined,
   LogoutOutlined,
   ProjectOutlined,
+  SolutionOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
 import { Button, Flex, Layout, Menu, Select, Typography } from 'antd'
@@ -30,6 +31,9 @@ export function AppLayout() {
     { key: '/projects', icon: <ProjectOutlined />, label: t('nav.projects') },
     ...(hasPermission(session, 'client.view')
       ? [{ key: '/customers', icon: <TeamOutlined />, label: t('nav.customers') }]
+      : []),
+    ...(hasPermission(session, 'personnel.manage') || hasPermission(session, 'catalog.manage')
+      ? [{ key: '/personnel', icon: <SolutionOutlined />, label: t('nav.personnel') }]
       : []),
     ...(hasPermission(session, 'asset.view')
       ? [{ key: '/assets', icon: <AppstoreOutlined />, label: t('nav.assets') }]

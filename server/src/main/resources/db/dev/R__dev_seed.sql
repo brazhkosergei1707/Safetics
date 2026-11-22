@@ -5,6 +5,7 @@
 --   +380500000002  Multi Company — менеджер у «Demo Drilling» (доступ лише до проєкту VALE-CRJ),
 --                                  адмін «Agua Perfuração» (вибір компанії)
 --   +380500000003  Ana Souza     — представник замовника Vale Exploration у «Demo Drilling» (портал)
+--   +380500000004  Pedro Santos  — виконавець «Demo Drilling», супервайзер на VALE-CRJ (призначення — DevDataInitializer)
 
 insert into company (id, name, template_key, enabled_modules)
 values ('d0000000-0000-4000-8000-000000000001', 'Demo Drilling', 'exploration-drilling', '{reports,stock,hse}'),
@@ -17,6 +18,8 @@ values ('d0000000-0000-4000-8000-0000000000a1', '+380500000001', 'Demo Owner', '
        ('d0000000-0000-4000-8000-0000000000a2', '+380500000002', 'Multi Company', 'multi@demo.local',
         '{bcrypt}$2b$10$r7UeoPbrPap0uX2LsjBhGuFZ1lyOPUxk3ppxnBja4wWK3JwMU/7Ma'),
        ('d0000000-0000-4000-8000-0000000000a3', '+380500000003', 'Ana Souza', 'ana@vale.local',
+        '{bcrypt}$2b$10$r7UeoPbrPap0uX2LsjBhGuFZ1lyOPUxk3ppxnBja4wWK3JwMU/7Ma'),
+       ('d0000000-0000-4000-8000-0000000000a4', '+380500000004', 'Pedro Santos', null,
         '{bcrypt}$2b$10$r7UeoPbrPap0uX2LsjBhGuFZ1lyOPUxk3ppxnBja4wWK3JwMU/7Ma')
 on conflict (id) do nothing;
 
@@ -25,7 +28,8 @@ select v.company_id::uuid, v.user_id::uuid, r.id
 from (values ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a1', 'admin'),
              ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a2', 'manager'),
              ('d0000000-0000-4000-8000-000000000002', 'd0000000-0000-4000-8000-0000000000a2', 'admin'),
-             ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a3', 'client_rep'))
+             ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a3', 'client_rep'),
+             ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a4', 'worker'))
          as v(company_id, user_id, role_code)
          join role r on r.code = v.role_code and r.company_id is null
 on conflict (company_id, user_id) do update set role_id = excluded.role_id;

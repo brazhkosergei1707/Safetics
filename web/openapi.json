@@ -90,12 +90,285 @@
         }
       }
     },
+    "/api/v1/projects/{id}/personnel-assignments/{assignmentId}": {
+      "put": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "updatePersonnelAssignment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonnelAssignmentUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelAssignmentView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "deletePersonnelAssignment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/equipment-assignments/{assignmentId}": {
+      "put": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "updateEquipmentAssignment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignmentDatesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentAssignmentView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "deleteEquipmentAssignment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/positions/{id}": {
+      "put": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "updatePosition",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PositionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/personnel/{id}": {
+      "get": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "get_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "update_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonnelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/customers/{id}": {
       "get": {
         "tags": [
           "customers"
         ],
-        "operationId": "get_1",
+        "operationId": "get_2",
         "parameters": [
           {
             "name": "id",
@@ -124,7 +397,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "update_1",
+        "operationId": "update_2",
         "parameters": [
           {
             "name": "id",
@@ -206,7 +479,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "get_2",
+        "operationId": "get_3",
         "parameters": [
           {
             "name": "id",
@@ -235,7 +508,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "update_2",
+        "operationId": "update_3",
         "parameters": [
           {
             "name": "id",
@@ -276,7 +549,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "get_3",
+        "operationId": "get_4",
         "parameters": [
           {
             "name": "id",
@@ -305,7 +578,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "update_3",
+        "operationId": "update_4",
         "parameters": [
           {
             "name": "id",
@@ -526,6 +799,193 @@
         }
       }
     },
+    "/api/v1/projects/{id}/personnel-assignments": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "personnelAssignments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonnelAssignmentView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "assignPersonnel",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonnelAssignmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelAssignmentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/equipment-assignments": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "equipmentAssignments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EquipmentAssignmentView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "assignEquipment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipmentAssignmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentAssignmentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/crew": {
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "addCrewMember",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrewMemberRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelAssignmentView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{id}/close": {
       "post": {
         "tags": [
@@ -633,12 +1093,347 @@
         }
       }
     },
+    "/api/v1/positions": {
+      "get": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "positions",
+        "parameters": [
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PositionView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "createPosition",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PositionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/positions/{id}/restore": {
+      "post": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "restorePosition",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/positions/{id}/archive": {
+      "post": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "archivePosition",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/personnel": {
+      "get": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "list_1",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "positionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonnelView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "create_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonnelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/personnel/{id}/restore": {
+      "post": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "restore",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/personnel/{id}/login": {
+      "post": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "grantLogin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonnelLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelLoginResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "revokeLogin",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/personnel/{id}/archive": {
+      "post": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "archive",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonnelView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/customers": {
       "get": {
         "tags": [
           "customers"
         ],
-        "operationId": "list_1",
+        "operationId": "list_2",
         "parameters": [
           {
             "name": "q",
@@ -678,7 +1473,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "create_1",
+        "operationId": "create_2",
         "requestBody": {
           "content": {
             "application/json": {
@@ -708,7 +1503,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "restore",
+        "operationId": "restore_1",
         "parameters": [
           {
             "name": "id",
@@ -821,7 +1616,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "archive",
+        "operationId": "archive_1",
         "parameters": [
           {
             "name": "id",
@@ -1142,7 +1937,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list_2",
+        "operationId": "list_3",
         "parameters": [
           {
             "name": "typeId",
@@ -1225,7 +2020,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_2",
+        "operationId": "create_3",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1255,7 +2050,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "restore_1",
+        "operationId": "restore_2",
         "parameters": [
           {
             "name": "id",
@@ -1286,7 +2081,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "archive_1",
+        "operationId": "archive_2",
         "parameters": [
           {
             "name": "id",
@@ -1317,7 +2112,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list_3",
+        "operationId": "list_4",
         "parameters": [
           {
             "name": "includeArchived",
@@ -1349,7 +2144,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_3",
+        "operationId": "create_4",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1404,12 +2199,46 @@
         }
       }
     },
+    "/api/v1/personnel/{id}/assignments": {
+      "get": {
+        "tags": [
+          "personnel"
+        ],
+        "operationId": "assignments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonnelAssignmentView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/members": {
       "get": {
         "tags": [
           "members"
         ],
-        "operationId": "list_4",
+        "operationId": "list_5",
         "responses": {
           "200": {
             "description": "OK",
@@ -1713,6 +2542,340 @@
           "durationMinutes",
           "name",
           "start"
+        ]
+      },
+      "PersonnelAssignmentUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "positionId",
+          "startDate"
+        ]
+      },
+      "PersonnelAssignmentView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "personnelId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "employmentType": {
+            "type": "string"
+          },
+          "organization": {
+            "type": "string"
+          },
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "positionName": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "projectRole": {
+            "type": "string",
+            "enum": [
+              "supervisor",
+              "storekeeper",
+              "none"
+            ]
+          },
+          "hasLogin": {
+            "type": "boolean"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "active",
+          "employmentType",
+          "fullName",
+          "hasLogin",
+          "id",
+          "personnelId",
+          "positionId",
+          "positionName",
+          "projectId",
+          "projectRole",
+          "startDate"
+        ]
+      },
+      "AssignmentDatesRequest": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "startDate"
+        ]
+      },
+      "EquipmentAssignmentView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "typeName": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "auxiliary"
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "active",
+          "assetCode",
+          "assetId",
+          "category",
+          "id",
+          "projectId",
+          "startDate",
+          "typeCode",
+          "typeName"
+        ]
+      },
+      "PositionRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "projectRole": {
+            "type": "string",
+            "enum": [
+              "supervisor",
+              "storekeeper",
+              "none"
+            ]
+          },
+          "supervisorCanAdd": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "PositionView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "projectRole": {
+            "type": "string",
+            "enum": [
+              "supervisor",
+              "storekeeper",
+              "none"
+            ]
+          },
+          "supervisorCanAdd": {
+            "type": "boolean"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "archived",
+          "code",
+          "id",
+          "name",
+          "projectRole",
+          "supervisorCanAdd"
+        ]
+      },
+      "PersonnelRequest": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "phone": {
+            "type": "string"
+          },
+          "employmentType": {
+            "type": "string",
+            "enum": [
+              "staff",
+              "subcontractor",
+              "hired"
+            ]
+          },
+          "organization": {
+            "type": "string"
+          },
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "fullName"
+        ]
+      },
+      "PersonnelView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "employmentType": {
+            "type": "string",
+            "enum": [
+              "staff",
+              "subcontractor",
+              "hired"
+            ]
+          },
+          "organization": {
+            "type": "string"
+          },
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "loginRole": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "archived",
+          "employmentType",
+          "fullName",
+          "id",
+          "version"
         ]
       },
       "CustomerRequest": {
@@ -2228,6 +3391,92 @@
           "validFrom"
         ]
       },
+      "PersonnelAssignmentRequest": {
+        "type": "object",
+        "properties": {
+          "personnelId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "personnelId",
+          "startDate"
+        ]
+      },
+      "EquipmentAssignmentRequest": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "assetId",
+          "startDate"
+        ]
+      },
+      "CrewMemberRequest": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "phone": {
+            "type": "string"
+          },
+          "employmentType": {
+            "type": "string",
+            "enum": [
+              "staff",
+              "subcontractor",
+              "hired"
+            ]
+          },
+          "organization": {
+            "type": "string"
+          },
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "fullName",
+          "positionId",
+          "startDate"
+        ]
+      },
       "GrantAccessRequest": {
         "type": "object",
         "properties": {
@@ -2270,6 +3519,36 @@
           "phone",
           "role",
           "userId"
+        ]
+      },
+      "PersonnelLoginRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "PersonnelLoginResponse": {
+        "type": "object",
+        "properties": {
+          "personnel": {
+            "$ref": "#/components/schemas/PersonnelView"
+          },
+          "newAccount": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "newAccount",
+          "personnel"
         ]
       },
       "PortalAccessRequest": {
@@ -2504,10 +3783,17 @@
             "items": {
               "type": "string"
             }
+          },
+          "positions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "installed",
+          "positions",
           "skipped"
         ]
       },

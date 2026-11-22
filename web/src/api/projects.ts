@@ -134,3 +134,111 @@ export function shiftsSummary(shifts: Shift[]): string {
   const fmt = (h: number) => (Number.isInteger(h) ? String(h) : h.toFixed(1))
   return same ? `${shifts.length}×${fmt(hours[0])}` : hours.map(fmt).join(' + ')
 }
+
+// ---------------------------------------------------------------- призначення
+
+export type PersonnelAssignment = Schemas['PersonnelAssignmentView']
+export type EquipmentAssignment = Schemas['EquipmentAssignmentView']
+
+export function useProjectPersonnel(projectId: string) {
+  return useQuery({
+    queryKey: ['project-personnel', projectId],
+    queryFn: () =>
+      unwrap(api.GET('/api/v1/projects/{id}/personnel-assignments', { params: { path: { id: projectId } } })),
+  })
+}
+
+export function useProjectEquipment(projectId: string) {
+  return useQuery({
+    queryKey: ['project-equipment', projectId],
+    queryFn: () =>
+      unwrap(api.GET('/api/v1/projects/{id}/equipment-assignments', { params: { path: { id: projectId } } })),
+  })
+}
+
+export function useAssignPersonnel(projectId: string) {
+  const invalidate = useInvalidate('project-personnel', 'personnel-assignments', 'project-access')
+  return useMutation({
+    mutationFn: (body: Schemas['PersonnelAssignmentRequest']) =>
+      unwrap(api.POST('/api/v1/projects/{id}/personnel-assignments', { params: { path: { id: projectId } }, body })),
+    onSuccess: invalidate,
+  })
+}
+
+export function useAddCrewMember(projectId: string) {
+  const invalidate = useInvalidate('project-personnel', 'personnel')
+  return useMutation({
+    mutationFn: (body: Schemas['CrewMemberRequest']) =>
+      unwrap(api.POST('/api/v1/projects/{id}/crew', { params: { path: { id: projectId } }, body })),
+    onSuccess: invalidate,
+  })
+}
+
+export function useUpdatePersonnelAssignment(projectId: string) {
+  const invalidate = useInvalidate('project-personnel', 'personnel-assignments')
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Schemas['PersonnelAssignmentUpdateRequest'] }) =>
+      unwrap(
+        api.PUT('/api/v1/projects/{id}/personnel-assignments/{assignmentId}', {
+          params: { path: { id: projectId, assignmentId: id } },
+          body,
+        }),
+      ),
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeletePersonnelAssignment(projectId: string) {
+  const invalidate = useInvalidate('project-personnel', 'personnel-assignments')
+  return useMutation({
+    mutationFn: (id: string) =>
+      unwrap(
+        api.DELETE('/api/v1/projects/{id}/personnel-assignments/{assignmentId}', {
+          params: { path: { id: projectId, assignmentId: id } },
+        }),
+      ),
+    onSuccess: invalidate,
+  })
+}
+
+export function useAssignEquipment(projectId: string) {
+  const invalidate = useInvalidate('project-equipment')
+  return useMutation({
+    mutationFn: (body: Schemas['EquipmentAssignmentRequest']) =>
+      unwrap(api.POST('/api/v1/projects/{id}/equipment-assignments', { params: { path: { id: projectId } }, body })),
+    onSuccess: invalidate,
+  })
+}
+
+export function useUpdateEquipmentAssignment(projectId: string) {
+  const invalidate = useInvalidate('project-equipment')
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Schemas['AssignmentDatesRequest'] }) =>
+      unwrap(
+        api.PUT('/api/v1/projects/{id}/equipment-assignments/{assignmentId}', {
+          params: { path: { id: projectId, assignmentId: id } },
+          body,
+        }),
+      ),
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeleteEquipmentAssignment(projectId: string) {
+  const invalidate = useInvalidate('project-equipment')
+  return useMutation({
+    mutationFn: (id: string) =>
+      unwrap(
+        api.DELETE('/api/v1/projects/{id}/equipment-assignments/{assignmentId}', {
+          params: { path: { id: projectId, assignmentId: id } },
+        }),
+      ),
+    onSuccess: invalidate,
+  })
+}
+
+/** «01.10.2026 – …» */
+export function formatPeriod(start: string, end?: string | null): string {
+  const fmt = (d: string) => d.split('-').reverse().join('.')
+  return `${fmt(start)} – ${end ? fmt(end) : '…'}`
+}

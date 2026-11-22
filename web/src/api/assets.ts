@@ -70,6 +70,10 @@ export function useInstallTemplate() {
   return useMutation({
     mutationFn: (templateKey: string) =>
       unwrap(api.POST('/api/v1/asset-types/install-template', { body: { templateKey } })),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['asset-types'] }),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: ['asset-types'] }),
+        client.invalidateQueries({ queryKey: ['positions'] }),
+      ]),
   })
 }

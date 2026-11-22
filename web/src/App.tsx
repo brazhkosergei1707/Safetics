@@ -10,6 +10,7 @@ import { AuditLogPage } from './pages/AuditLogPage'
 import { CustomersPage } from './pages/customers/CustomersPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
+import { PersonnelPage } from './pages/personnel/PersonnelPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
 import { ProjectDetailPage } from './pages/projects/ProjectDetailPage'
 import { ProjectsPage } from './pages/projects/ProjectsPage'
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: 'projects', element: <ProjectsPage /> },
       { path: 'projects/:id', element: <ProjectDetailPage /> },
       { path: 'customers', element: <CustomersPage /> },
+      { path: 'personnel', element: <PersonnelPage /> },
       { path: 'assets', element: <AssetsPage /> },
       { path: 'reports', element: <PlaceholderPage titleKey="nav.reports" /> },
       { path: 'stock', element: <PlaceholderPage titleKey="nav.stock" /> },
