@@ -25,6 +25,7 @@ import com.safetics.projects.AssignmentDtos.EquipmentAssignmentRequest;
 import com.safetics.projects.AssignmentDtos.PersonnelAssignmentRequest;
 import com.safetics.projects.AssignmentService;
 import com.safetics.services.ServiceTypeService;
+import com.safetics.tasks.TaskTypeService;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -57,11 +58,13 @@ class DevDataInitializer implements ApplicationRunner {
     private final PersonnelService personnel;
     private final AssignmentService assignments;
     private final ServiceTypeService serviceTypes;
+    private final TaskTypeService taskTypes;
 
     DevDataInitializer(JdbcClient db, TemplateService templates, AssetTypeService types, AssetService assets,
                        PositionService positions, PersonnelService personnel, AssignmentService assignments,
-                       ServiceTypeService serviceTypes) {
+                       ServiceTypeService serviceTypes, TaskTypeService taskTypes) {
         this.serviceTypes = serviceTypes;
+        this.taskTypes = taskTypes;
         this.db = db;
         this.templates = templates;
         this.types = types;
@@ -79,6 +82,7 @@ class DevDataInitializer implements ApplicationRunner {
         // Від імені адміна: він бачить усі проєкти (RLS)
         TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedCrew);
         TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedServices);
+        TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedTasks);
     }
 
     private void seed(UUID companyId) {
@@ -87,7 +91,8 @@ class DevDataInitializer implements ApplicationRunner {
             return;
         }
         // Повторне встановлення лише додає відсутнє (посади з'явилися в шаблоні в кроці 2б)
-        if (types.list(true).isEmpty() || positions.list(true).isEmpty() || serviceTypes.list(true).isEmpty()) {
+        if (types.list(true).isEmpty() || positions.list(true).isEmpty() || serviceTypes.list(true).isEmpty()
+                || taskTypes.list(true).isEmpty()) {
             templates.install("exploration-drilling");
             log.info("Installed exploration-drilling template for demo company {}", companyId);
         }
@@ -164,6 +169,51 @@ class DevDataInitializer implements ApplicationRunner {
             log.debug("Demo service {}", id);
         }
         log.info("Created demo drill holes for project VALE-CRJ");
+    }
+
+    /**
+     * Задачі на VALE-CRJ: буріння BH-102 (в роботі, Pedro), буріння BH-103 (нова, блокується BH-102),
+     * сервіс RIG-01. Напряму SQL, бо в dev немає користувача з токеном для перевірки прав.
+     */
+    private void seedTasks() {
+        Long existing = db.sql("select count(*) from task where project_id = ?").param(VALE_PROJECT).query(Long.class).single();
+        Long services = db.sql("select count(*) from service where project_id = ?").param(VALE_PROJECT).query(Long.class).single();
+        if (existing > 0 || services == 0) {
+            return;
+        }
+        UUID drilling = taskTypes.findByCode("drilling").orElseThrow().id();
+        UUID service = taskTypes.findByCode("service").orElseThrow().id();
+        UUID bh102 = db.sql("select id from service where project_id = ? and code = 'BH-102'").param(VALE_PROJECT).query(UUID.class).single();
+        UUID bh103 = db.sql("select id from service where project_id = ? and code = 'BH-103'").param(VALE_PROJECT).query(UUID.class).single();
+        UUID rig = db.sql("select id from asset where code = 'RIG-01'").query(UUID.class).single();
+
+        UUID t1 = demoTask(drilling, "Буріння BH-102", "in_progress", "active", DEMO_SUPERVISOR_USER, bh102, null, "{}");
+        UUID t2 = demoTask(drilling, "Буріння BH-103", "new", "new", DEMO_SUPERVISOR_USER, bh103, null, "{}");
+        demoTask(service, "RIG-01: замінити шланг високого тиску", "new", "new", DEMO_SUPERVISOR_USER, null, rig,
+                "{\"criticality\": \"medium\"}");
+        db.sql("insert into task_link (company_id, from_task, to_task, kind) values (?, ?, ?, 'blocks')")
+                .params(DEMO_DRILLING, t1, t2).update();
+        log.info("Created demo tasks for project VALE-CRJ");
+    }
+
+    private UUID demoTask(UUID type, String title, String status, String category, UUID assignee, UUID serviceId,
+                          UUID assetId, String attributes) {
+        long number = db.sql("""
+                        insert into task_counter (company_id, last_number) values (?, 1)
+                        on conflict (company_id) do update set last_number = task_counter.last_number + 1
+                        returning last_number
+                        """)
+                .param(DEMO_DRILLING).query(Long.class).single();
+        return db.sql("""
+                        insert into task (company_id, project_id, task_type_id, number, title, status, status_category,
+                                          assignee_id, author_id, service_id, asset_id, attributes, actual_start)
+                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, cast(? as jsonb), ?)
+                        returning id
+                        """)
+                .params(DEMO_DRILLING, VALE_PROJECT, type, number, title, status, category, assignee, DEMO_ADMIN,
+                        serviceId, assetId, attributes,
+                        "active".equals(category) ? java.time.OffsetDateTime.parse("2026-10-21T07:00:00-03:00") : null)
+                .query(UUID.class).single();
     }
 
     private PersonnelView person(String fullName, String phone, String employmentType, String organization,

@@ -7,6 +7,7 @@ import {
   InboxOutlined,
   LogoutOutlined,
   ProjectOutlined,
+  CheckSquareOutlined,
   SolutionOutlined,
   TeamOutlined,
   UserOutlined,
@@ -33,6 +34,9 @@ export function AppLayout() {
     : []
   const companyItems = [
     { key: '/', icon: <DashboardOutlined />, label: t('nav.dashboard') },
+    ...(hasPermission(session, 'task.view')
+      ? [{ key: '/my-tasks', icon: <CheckSquareOutlined />, label: t('nav.myTasks') }]
+      : []),
     { key: '/projects', icon: <ProjectOutlined />, label: t('nav.projects') },
     ...(hasPermission(session, 'client.view')
       ? [{ key: '/customers', icon: <TeamOutlined />, label: t('nav.customers') }]

@@ -20,7 +20,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/services/{id}": {
+    "/api/v1/tasks/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -36,7 +36,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/service-types/{id}": {
+    "/api/v1/task-types/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -52,7 +52,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/projects/{id}": {
+    "/api/v1/services/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -61,6 +61,38 @@ export interface paths {
         };
         get: operations["get_1"];
         put: operations["update_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/service-types/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateType_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_2"];
+        put: operations["update_2"];
         post?: never;
         delete?: never;
         options?: never;
@@ -123,8 +155,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_2"];
-        put: operations["update_2"];
+        get: operations["get_3"];
+        put: operations["update_3"];
         post?: never;
         delete?: never;
         options?: never;
@@ -139,8 +171,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_3"];
-        put: operations["update_3"];
+        get: operations["get_4"];
+        put: operations["update_4"];
         post?: never;
         delete?: never;
         options?: never;
@@ -171,8 +203,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_4"];
-        put: operations["update_4"];
+        get: operations["get_5"];
+        put: operations["update_5"];
         post?: never;
         delete?: never;
         options?: never;
@@ -187,8 +219,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_5"];
-        put: operations["update_5"];
+        get: operations["get_6"];
+        put: operations["update_6"];
         post?: never;
         delete?: never;
         options?: never;
@@ -238,6 +270,86 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["disable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["changeStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{id}/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["links"];
+        put?: never;
+        post: operations["addLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/task-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["types"];
+        put?: never;
+        post: operations["createType"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/task-types/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["restoreType"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/task-types/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archiveType"];
         delete?: never;
         options?: never;
         head?: never;
@@ -315,9 +427,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["types"];
+        get: operations["types_1"];
         put?: never;
-        post: operations["createType"];
+        post: operations["createType_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -333,7 +445,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["restoreType"];
+        post: operations["restoreType_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -349,7 +461,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["archiveType"];
+        post: operations["archiveType_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -372,7 +484,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/projects/{projectId}/services": {
+    "/api/v1/projects/{projectId}/tasks": {
         parameters: {
             query?: never;
             header?: never;
@@ -382,6 +494,22 @@ export interface paths {
         get: operations["list_2"];
         put?: never;
         post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_3"];
+        put?: never;
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -557,7 +685,7 @@ export interface paths {
         };
         get: operations["companies"];
         put?: never;
-        post: operations["create_2"];
+        post: operations["create_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -603,9 +731,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
-        post: operations["create_3"];
+        post: operations["create_4"];
         delete?: never;
         options?: never;
         head?: never;
@@ -667,9 +795,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_4"];
+        get: operations["list_5"];
         put?: never;
-        post: operations["create_4"];
+        post: operations["create_5"];
         delete?: never;
         options?: never;
         head?: never;
@@ -875,9 +1003,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_5"];
+        get: operations["list_6"];
         put?: never;
-        post: operations["create_5"];
+        post: operations["create_6"];
         delete?: never;
         options?: never;
         head?: never;
@@ -923,9 +1051,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_6"];
+        get: operations["list_7"];
         put?: never;
-        post: operations["create_6"];
+        post: operations["create_7"];
         delete?: never;
         options?: never;
         head?: never;
@@ -974,6 +1102,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["installTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/my": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["mine"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1035,7 +1195,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_7"];
+        get: operations["list_8"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1071,6 +1231,22 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{id}/links/{linkId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["removeLink"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1125,6 +1301,136 @@ export interface components {
             status: "active" | "invited" | "disabled";
             portal: boolean;
         };
+        TaskUpdateRequest: {
+            title: string;
+            description?: string;
+            /** Format: uuid */
+            assigneeId?: string;
+            /** Format: uuid */
+            serviceId?: string;
+            /** Format: uuid */
+            assetId?: string;
+            /** Format: date */
+            plannedStart?: string;
+            /** Format: date */
+            plannedEnd?: string;
+            /** Format: date */
+            forecastEnd?: string;
+            attributes?: {
+                [key: string]: unknown;
+            };
+            /** Format: int32 */
+            version: number;
+        };
+        TaskView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            number: number;
+            /** Format: uuid */
+            projectId: string;
+            projectCode: string;
+            /** Format: uuid */
+            typeId: string;
+            typeCode: string;
+            title: string;
+            description?: string;
+            status: string;
+            /** @enum {string} */
+            statusCategory: "new" | "active" | "done" | "cancelled";
+            /** Format: uuid */
+            assigneeId?: string;
+            assigneeName?: string;
+            authorName?: string;
+            /** Format: uuid */
+            serviceId?: string;
+            serviceCode?: string;
+            /** Format: uuid */
+            assetId?: string;
+            assetCode?: string;
+            /** Format: uuid */
+            parentId?: string;
+            /** Format: int64 */
+            parentNumber?: number;
+            /** Format: date */
+            plannedStart?: string;
+            /** Format: date */
+            plannedEnd?: string;
+            /** Format: date */
+            forecastEnd?: string;
+            /** Format: date-time */
+            actualStart?: string;
+            /** Format: date-time */
+            actualEnd?: string;
+            attributes: {
+                [key: string]: unknown;
+            };
+            closingValues?: {
+                [key: string]: unknown;
+            };
+            /** Format: int32 */
+            openBlockers: number;
+            /** Format: int32 */
+            childrenTotal: number;
+            /** Format: int32 */
+            childrenOpen: number;
+            /** Format: int32 */
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        FieldDefinition: {
+            key: string;
+            label: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            type: "string" | "text" | "number" | "integer" | "boolean" | "date" | "enum";
+            unit?: string;
+            required?: boolean;
+            min?: number;
+            max?: number;
+            options?: string[];
+        };
+        TaskStatusDefinition: {
+            code: string;
+            label: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            category: "new" | "active" | "done" | "cancelled";
+            color?: string;
+        };
+        TaskTypeRequest: {
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            statuses: components["schemas"]["TaskStatusDefinition"][];
+            fields?: components["schemas"]["FieldDefinition"][];
+            closingFields?: components["schemas"]["FieldDefinition"][];
+            /** @enum {string} */
+            subjectKind?: "none" | "service" | "asset";
+            syncService?: boolean;
+            childrenBlockClose?: boolean;
+        };
+        TaskTypeView: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            statuses: components["schemas"]["TaskStatusDefinition"][];
+            fields: components["schemas"]["FieldDefinition"][];
+            closingFields: components["schemas"]["FieldDefinition"][];
+            /** @enum {string} */
+            subjectKind: "none" | "service" | "asset";
+            syncService: boolean;
+            childrenBlockClose: boolean;
+            templateKey?: string;
+            archived: boolean;
+        };
         ServiceUpdateRequest: {
             code: string;
             name?: string;
@@ -1171,19 +1477,6 @@ export interface components {
             version: number;
             /** Format: date-time */
             createdAt: string;
-        };
-        FieldDefinition: {
-            key: string;
-            label: {
-                [key: string]: string;
-            };
-            /** @enum {string} */
-            type: "string" | "text" | "number" | "integer" | "boolean" | "date" | "enum";
-            unit?: string;
-            required?: boolean;
-            min?: number;
-            max?: number;
-            options?: string[];
         };
         ServiceTypeRequest: {
             code: string;
@@ -1479,6 +1772,37 @@ export interface components {
             role: string;
             password?: string;
         };
+        TaskStatusRequest: {
+            status: string;
+            closingValues?: {
+                [key: string]: unknown;
+            };
+            /** Format: int32 */
+            version: number;
+        };
+        TaskLinkRequest: {
+            /** Format: uuid */
+            taskId: string;
+            /** @enum {string} */
+            kind: "blocks" | "blocked_by" | "relates";
+        };
+        TaskLinksView: {
+            blocks: components["schemas"]["TaskRef"][];
+            blockedBy: components["schemas"]["TaskRef"][];
+            related: components["schemas"]["TaskRef"][];
+            children: components["schemas"]["TaskRef"][];
+        };
+        TaskRef: {
+            /** Format: uuid */
+            linkId?: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            number: number;
+            title: string;
+            status: string;
+            statusCategory: string;
+        };
         CancelServiceRequest: {
             reason: string;
         };
@@ -1496,6 +1820,27 @@ export interface components {
             /** Format: date */
             endDate?: string;
             shifts: components["schemas"]["Shift"][];
+        };
+        TaskCreateRequest: {
+            /** Format: uuid */
+            typeId: string;
+            title: string;
+            description?: string;
+            /** Format: uuid */
+            assigneeId?: string;
+            /** Format: uuid */
+            serviceId?: string;
+            /** Format: uuid */
+            assetId?: string;
+            /** Format: uuid */
+            parentId?: string;
+            /** Format: date */
+            plannedStart?: string;
+            /** Format: date */
+            plannedEnd?: string;
+            attributes?: {
+                [key: string]: unknown;
+            };
         };
         ServiceCreateRequest: {
             /** Format: uuid */
@@ -1681,6 +2026,18 @@ export interface components {
             skipped: string[];
             positions: string[];
             serviceTypes: string[];
+            taskTypes: string[];
+        };
+        TaskHistoryEntry: {
+            /** Format: int64 */
+            id: number;
+            userName?: string;
+            action: string;
+            changes?: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            createdAt: string;
         };
         AvailableEquipmentView: {
             /** Format: uuid */
@@ -1783,12 +2140,86 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ServiceView"];
+                    "*/*": components["schemas"]["TaskView"];
                 };
             };
         };
     };
     update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"];
+                };
+            };
+        };
+    };
+    updateType: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskTypeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"];
+                };
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ServiceView"];
+                };
+            };
+        };
+    };
+    update_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1814,7 +2245,7 @@ export interface operations {
             };
         };
     };
-    updateType: {
+    updateType_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1840,7 +2271,7 @@ export interface operations {
             };
         };
     };
-    get_1: {
+    get_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1862,7 +2293,7 @@ export interface operations {
             };
         };
     };
-    update_1: {
+    update_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -2010,7 +2441,7 @@ export interface operations {
             };
         };
     };
-    get_2: {
+    get_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -2032,7 +2463,7 @@ export interface operations {
             };
         };
     };
-    update_2: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -2058,7 +2489,7 @@ export interface operations {
             };
         };
     };
-    get_3: {
+    get_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -2080,7 +2511,7 @@ export interface operations {
             };
         };
     };
-    update_3: {
+    update_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -2132,7 +2563,7 @@ export interface operations {
             };
         };
     };
-    get_4: {
+    get_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -2154,7 +2585,7 @@ export interface operations {
             };
         };
     };
-    update_4: {
+    update_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -2180,7 +2611,7 @@ export interface operations {
             };
         };
     };
-    get_5: {
+    get_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -2202,7 +2633,7 @@ export interface operations {
             };
         };
     };
-    update_5: {
+    update_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -2316,6 +2747,170 @@ export interface operations {
             };
         };
     };
+    changeStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"];
+                };
+            };
+        };
+    };
+    links: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskLinksView"];
+                };
+            };
+        };
+    };
+    addLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskLinksView"];
+                };
+            };
+        };
+    };
+    types: {
+        parameters: {
+            query?: {
+                includeArchived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"][];
+                };
+            };
+        };
+    };
+    createType: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskTypeRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"];
+                };
+            };
+        };
+    };
+    restoreType: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"];
+                };
+            };
+        };
+    };
+    archiveType: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"];
+                };
+            };
+        };
+    };
     start: {
         parameters: {
             query?: never;
@@ -2408,7 +3003,7 @@ export interface operations {
             };
         };
     };
-    types: {
+    types_1: {
         parameters: {
             query?: {
                 includeArchived?: boolean;
@@ -2430,7 +3025,7 @@ export interface operations {
             };
         };
     };
-    createType: {
+    createType_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2454,7 +3049,7 @@ export interface operations {
             };
         };
     };
-    restoreType: {
+    restoreType_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2476,7 +3071,7 @@ export interface operations {
             };
         };
     };
-    archiveType: {
+    archiveType_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2549,6 +3144,59 @@ export interface operations {
     list_2: {
         parameters: {
             query?: {
+                category?: string;
+                assigneeId?: string;
+                typeId?: string;
+                serviceId?: string;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"][];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"];
+                };
+            };
+        };
+    };
+    list_3: {
+        parameters: {
+            query?: {
                 status?: string;
                 typeId?: string;
             };
@@ -2571,7 +3219,7 @@ export interface operations {
             };
         };
     };
-    create_1: {
+    create_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -2969,7 +3617,7 @@ export interface operations {
             };
         };
     };
-    create_2: {
+    create_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -3037,7 +3685,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_4: {
         parameters: {
             query?: {
                 q?: string;
@@ -3061,7 +3709,7 @@ export interface operations {
             };
         };
     };
-    create_3: {
+    create_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -3177,7 +3825,7 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    list_5: {
         parameters: {
             query?: {
                 q?: string;
@@ -3200,7 +3848,7 @@ export interface operations {
             };
         };
     };
-    create_4: {
+    create_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -3544,7 +4192,7 @@ export interface operations {
             };
         };
     };
-    list_5: {
+    list_6: {
         parameters: {
             query?: {
                 typeId?: string;
@@ -3572,7 +4220,7 @@ export interface operations {
             };
         };
     };
-    create_5: {
+    create_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -3640,7 +4288,7 @@ export interface operations {
             };
         };
     };
-    list_6: {
+    list_7: {
         parameters: {
             query?: {
                 includeArchived?: boolean;
@@ -3662,7 +4310,7 @@ export interface operations {
             };
         };
     };
-    create_6: {
+    create_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -3754,6 +4402,50 @@ export interface operations {
             };
         };
     };
+    history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskHistoryEntry"][];
+                };
+            };
+        };
+    };
+    mine: {
+        parameters: {
+            query?: {
+                includeClosed?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"][];
+                };
+            };
+        };
+    };
     availableEquipment: {
         parameters: {
             query?: {
@@ -3821,7 +4513,7 @@ export interface operations {
             };
         };
     };
-    list_7: {
+    list_8: {
         parameters: {
             query?: never;
             header?: never;
@@ -3879,6 +4571,29 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AuditEntry"][];
+                };
+            };
+        };
+    };
+    removeLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                linkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskLinksView"];
                 };
             };
         };

@@ -5,9 +5,18 @@ import type { FieldDefinition } from '../api/assets'
 import { localized } from '../i18n/localized'
 
 /** Поле форми за описом поля типу (обладнання чи послуги). Значення — у attributes.<key>. */
-export function AttributeField({ field, language }: { field: FieldDefinition; language: string }) {
+export function AttributeField({
+  field,
+  language,
+  namePrefix = 'attributes',
+}: {
+  field: FieldDefinition
+  language: string
+  /** Об'єкт форми, у який пишеться значення: attributes (за замовчуванням) або closingValues */
+  namePrefix?: string
+}) {
   const { t } = useTranslation()
-  const name = ['attributes', field.key]
+  const name = [namePrefix, field.key]
   const label = localized(field.label, language)
   const rules = field.required ? [{ required: true, message: t('validation.required') }] : []
 

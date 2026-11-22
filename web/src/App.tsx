@@ -15,6 +15,7 @@ import { PlatformCompaniesPage } from './pages/platform/PlatformCompaniesPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
 import { ProjectDetailPage } from './pages/projects/ProjectDetailPage'
 import { ProjectsPage } from './pages/projects/ProjectsPage'
+import { MyTasksPage } from './pages/tasks/MyTasksPage'
 import { UsersPage } from './pages/users/UsersPage'
 
 const router = createBrowserRouter([
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardPage /> },
+      { path: 'my-tasks', element: <MyTasksPage /> },
       { path: 'projects', element: <ProjectsPage /> },
       { path: 'projects/:id', element: <ProjectDetailPage /> },
       { path: 'customers', element: <CustomersPage /> },

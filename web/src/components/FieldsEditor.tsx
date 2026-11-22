@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { FIELD_TYPES, type FieldFormValues } from './fieldsForm'
 
 /** Редактор полів типу (обладнання чи послуги): назва, ключ, тип, одиниця, межі, варіанти, обов'язковість. */
-export function FieldsEditor({ form }: { form: FormInstance }) {
+export function FieldsEditor({ form, name = 'fields' }: { form: FormInstance; name?: string }) {
   const { t } = useTranslation()
-  const values = Form.useWatch('fields', form) as FieldFormValues[] | undefined
+  const values = Form.useWatch(name, form) as FieldFormValues[] | undefined
   const required = [{ required: true, message: t('validation.required') }]
 
   return (
-    <Form.List name="fields">
+    <Form.List name={name}>
       {(fields, { add, remove }) => (
         <>
           {fields.map((field) => {

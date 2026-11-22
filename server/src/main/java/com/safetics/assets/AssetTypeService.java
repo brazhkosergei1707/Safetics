@@ -168,10 +168,15 @@ public class AssetTypeService {
 
     /** Перевірка опису полів (для типів обладнання й типів послуг): ключі, типи, варіанти, межі. */
     public static void validateFields(List<FieldDefinition> fields, Map<String, String> errors) {
+        validateFields(fields, errors, "fields");
+    }
+
+    /** @param path назва списку в помилках: fields[0].key, closingFields[1].type */
+    public static void validateFields(List<FieldDefinition> fields, Map<String, String> errors, String path) {
         Set<String> keys = new HashSet<>();
         for (int i = 0; i < fields.size(); i++) {
             FieldDefinition field = fields.get(i);
-            String prefix = "fields[" + i + "].";
+            String prefix = path + "[" + i + "].";
             if (field.key() == null || !FIELD_KEY.matcher(field.key()).matches()) {
                 errors.put(prefix + "key", "invalid_format");
             } else if (!keys.add(field.key())) {

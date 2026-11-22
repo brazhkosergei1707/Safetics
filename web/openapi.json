@@ -61,12 +61,123 @@
         }
       }
     },
+    "/api/v1/tasks/{id}": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-types/{id}": {
+      "put": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "updateType",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskTypeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/services/{id}": {
       "get": {
         "tags": [
           "services"
         ],
-        "operationId": "get",
+        "operationId": "get_1",
         "parameters": [
           {
             "name": "id",
@@ -95,7 +206,7 @@
         "tags": [
           "services"
         ],
-        "operationId": "update",
+        "operationId": "update_1",
         "parameters": [
           {
             "name": "id",
@@ -136,7 +247,7 @@
         "tags": [
           "services"
         ],
-        "operationId": "updateType",
+        "operationId": "updateType_1",
         "parameters": [
           {
             "name": "id",
@@ -177,7 +288,7 @@
         "tags": [
           "projects"
         ],
-        "operationId": "get_1",
+        "operationId": "get_2",
         "parameters": [
           {
             "name": "id",
@@ -206,7 +317,7 @@
         "tags": [
           "projects"
         ],
-        "operationId": "update_1",
+        "operationId": "update_2",
         "parameters": [
           {
             "name": "id",
@@ -450,7 +561,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "get_2",
+        "operationId": "get_3",
         "parameters": [
           {
             "name": "id",
@@ -479,7 +590,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "update_2",
+        "operationId": "update_3",
         "parameters": [
           {
             "name": "id",
@@ -520,7 +631,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "get_3",
+        "operationId": "get_4",
         "parameters": [
           {
             "name": "id",
@@ -549,7 +660,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "update_3",
+        "operationId": "update_4",
         "parameters": [
           {
             "name": "id",
@@ -631,7 +742,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "get_4",
+        "operationId": "get_5",
         "parameters": [
           {
             "name": "id",
@@ -660,7 +771,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "update_4",
+        "operationId": "update_5",
         "parameters": [
           {
             "name": "id",
@@ -701,7 +812,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "get_5",
+        "operationId": "get_6",
         "parameters": [
           {
             "name": "id",
@@ -730,7 +841,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "update_5",
+        "operationId": "update_6",
         "parameters": [
           {
             "name": "id",
@@ -879,6 +990,241 @@
         }
       }
     },
+    "/api/v1/tasks/{id}/status": {
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "changeStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{id}/links": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "links",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskLinksView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "addLink",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskLinkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskLinksView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-types": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "types",
+        "parameters": [
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskTypeView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "createType",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskTypeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-types/{id}/restore": {
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "restoreType",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task-types/{id}/archive": {
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "archiveType",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/services/{id}/start": {
       "post": {
         "tags": [
@@ -1018,7 +1364,7 @@
         "tags": [
           "services"
         ],
-        "operationId": "types",
+        "operationId": "types_1",
         "parameters": [
           {
             "name": "includeArchived",
@@ -1050,7 +1396,7 @@
         "tags": [
           "services"
         ],
-        "operationId": "createType",
+        "operationId": "createType_1",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1080,7 +1426,7 @@
         "tags": [
           "services"
         ],
-        "operationId": "restoreType",
+        "operationId": "restoreType_1",
         "parameters": [
           {
             "name": "id",
@@ -1111,7 +1457,7 @@
         "tags": [
           "services"
         ],
-        "operationId": "archiveType",
+        "operationId": "archiveType_1",
         "parameters": [
           {
             "name": "id",
@@ -1215,12 +1561,120 @@
         }
       }
     },
+    "/api/v1/projects/{projectId}/tasks": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "list_2",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "assigneeId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "typeId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "serviceId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "create_1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{projectId}/services": {
       "get": {
         "tags": [
           "services"
         ],
-        "operationId": "list_2",
+        "operationId": "list_3",
         "parameters": [
           {
             "name": "projectId",
@@ -1269,7 +1723,7 @@
         "tags": [
           "services"
         ],
-        "operationId": "create_1",
+        "operationId": "create_2",
         "parameters": [
           {
             "name": "projectId",
@@ -1856,7 +2310,7 @@
         "tags": [
           "platform"
         ],
-        "operationId": "create_2",
+        "operationId": "create_3",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1948,7 +2402,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "list_3",
+        "operationId": "list_4",
         "parameters": [
           {
             "name": "q",
@@ -1997,7 +2451,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "create_3",
+        "operationId": "create_4",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2159,7 +2613,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "list_4",
+        "operationId": "list_5",
         "parameters": [
           {
             "name": "q",
@@ -2199,7 +2653,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "create_4",
+        "operationId": "create_5",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2663,7 +3117,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list_5",
+        "operationId": "list_6",
         "parameters": [
           {
             "name": "typeId",
@@ -2746,7 +3200,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_5",
+        "operationId": "create_6",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2838,7 +3292,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list_6",
+        "operationId": "list_7",
         "parameters": [
           {
             "name": "includeArchived",
@@ -2870,7 +3324,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_6",
+        "operationId": "create_7",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2980,6 +3434,74 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/InstallTemplateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{id}/history": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "history",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskHistoryEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/my": {
+      "get": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "mine",
+        "parameters": [
+          {
+            "name": "includeClosed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskView"
+                  }
                 }
               }
             }
@@ -3101,7 +3623,7 @@
         "tags": [
           "members"
         ],
-        "operationId": "list_7",
+        "operationId": "list_8",
         "responses": {
           "200": {
             "description": "OK",
@@ -3167,6 +3689,46 @@
                   "items": {
                     "$ref": "#/components/schemas/AuditEntry"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{id}/links/{linkId}": {
+      "delete": {
+        "tags": [
+          "tasks"
+        ],
+        "operationId": "removeLink",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "linkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskLinksView"
                 }
               }
             }
@@ -3312,6 +3874,400 @@
           "userId"
         ]
       },
+      "TaskUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "assigneeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "plannedStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "plannedEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "forecastEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "title",
+          "version"
+        ]
+      },
+      "TaskView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectCode": {
+            "type": "string"
+          },
+          "typeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "statusCategory": {
+            "type": "string",
+            "enum": [
+              "new",
+              "active",
+              "done",
+              "cancelled"
+            ]
+          },
+          "assigneeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assigneeName": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceCode": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parentNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "plannedStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "plannedEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "forecastEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "actualStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actualEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "closingValues": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "openBlockers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "childrenTotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "childrenOpen": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "attributes",
+          "childrenOpen",
+          "childrenTotal",
+          "createdAt",
+          "id",
+          "number",
+          "openBlockers",
+          "projectCode",
+          "projectId",
+          "status",
+          "statusCategory",
+          "title",
+          "typeCode",
+          "typeId",
+          "version"
+        ]
+      },
+      "FieldDefinition": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "text",
+              "number",
+              "integer",
+              "boolean",
+              "date",
+              "enum"
+            ],
+            "minLength": 1
+          },
+          "unit": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "min": {
+            "type": "number"
+          },
+          "max": {
+            "type": "number"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "type"
+        ]
+      },
+      "TaskStatusDefinition": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "new",
+              "active",
+              "done",
+              "cancelled"
+            ],
+            "minLength": 1
+          },
+          "color": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "code",
+          "label"
+        ]
+      },
+      "TaskTypeRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskStatusDefinition"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldDefinition"
+            }
+          },
+          "closingFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldDefinition"
+            }
+          },
+          "subjectKind": {
+            "type": "string",
+            "enum": [
+              "none",
+              "service",
+              "asset"
+            ]
+          },
+          "syncService": {
+            "type": "boolean"
+          },
+          "childrenBlockClose": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "statuses"
+        ]
+      },
+      "TaskTypeView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskStatusDefinition"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldDefinition"
+            }
+          },
+          "closingFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldDefinition"
+            }
+          },
+          "subjectKind": {
+            "type": "string",
+            "enum": [
+              "none",
+              "service",
+              "asset"
+            ]
+          },
+          "syncService": {
+            "type": "boolean"
+          },
+          "childrenBlockClose": {
+            "type": "boolean"
+          },
+          "templateKey": {
+            "type": "string"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "archived",
+          "childrenBlockClose",
+          "closingFields",
+          "code",
+          "fields",
+          "id",
+          "name",
+          "statuses",
+          "subjectKind",
+          "syncService"
+        ]
+      },
       "ServiceUpdateRequest": {
         "type": "object",
         "properties": {
@@ -3431,57 +4387,6 @@
           "typeCode",
           "typeId",
           "version"
-        ]
-      },
-      "FieldDefinition": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "minLength": 1
-          },
-          "label": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "string",
-              "text",
-              "number",
-              "integer",
-              "boolean",
-              "date",
-              "enum"
-            ],
-            "minLength": 1
-          },
-          "unit": {
-            "type": "string"
-          },
-          "required": {
-            "type": "boolean"
-          },
-          "min": {
-            "type": "number"
-          },
-          "max": {
-            "type": "number"
-          },
-          "options": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "key",
-          "label",
-          "type"
         ]
       },
       "ServiceTypeRequest": {
@@ -4412,6 +5317,117 @@
           "role"
         ]
       },
+      "TaskStatusRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "minLength": 1
+          },
+          "closingValues": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "status",
+          "version"
+        ]
+      },
+      "TaskLinkRequest": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "blocks",
+              "blocked_by",
+              "relates"
+            ],
+            "minLength": 1
+          }
+        },
+        "required": [
+          "kind",
+          "taskId"
+        ]
+      },
+      "TaskLinksView": {
+        "type": "object",
+        "properties": {
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskRef"
+            }
+          },
+          "blockedBy": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskRef"
+            }
+          },
+          "related": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskRef"
+            }
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskRef"
+            }
+          }
+        },
+        "required": [
+          "blockedBy",
+          "blocks",
+          "children",
+          "related"
+        ]
+      },
+      "TaskRef": {
+        "type": "object",
+        "properties": {
+          "linkId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "statusCategory": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "statusCategory",
+          "title"
+        ]
+      },
       "CancelServiceRequest": {
         "type": "object",
         "properties": {
@@ -4471,6 +5487,54 @@
           "shifts",
           "startDate",
           "timeZone"
+        ]
+      },
+      "TaskCreateRequest": {
+        "type": "object",
+        "properties": {
+          "typeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "assigneeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "plannedStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "plannedEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "title",
+          "typeId"
         ]
       },
       "ServiceCreateRequest": {
@@ -5085,13 +6149,48 @@
             "items": {
               "type": "string"
             }
+          },
+          "taskTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "installed",
           "positions",
           "serviceTypes",
-          "skipped"
+          "skipped",
+          "taskTypes"
+        ]
+      },
+      "TaskHistoryEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "changes": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "action",
+          "createdAt",
+          "id"
         ]
       },
       "AvailableEquipmentView": {

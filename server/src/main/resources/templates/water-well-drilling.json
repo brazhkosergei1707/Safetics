@@ -496,5 +496,235 @@
         }
       ]
     }
+  ],
+  "taskTypes": [
+    {
+      "code": "drilling",
+      "name": {
+        "en": "Drilling a well",
+        "uk": "Буріння свердловини",
+        "pt": "Perfuração do poço"
+      },
+      "statuses": [
+        {
+          "code": "new",
+          "label": {
+            "en": "New",
+            "uk": "Нова",
+            "pt": "Nova"
+          },
+          "category": "new",
+          "color": "default"
+        },
+        {
+          "code": "in_progress",
+          "label": {
+            "en": "In progress",
+            "uk": "В роботі",
+            "pt": "Em andamento"
+          },
+          "category": "active",
+          "color": "blue"
+        },
+        {
+          "code": "done",
+          "label": {
+            "en": "Done",
+            "uk": "Виконано",
+            "pt": "Concluída"
+          },
+          "category": "done",
+          "color": "green"
+        },
+        {
+          "code": "cancelled",
+          "label": {
+            "en": "Cancelled",
+            "uk": "Скасовано",
+            "pt": "Cancelada"
+          },
+          "category": "cancelled"
+        }
+      ],
+      "fields": [],
+      "closingFields": [
+        {
+          "key": "actualDepth",
+          "label": {
+            "en": "Actual depth",
+            "uk": "Фактична глибина",
+            "pt": "Profundidade final"
+          },
+          "type": "number",
+          "unit": "m",
+          "required": true,
+          "min": 0
+        },
+        {
+          "key": "waterLevel",
+          "label": {
+            "en": "Static water level",
+            "uk": "Статичний рівень води",
+            "pt": "Nível estático"
+          },
+          "type": "number",
+          "unit": "m",
+          "min": 0
+        }
+      ],
+      "subjectKind": "service",
+      "syncService": true,
+      "childrenBlockClose": false
+    },
+    {
+      "code": "service",
+      "name": {
+        "en": "Service",
+        "uk": "Сервіс",
+        "pt": "Manutenção"
+      },
+      "statuses": [
+        {
+          "code": "new",
+          "label": {
+            "en": "New",
+            "uk": "Нова",
+            "pt": "Nova"
+          },
+          "category": "new",
+          "color": "default"
+        },
+        {
+          "code": "in_progress",
+          "label": {
+            "en": "In progress",
+            "uk": "В роботі",
+            "pt": "Em andamento"
+          },
+          "category": "active",
+          "color": "blue"
+        },
+        {
+          "code": "done",
+          "label": {
+            "en": "Done",
+            "uk": "Виконано",
+            "pt": "Concluída"
+          },
+          "category": "done",
+          "color": "green"
+        },
+        {
+          "code": "cancelled",
+          "label": {
+            "en": "Cancelled",
+            "uk": "Скасовано",
+            "pt": "Cancelada"
+          },
+          "category": "cancelled"
+        }
+      ],
+      "fields": [
+        {
+          "key": "criticality",
+          "label": {
+            "en": "Criticality",
+            "uk": "Критичність",
+            "pt": "Criticidade"
+          },
+          "type": "enum",
+          "required": true,
+          "options": [
+            "high",
+            "medium",
+            "low"
+          ]
+        }
+      ],
+      "closingFields": [
+        {
+          "key": "workDone",
+          "label": {
+            "en": "What was done",
+            "uk": "Що зроблено",
+            "pt": "O que foi feito"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "criticality",
+          "label": {
+            "en": "Criticality",
+            "uk": "Критичність",
+            "pt": "Criticidade"
+          },
+          "type": "enum",
+          "required": true,
+          "options": [
+            "high",
+            "medium",
+            "low"
+          ]
+        }
+      ],
+      "subjectKind": "asset",
+      "syncService": false,
+      "childrenBlockClose": false
+    },
+    {
+      "code": "general",
+      "name": {
+        "en": "Task",
+        "uk": "Задача",
+        "pt": "Tarefa"
+      },
+      "statuses": [
+        {
+          "code": "new",
+          "label": {
+            "en": "New",
+            "uk": "Нова",
+            "pt": "Nova"
+          },
+          "category": "new",
+          "color": "default"
+        },
+        {
+          "code": "in_progress",
+          "label": {
+            "en": "In progress",
+            "uk": "В роботі",
+            "pt": "Em andamento"
+          },
+          "category": "active",
+          "color": "blue"
+        },
+        {
+          "code": "done",
+          "label": {
+            "en": "Done",
+            "uk": "Виконано",
+            "pt": "Concluída"
+          },
+          "category": "done",
+          "color": "green"
+        },
+        {
+          "code": "cancelled",
+          "label": {
+            "en": "Cancelled",
+            "uk": "Скасовано",
+            "pt": "Cancelada"
+          },
+          "category": "cancelled"
+        }
+      ],
+      "fields": [],
+      "closingFields": [],
+      "subjectKind": "none",
+      "syncService": false,
+      "childrenBlockClose": false
+    }
   ]
 }

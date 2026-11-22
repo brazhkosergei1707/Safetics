@@ -47,10 +47,11 @@ public final class AssetDtos {
 
     /**
      * installed — створені типи, skipped — уже були в компанії (не перезаписуються);
-     * positions, serviceTypes — створені посади й типи послуг (наявні не змінюються).
+     * positions, serviceTypes, taskTypes — створені посади, типи послуг і задач (наявні не змінюються).
      */
     public record InstallTemplateResponse(@NotNull List<String> installed, @NotNull List<String> skipped,
-                                          @NotNull List<String> positions, @NotNull List<String> serviceTypes) {
+                                          @NotNull List<String> positions, @NotNull List<String> serviceTypes,
+                                          @NotNull List<String> taskTypes) {
     }
 
     // ---------------------------------------------------------------- об'єкти

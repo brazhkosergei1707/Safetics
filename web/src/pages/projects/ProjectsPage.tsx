@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { hasPermission, useSession } from '../../api/auth'
 import { type Project, shiftsSummary, useProjects } from '../../api/projects'
 import { ServiceTypesDrawer } from '../services/ServiceTypesDrawer'
+import { TaskTypesDrawer } from '../tasks/TaskTypesDrawer'
 import { ProjectCreateDrawer } from './ProjectCreateDrawer'
 
 export function ProjectsPage() {
@@ -16,6 +17,7 @@ export function ProjectsPage() {
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
   const [typesOpen, setTypesOpen] = useState(false)
+  const [taskTypesOpen, setTaskTypesOpen] = useState(false)
   const projects = useProjects({ status: status === 'all' ? undefined : status, q: query })
   const canManage = hasPermission(session, 'project.manage')
 
@@ -27,9 +29,14 @@ export function ProjectsPage() {
         </Typography.Title>
         <Flex gap={8}>
           {hasPermission(session, 'catalog.manage') && (
-            <Button icon={<SettingOutlined />} onClick={() => setTypesOpen(true)}>
-              {t('serviceTypes.title')}
-            </Button>
+            <>
+              <Button icon={<SettingOutlined />} onClick={() => setTypesOpen(true)}>
+                {t('serviceTypes.title')}
+              </Button>
+              <Button icon={<SettingOutlined />} onClick={() => setTaskTypesOpen(true)}>
+                {t('taskTypes.title')}
+              </Button>
+            </>
           )}
           {canManage && (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
@@ -96,6 +103,7 @@ export function ProjectsPage() {
 
       <ProjectCreateDrawer open={creating} onClose={() => setCreating(false)} />
       <ServiceTypesDrawer open={typesOpen} onClose={() => setTypesOpen(false)} />
+      <TaskTypesDrawer open={taskTypesOpen} onClose={() => setTaskTypesOpen(false)} />
     </>
   )
 }

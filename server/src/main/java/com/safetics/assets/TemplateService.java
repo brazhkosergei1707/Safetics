@@ -20,6 +20,8 @@ import com.safetics.personnel.PersonnelDtos.PositionRequest;
 import com.safetics.personnel.PositionService;
 import com.safetics.services.ServiceDtos.ServiceTypeRequest;
 import com.safetics.services.ServiceTypeService;
+import com.safetics.tasks.TaskDtos.TaskTypeRequest;
+import com.safetics.tasks.TaskTypeService;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -34,17 +36,20 @@ public class TemplateService {
 
     /** Вміст файлу шаблону. Пізніше сюди додадуться послуги, коди операцій, чек-листи. */
     public record TemplateDefinition(String key, Map<String, String> name, List<AssetTypeRequest> assetTypes,
-                                     List<PositionRequest> positions, List<ServiceTypeRequest> serviceTypes) {
+                                     List<PositionRequest> positions, List<ServiceTypeRequest> serviceTypes,
+                                     List<TaskTypeRequest> taskTypes) {
     }
 
     private final JsonMapper json;
     private final AssetTypeService types;
     private final PositionService positions;
     private final ServiceTypeService serviceTypes;
+    private final TaskTypeService taskTypes;
     private final AuditService audit;
 
     public TemplateService(JsonMapper json, AssetTypeService types, PositionService positions,
-                           ServiceTypeService serviceTypes, AuditService audit) {
+                           ServiceTypeService serviceTypes, TaskTypeService taskTypes, AuditService audit) {
+        this.taskTypes = taskTypes;
         this.json = json;
         this.types = types;
         this.positions = positions;
@@ -116,8 +121,16 @@ public class TemplateService {
                 installedServiceTypes.add(serviceType.code());
             }
         }
+        List<String> installedTaskTypes = new ArrayList<>();
+        for (TaskTypeRequest taskType : template.taskTypes() == null ? List.<TaskTypeRequest>of() : template.taskTypes()) {
+            if (taskTypes.findByCode(taskType.code()).isEmpty()) {
+                taskTypes.create(taskType, key);
+                installedTaskTypes.add(taskType.code());
+            }
+        }
         audit.record("template", key, "install", Map.of("installed", installed, "skipped", skipped,
-                "positions", installedPositions, "serviceTypes", installedServiceTypes));
-        return new InstallTemplateResponse(installed, skipped, installedPositions, installedServiceTypes);
+                "positions", installedPositions, "serviceTypes", installedServiceTypes, "taskTypes", installedTaskTypes));
+        return new InstallTemplateResponse(installed, skipped, installedPositions, installedServiceTypes,
+                installedTaskTypes);
     }
 }
