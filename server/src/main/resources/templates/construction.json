@@ -583,10 +583,11 @@
     {
       "code": "work_site",
       "name": {
-        "en": "Work site",
-        "uk": "Об'єкт робіт",
-        "pt": "Frente de obra"
+        "en": "Construction works",
+        "uk": "Будівельні роботи",
+        "pt": "Obras de construção"
       },
+      "taskType": "work_stage",
       "fields": [
         {
           "key": "address",
@@ -624,9 +625,9 @@
     {
       "code": "work_stage",
       "name": {
-        "en": "Work stage",
-        "uk": "Етап робіт",
-        "pt": "Etapa de obra"
+        "en": "Perform construction works",
+        "uk": "Виконати будівельні роботи",
+        "pt": "Executar obras de construção"
       },
       "statuses": [
         {

@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { hasPermission, useSession } from '../../api/auth'
-import { errorMessage } from '../../api/formErrors'
+import { applyFieldErrors, errorMessage } from '../../api/formErrors'
 import { type Project, useProjectPersonnel } from '../../api/projects'
 import {
   type ServiceAction,
@@ -16,6 +16,8 @@ import {
   useServiceAction,
   useServiceTypes,
 } from '../../api/services'
+import { type TaskType, useTaskTypes } from '../../api/tasks'
+import { AttributeField } from '../../components/AttributeField'
 import { formatAttribute } from '../../components/attributes'
 import { localized } from '../../i18n/localized'
 import { ServiceFormDrawer } from './ServiceFormDrawer'
@@ -49,6 +51,9 @@ export function ProjectServicesTab({ project }: { project: Project }) {
   const [editing, setEditing] = useState<{ open: boolean; type?: ServiceType; service?: ServiceItem }>({ open: false })
   const [cancelling, setCancelling] = useState<ServiceItem>()
   const [cancelForm] = Form.useForm<{ reason: string }>()
+  const taskTypes = useTaskTypes(true, hasPermission(session, 'task.view'))
+  const [completing, setCompleting] = useState<{ service: ServiceItem; type: TaskType }>()
+  const [completeForm] = Form.useForm<{ closingValues: Record<string, unknown> }>()
 
   const lang = i18n.language
   const projectOpen = project.status === 'active'
@@ -72,6 +77,17 @@ export function ProjectServicesTab({ project }: { project: Project }) {
 
   const run = (s: ServiceItem, act: ServiceAction) =>
     action.mutate({ id: s.id, action: act }, { onError: (e) => message.error(errorMessage(e, t)) })
+
+  // Завершення — це закриття головної задачі: якщо в її типу є форма закриття, заповнюємо її
+  const taskTypeById = new Map((taskTypes.data ?? []).map((type) => [type.id, type]))
+  const closingTypeOf = (s: ServiceItem) => {
+    const type = s.mainTaskTypeId ? taskTypeById.get(s.mainTaskTypeId) : undefined
+    return type && type.closingFields.length > 0 ? type : undefined
+  }
+  const startComplete = (s: ServiceItem, type: TaskType) => {
+    completeForm.resetFields()
+    setCompleting({ service: s, type })
+  }
 
   const newButton =
     activeTypes.length <= 1 ? (
@@ -153,6 +169,21 @@ export function ProjectServicesTab({ project }: { project: Project }) {
           })),
           ...(!project.customerId ? [{ title: t('projects.customer'), dataIndex: 'customerName' }] : []),
           {
+            title: t('services.assignee'),
+            key: 'assignee',
+            render: (_: unknown, s: ServiceItem) =>
+              s.assigneeName ? (
+                <>
+                  {s.assigneeName}
+                  {s.mainTaskNumber != null && <Typography.Text type="secondary"> · #{s.mainTaskNumber}</Typography.Text>}
+                </>
+              ) : s.mainTaskNumber != null ? (
+                <Typography.Text type="secondary">#{s.mainTaskNumber}</Typography.Text>
+              ) : (
+                ''
+              ),
+          },
+          {
             title: t('services.dates'),
             key: 'dates',
             render: (_: unknown, s: ServiceItem) =>
@@ -173,7 +204,12 @@ export function ProjectServicesTab({ project }: { project: Project }) {
                       {t('services.start')}
                     </Button>
                   )}
-                  {onSite && s.status === 'in_progress' && (
+                  {onSite && s.status === 'in_progress' && closingTypeOf(s) && (
+                    <Button size="small" type="primary" onClick={() => startComplete(s, closingTypeOf(s)!)}>
+                      {t('services.complete')}
+                    </Button>
+                  )}
+                  {onSite && s.status === 'in_progress' && !closingTypeOf(s) && (
                     <Popconfirm title={t('services.completeConfirm')} onConfirm={() => run(s, 'complete')}>
                       <Button size="small" type="primary">
                         {t('services.complete')}
@@ -212,6 +248,7 @@ export function ProjectServicesTab({ project }: { project: Project }) {
         type={editing.type}
         service={editing.service}
         editable={editing.service ? canEdit(editing.service) : canCreate}
+        canAssign={onSite}
         onClose={() => setEditing({ open: false })}
       />
 
@@ -240,6 +277,42 @@ export function ProjectServicesTab({ project }: { project: Project }) {
           <Form.Item name="reason" label={t('services.cancelReason')} rules={[{ required: true, message: t('validation.required') }]}>
             <Input.TextArea rows={3} />
           </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={!!completing}
+        title={t('services.completeTitle', { code: completing?.service.code })}
+        onCancel={() => setCompleting(undefined)}
+        onOk={() => completeForm.submit()}
+        okText={t('services.complete')}
+        cancelText={t('common.cancel')}
+        confirmLoading={action.isPending}
+        destroyOnHidden
+      >
+        <Form
+          form={completeForm}
+          layout="vertical"
+          requiredMark="optional"
+          onFinish={(values) => {
+            if (!completing) return
+            const closingValues = Object.fromEntries(
+              Object.entries(values.closingValues ?? {}).filter(([, v]) => v !== undefined && v !== null && v !== ''),
+            )
+            action.mutate(
+              { id: completing.service.id, action: 'complete', closingValues },
+              {
+                onSuccess: () => setCompleting(undefined),
+                onError: (e) => {
+                  if (!applyFieldErrors(completeForm, e, t)) message.error(errorMessage(e, t))
+                },
+              },
+            )
+          }}
+        >
+          {completing?.type.closingFields.map((field) => (
+            <AttributeField key={field.key} field={field} language={lang} namePrefix="closingValues" />
+          ))}
         </Form>
       </Modal>
     </>

@@ -329,6 +329,7 @@
         "uk": "Шиномонтаж",
         "pt": "Serviço de pneus"
       },
+      "taskType": "perform_tire_service",
       "fields": [
         {
           "key": "plate",
@@ -396,6 +397,57 @@
     }
   ],
   "taskTypes": [
+    {
+      "code": "perform_tire_service",
+      "name": {
+        "en": "Perform tire service",
+        "uk": "Виконати шиномонтаж",
+        "pt": "Executar serviço de pneus"
+      },
+      "statuses": [
+        {
+          "code": "new",
+          "label": {
+            "en": "New",
+            "uk": "Нова",
+            "pt": "Nova"
+          },
+          "category": "new",
+          "color": "default"
+        },
+        {
+          "code": "in_progress",
+          "label": {
+            "en": "In progress",
+            "uk": "В роботі",
+            "pt": "Em andamento"
+          },
+          "category": "active",
+          "color": "blue"
+        },
+        {
+          "code": "done",
+          "label": {
+            "en": "Done",
+            "uk": "Виконано",
+            "pt": "Concluída"
+          },
+          "category": "done",
+          "color": "green"
+        },
+        {
+          "code": "cancelled",
+          "label": {
+            "en": "Cancelled",
+            "uk": "Скасовано",
+            "pt": "Cancelada"
+          },
+          "category": "cancelled"
+        }
+      ],
+      "subjectKind": "service",
+      "syncService": true
+    },
     {
       "code": "general",
       "name": {

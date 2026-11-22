@@ -314,10 +314,11 @@
     {
       "code": "furniture_order",
       "name": {
-        "en": "Order",
-        "uk": "Замовлення",
-        "pt": "Pedido"
+        "en": "Furniture order",
+        "uk": "Замовлення меблів",
+        "pt": "Pedido de móveis"
       },
+      "taskType": "order",
       "fields": [
         {
           "key": "address",
@@ -372,9 +373,9 @@
     {
       "code": "order",
       "name": {
-        "en": "Order",
-        "uk": "Замовлення",
-        "pt": "Pedido"
+        "en": "Fulfil furniture order",
+        "uk": "Виконати замовлення меблів",
+        "pt": "Executar pedido de móveis"
       },
       "statuses": [
         {
@@ -421,7 +422,32 @@
       "closingFields": [],
       "subjectKind": "service",
       "syncService": true,
-      "childrenBlockClose": true
+      "childrenBlockClose": true,
+      "rules": [
+        {
+          "trigger": "created",
+          "action": "create_subtask",
+          "taskType": "measurement",
+          "assignTo": "supervisor",
+          "dueInDays": 3
+        },
+        {
+          "trigger": "created",
+          "action": "create_subtask",
+          "taskType": "manufacturing",
+          "assignTo": "supervisor",
+          "dueInDays": 14,
+          "blockedBy": 0
+        },
+        {
+          "trigger": "created",
+          "action": "create_subtask",
+          "taskType": "installation",
+          "assignTo": "supervisor",
+          "dueInDays": 21,
+          "blockedBy": 1
+        }
+      ]
     },
     {
       "code": "measurement",

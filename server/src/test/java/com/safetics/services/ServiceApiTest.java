@@ -101,9 +101,13 @@ class ServiceApiTest extends AbstractIntegrationTest {
         Response started = admin.post("/api/v1/services/" + id + "/start", Map.of());
         assertThat(started.str("status")).isEqualTo("in_progress");
         assertThat(started.str("actualStart")).isNotNull();
-        Response completed = admin.post("/api/v1/services/" + id + "/complete", Map.of());
+        assertThat(admin.post("/api/v1/services/" + id + "/complete", Map.of()).field("closingValues.actualDepth"))
+                .as("форма закриття головної задачі").isEqualTo("required");
+        Response completed = admin.post("/api/v1/services/" + id + "/complete",
+                Map.of("closingValues", Map.of("actualDepth", 298, "completionReason", "target_depth")));
         assertThat(completed.str("status")).isEqualTo("completed");
         assertThat(completed.str("actualEnd")).isNotNull();
+        assertThat(completed.str("attributes.actualDepth")).isEqualTo("298");
 
         Map<String, Object> update = hole("BH-1", 320);
         update.put("version", completed.at("version"));

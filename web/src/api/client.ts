@@ -1,3 +1,4 @@
+import i18next from 'i18next'
 import createClient from 'openapi-fetch'
 import type { components, paths } from './schema'
 
@@ -55,6 +56,14 @@ export const api = createClient<paths>({
   baseUrl: window.location.origin,
   credentials: 'include',
   fetch: fetchWithRefresh,
+})
+
+// Мова інтерфейсу — серверу (назви, які він складає сам: «Монтаж: 2026-014»)
+api.use({
+  onRequest({ request }) {
+    if (i18next.language) request.headers.set('Accept-Language', i18next.language)
+    return request
+  },
 })
 
 /** Повертає дані або кидає ApiError зі статусом, кодом і помилками полів ({"error": "...", "fields": {...}}). */

@@ -1,9 +1,10 @@
 import { PlusOutlined } from '@ant-design/icons'
-import { App, Button, Divider, Drawer, Flex, Form, Input, List, Tag } from 'antd'
+import { App, Button, Divider, Drawer, Flex, Form, Input, List, Select, Tag } from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { applyFieldErrors, errorMessage } from '../../api/formErrors'
 import { type ServiceType, useArchiveServiceType, useSaveServiceType, useServiceTypes } from '../../api/services'
+import { useTaskTypes } from '../../api/tasks'
 import { FieldsEditor } from '../../components/FieldsEditor'
 import { type FieldFormValues, fieldsFromForm, fieldsToForm } from '../../components/fieldsForm'
 import { localized } from '../../i18n/localized'
@@ -12,15 +13,17 @@ interface FormValues {
   code: string
   name: string
   fields: FieldFormValues[]
+  taskTypeId?: string
 }
 
-/** Типи послуг компанії (свердловина, замовлення…): назва й поля. catalog.manage. */
+/** Типи послуг компанії (свердловина, замовлення…): назва, поля й тип головної задачі. catalog.manage. */
 export function ServiceTypesDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t, i18n } = useTranslation()
   const { message } = App.useApp()
   const types = useServiceTypes(true)
   const save = useSaveServiceType()
   const archive = useArchiveServiceType()
+  const taskTypes = useTaskTypes(false, open)
   const [form] = Form.useForm<FormValues>()
   const [editing, setEditing] = useState<{ type?: ServiceType } | null>(null)
   const lang = i18n.language
@@ -28,7 +31,9 @@ export function ServiceTypesDrawer({ open, onClose }: { open: boolean; onClose: 
   const startEdit = (type?: ServiceType) => {
     form.resetFields()
     form.setFieldsValue(
-      type ? { code: type.code, name: localized(type.name, lang), fields: fieldsToForm(type.fields, lang) } : { fields: [] },
+      type
+        ? { code: type.code, name: localized(type.name, lang), fields: fieldsToForm(type.fields, lang), taskTypeId: type.taskTypeId }
+        : { fields: [] },
     )
     setEditing({ type })
   }
@@ -41,6 +46,7 @@ export function ServiceTypesDrawer({ open, onClose }: { open: boolean; onClose: 
           code: values.code,
           name: { ...(editing?.type?.name ?? {}), [lang]: values.name },
           fields: fieldsFromForm(values.fields, lang),
+          taskTypeId: values.taskTypeId,
         },
       },
       {
@@ -122,6 +128,16 @@ export function ServiceTypesDrawer({ open, onClose }: { open: boolean; onClose: 
               <Input disabled={!!editing.type} style={{ width: 180 }} />
             </Form.Item>
           </Flex>
+          <Form.Item name="taskTypeId" label={t('serviceTypes.taskType')} extra={t('serviceTypes.taskTypeHint')}>
+            <Select
+              allowClear={!editing.type}
+              placeholder={t('serviceTypes.taskTypeAuto')}
+              loading={taskTypes.isPending}
+              options={(taskTypes.data ?? [])
+                .filter((tt) => tt.subjectKind === 'service' && tt.syncService)
+                .map((tt) => ({ value: tt.id, label: localized(tt.name, lang) }))}
+            />
+          </Form.Item>
           <Divider titlePlacement="start">{t('assetTypes.fields')}</Divider>
           <FieldsEditor form={form} />
         </Form>

@@ -225,7 +225,7 @@ class TaskApiTest extends AbstractIntegrationTest {
         Response service = admin.get("/api/v1/services/" + serviceId);
         assertThat(service.str("status")).isEqualTo("completed");
         assertThat(service.str("attributes.actualDepth")).as("фактична глибина — у паспорт свердловини").isEqualTo("312.5");
-        assertThat(admin.get(tasks(projectA) + "?serviceId=" + serviceId).list()).hasSize(1);
+        assertThat(admin.get(tasks(projectA) + "?serviceId=" + serviceId).list()).as("головна + окрема").hasSize(2);
     }
 
     private String tasks(String projectId) {

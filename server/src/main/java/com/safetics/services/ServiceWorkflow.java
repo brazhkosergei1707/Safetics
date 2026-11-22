@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.safetics.assets.AttributeValidator;
 import com.safetics.core.audit.AuditService;
@@ -36,6 +37,7 @@ import com.safetics.services.ServiceDtos.ServiceCreateRequest;
 import com.safetics.services.ServiceDtos.ServiceTypeView;
 import com.safetics.services.ServiceDtos.ServiceUpdateRequest;
 import com.safetics.services.ServiceDtos.ServiceView;
+import com.safetics.tasks.TaskWorkflow;
 
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
@@ -51,6 +53,11 @@ import tools.jackson.databind.json.JsonMapper;
  *   <li>планувальник (service.plan без project.manage — представник і менеджер замовника) —
  *       додавати, змінювати й скасовувати лише заплановані.</li>
  * </ul>
+ *
+ * <p>У кожної послуги є головна задача (тип — з типу послуги): створюється разом із послугою з тими
+ * самими датами й відповідальним (за замовчуванням — супервайзер проєкту). Статус послуги веде
+ * головна задача: «почати» / «завершити» / «скасувати» / «повернути» послугу — це перехід головної
+ * задачі, а синхронізація задачі оновлює послугу. Без головної задачі послуги не буває.
  */
 @Service
 public class ServiceWorkflow {
@@ -62,11 +69,14 @@ public class ServiceWorkflow {
             select s.id, s.project_id, s.service_type_id, t.code as type_code, s.code, s.name,
                    coalesce(s.customer_id, p.customer_id) as customer_id, c.name as customer_name,
                    s.status, s.attributes, s.planned_start, s.planned_end, s.actual_start, s.actual_end,
-                   s.cancel_reason, s.version, s.created_at
+                   s.cancel_reason, mt.id as main_task_id, mt.number as main_task_number, mt.task_type_id as main_task_type_id,
+                   mt.assignee_id, au.full_name as assignee_name, s.version, s.created_at
             from service s
                      join service_type t on t.id = s.service_type_id
                      join project p on p.id = s.project_id
                      left join customer c on c.id = coalesce(s.customer_id, p.customer_id)
+                     left join task mt on mt.id = s.main_task_id
+                     left join app_user au on au.id = mt.assignee_id
             """;
 
     /** Що може поточний користувач на цьому проєкті. */
@@ -86,16 +96,18 @@ public class ServiceWorkflow {
     private final ProjectRoles roles;
     private final ServiceTypeService types;
     private final CustomerService customers;
+    private final TaskWorkflow tasks;
     private final AuditService audit;
 
     public ServiceWorkflow(JdbcClient db, JsonMapper json, ProjectService projects, ProjectRoles roles,
-                           ServiceTypeService types, CustomerService customers, AuditService audit) {
+                           ServiceTypeService types, CustomerService customers, TaskWorkflow tasks, AuditService audit) {
         this.db = db;
         this.json = json;
         this.projects = projects;
         this.roles = roles;
         this.types = types;
         this.customers = customers;
+        this.tasks = tasks;
         this.audit = audit;
     }
 
@@ -130,6 +142,7 @@ public class ServiceWorkflow {
 
     // ---------------------------------------------------------------- зміни
 
+    @Transactional
     public ServiceView create(UUID projectId, ServiceCreateRequest request) {
         ProjectView project = openProject(projectId);
         Actor actor = actor(project);
@@ -140,6 +153,9 @@ public class ServiceWorkflow {
                 .orElseThrow(() -> ApiException.validation("typeId", "not_found"));
         if (type.archived()) {
             throw ApiException.validation("typeId", "archived");
+        }
+        if (type.taskTypeId() == null) {
+            throw ApiException.validation("typeId", "no_task_type");
         }
         UUID customerId = customer(project, request.customerId(), null);
         checkDates(request.plannedStart(), request.plannedEnd());
@@ -156,9 +172,15 @@ public class ServiceWorkflow {
                         request.plannedStart(), request.plannedEnd(), currentUserId())
                 .query(UUID.class).single();
         audit.record("service", id, "create", Map.of("projectId", projectId, "type", type.code(), "code", request.code().trim()));
+        // Замовник відповідального не обирає — супервайзер проєкту
+        UUID assignee = actor.worksOnSite() ? request.assigneeId() : null;
+        UUID mainTask = tasks.createMainTask(project, type.taskTypeId(), id, request.code().trim(), assignee,
+                request.plannedStart(), request.plannedEnd());
+        db.sql("update service set main_task_id = ? where id = ?").params(mainTask, id).update();
         return get(id);
     }
 
+    @Transactional
     public ServiceView update(UUID id, ServiceUpdateRequest request) {
         ServiceView existing = get(id);
         ProjectView project = openProject(existing.projectId());
@@ -190,6 +212,11 @@ public class ServiceWorkflow {
         if (updated == 0) {
             throw ApiException.conflict("stale_version");
         }
+        UUID mainTask = mainTaskId(id);
+        if (mainTask != null) {
+            tasks.syncMainTask(mainTask, request.plannedStart(), request.plannedEnd(), actor.worksOnSite(),
+                    request.assigneeId());
+        }
         ServiceView saved = get(id);
         Map<String, Object> changes = changes(existing, saved);
         if (!changes.isEmpty()) {
@@ -198,36 +225,50 @@ public class ServiceWorkflow {
         return saved;
     }
 
-    /** Заплановано → в роботі. Фактичний початок — зараз. */
+    /** Заплановано → в роботі: головна задача — в роботу. Фактичний початок — зараз. */
+    @Transactional
     public ServiceView start(UUID id) {
         ServiceView existing = get(id);
         ProjectView project = openProject(existing.projectId());
         if (!actor(project).worksOnSite()) {
             throw forbidden();
         }
-        return transition(existing, "planned", "in_progress", "actual_start = now()", null);
+        requireStatus(existing, "planned");
+        return viaMainTask(existing, "active", null, "in_progress", "actual_start = now()", null);
     }
 
-    /** В роботі → завершено. Фактичний кінець — зараз. */
-    public ServiceView complete(UUID id) {
+    /**
+     * В роботі → завершено: головна задача — виконано (closingValues — її форма закриття; поля з
+     * ключами полів послуги записуються в послугу). Фактичний кінець — зараз.
+     */
+    @Transactional
+    public ServiceView complete(UUID id, Map<String, Object> closingValues) {
         ServiceView existing = get(id);
         ProjectView project = openProject(existing.projectId());
         if (!actor(project).worksOnSite()) {
             throw forbidden();
         }
-        return transition(existing, "in_progress", "completed", "actual_end = now()", null);
+        requireStatus(existing, "in_progress");
+        return viaMainTask(existing, "done", closingValues, "completed", "actual_end = now()", null);
     }
 
-    /** Заплановано / в роботі → скасовано (з причиною). Планувальник — лише заплановані. */
+    /** Заплановано / в роботі → скасовано (з причиною), і головна задача теж. Планувальник — лише заплановані. */
+    @Transactional
     public ServiceView cancel(UUID id, String reason) {
         ServiceView existing = get(id);
         ProjectView project = openProject(existing.projectId());
         Actor actor = actor(project);
         requireEditable(existing, actor);
-        return transition(existing, existing.status(), "cancelled", "cancel_reason = ?", reason.trim());
+        transition(existing, existing.status(), "cancelled", "cancel_reason = ?", reason.trim());
+        UUID mainTask = mainTaskId(id);
+        if (mainTask != null) {
+            tasks.moveMainTask(mainTask, "cancelled", null);
+        }
+        return get(id);
     }
 
-    /** Лише менеджер: завершена → в роботі, скасована → заплановано. */
+    /** Лише менеджер: завершена → в роботі, скасована → заплановано; головна задача повертається теж. */
+    @Transactional
     public ServiceView reopen(UUID id) {
         ServiceView existing = get(id);
         ProjectView project = openProject(existing.projectId());
@@ -235,10 +276,38 @@ public class ServiceWorkflow {
             throw forbidden();
         }
         return switch (existing.status()) {
-            case "completed" -> transition(existing, "completed", "in_progress", "actual_end = null", null);
-            case "cancelled" -> transition(existing, "cancelled", "planned", "cancel_reason = null", null);
+            case "completed" -> viaMainTask(existing, "active", null, "in_progress", "actual_end = null", null);
+            case "cancelled" -> viaMainTask(existing, "new", null, "planned", "cancel_reason = null", null);
             default -> throw ApiException.conflict("invalid_transition");
         };
+    }
+
+    /**
+     * Перехід головної задачі в категорію; синхронізація задачі оновлює послугу. Якщо послуга після
+     * цього ще не в потрібному статусі (задача вже була в категорії, тип без синхронізації) — напряму.
+     */
+    private ServiceView viaMainTask(ServiceView existing, String taskCategory, Map<String, Object> closingValues,
+                                    String to, String extraSet, String extraParam) {
+        UUID mainTask = mainTaskId(existing.id());
+        if (mainTask != null) {
+            tasks.moveMainTask(mainTask, taskCategory, closingValues);
+        }
+        String status = db.sql("select status from service where id = ?").param(existing.id()).query(String.class).single();
+        if (!to.equals(status)) {
+            return transition(existing, existing.status(), to, extraSet, extraParam);
+        }
+        return get(existing.id());
+    }
+
+    private UUID mainTaskId(UUID serviceId) {
+        return db.sql("select main_task_id from service where id = ?").param(serviceId).query(UUID.class).optional()
+                .orElse(null);
+    }
+
+    private static void requireStatus(ServiceView service, String status) {
+        if (!status.equals(service.status())) {
+            throw ApiException.conflict("invalid_transition");
+        }
     }
 
     // ---------------------------------------------------------------- правила
@@ -393,6 +462,11 @@ public class ServiceWorkflow {
                 rs.getObject("actual_start", OffsetDateTime.class),
                 rs.getObject("actual_end", OffsetDateTime.class),
                 rs.getString("cancel_reason"),
+                rs.getObject("main_task_id", UUID.class),
+                rs.getObject("main_task_number") == null ? null : rs.getLong("main_task_number"),
+                rs.getObject("main_task_type_id", UUID.class),
+                rs.getObject("assignee_id", UUID.class),
+                rs.getString("assignee_name"),
                 rs.getInt("version"),
                 rs.getObject("created_at", OffsetDateTime.class));
     }

@@ -50,12 +50,14 @@ public class AuthService {
     private final JwtEncoder jwtEncoder;
     private final SecurityProperties properties;
     private final Clock clock;
+    private final tools.jackson.databind.json.JsonMapper json;
 
     /** Хеш для порівняння, коли користувача не знайдено: відповідь займає стільки ж часу. */
     private final String dummyHash;
 
     public AuthService(JdbcClient db, PasswordEncoder passwordEncoder, JwtEncoder jwtEncoder,
-                       SecurityProperties properties, Clock clock) {
+                       SecurityProperties properties, Clock clock, tools.jackson.databind.json.JsonMapper json) {
+        this.json = json;
         this.db = db;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
@@ -256,7 +258,24 @@ public class AuthService {
                 current,
                 companies,
                 grantedAuthorities(user.id(), current == null ? null : current.id()),
-                isPlatformAdmin(user.id()));
+                isPlatformAdmin(user.id()),
+                current == null ? null : positionOf(user.id(), current.id()));
+    }
+
+    /** Посада людини в компанії (з її запису виконавця) — назва за мовами, або null. */
+    private java.util.Map<String, String> positionOf(UUID userId, UUID companyId) {
+        return TenantContext.callAs(companyId, userId, () -> db.sql("""
+                        select pos.name
+                        from personnel p join position pos on pos.id = p.position_id
+                        where p.user_id = ? and p.archived_at is null
+                        limit 1
+                        """)
+                .param(userId)
+                .query(String.class)
+                .optional()
+                .map(name -> json.readValue(name, new tools.jackson.core.type.TypeReference<java.util.Map<String, String>>() {
+                }))
+                .orElse(null));
     }
 
     private static boolean isMember(List<CompanyView> companies, UUID companyId) {

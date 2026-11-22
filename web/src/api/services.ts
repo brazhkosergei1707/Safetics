@@ -27,8 +27,21 @@ function useInvalidate(key: string) {
   return () => client.invalidateQueries({ queryKey: [key] })
 }
 
+/** Послуга змінює й головну задачу — оновлюємо обидва списки. */
+function useInvalidateServices() {
+  const client = useQueryClient()
+  return () => {
+    void client.invalidateQueries({ queryKey: ['services'] })
+    void client.invalidateQueries({ queryKey: ['tasks'] })
+  }
+}
+
 export function useSaveServiceType() {
-  const invalidate = useInvalidate('service-types')
+  const client = useQueryClient()
+  const invalidate = () => {
+    void client.invalidateQueries({ queryKey: ['service-types'] })
+    void client.invalidateQueries({ queryKey: ['task-types'] })
+  }
   return useMutation({
     mutationFn: ({ id, body }: { id?: string; body: ServiceTypeRequest }) =>
       id
@@ -50,7 +63,7 @@ export function useArchiveServiceType() {
 }
 
 export function useCreateService(projectId: string) {
-  const invalidate = useInvalidate('services')
+  const invalidate = useInvalidateServices()
   return useMutation({
     mutationFn: (body: Schemas['ServiceCreateRequest']) =>
       unwrap(api.POST('/api/v1/projects/{projectId}/services', { params: { path: { projectId } }, body })),
@@ -59,7 +72,7 @@ export function useCreateService(projectId: string) {
 }
 
 export function useUpdateService() {
-  const invalidate = useInvalidate('services')
+  const invalidate = useInvalidateServices()
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: Schemas['ServiceUpdateRequest'] }) =>
       unwrap(api.PUT('/api/v1/services/{id}', { params: { path: { id } }, body })),
@@ -70,15 +83,23 @@ export function useUpdateService() {
 export type ServiceAction = 'start' | 'complete' | 'reopen'
 
 export function useServiceAction() {
-  const invalidate = useInvalidate('services')
+  const invalidate = useInvalidateServices()
   return useMutation({
-    mutationFn: ({ id, action }: { id: string; action: ServiceAction }) => {
+    mutationFn: ({
+      id,
+      action,
+      closingValues,
+    }: {
+      id: string
+      action: ServiceAction
+      closingValues?: Record<string, unknown>
+    }) => {
       const options = { params: { path: { id } } }
       switch (action) {
         case 'start':
           return unwrap(api.POST('/api/v1/services/{id}/start', options))
         case 'complete':
-          return unwrap(api.POST('/api/v1/services/{id}/complete', options))
+          return unwrap(api.POST('/api/v1/services/{id}/complete', { ...options, body: { closingValues } }))
         default:
           return unwrap(api.POST('/api/v1/services/{id}/reopen', options))
       }
@@ -88,7 +109,7 @@ export function useServiceAction() {
 }
 
 export function useCancelService() {
-  const invalidate = useInvalidate('services')
+  const invalidate = useInvalidateServices()
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       unwrap(api.POST('/api/v1/services/{id}/cancel', { params: { path: { id } }, body: { reason } })),

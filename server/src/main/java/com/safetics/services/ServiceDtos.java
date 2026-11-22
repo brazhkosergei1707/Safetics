@@ -25,20 +25,27 @@ public final class ServiceDtos {
             @NotNull String code,
             @NotNull Map<String, String> name,
             @NotNull List<FieldDefinition> fields,
+            @NotNull UUID taskTypeId,
             String templateKey,
             @NotNull boolean archived) {
     }
 
-    /** code після створення не змінюється. */
+    /**
+     * code після створення не змінюється. taskTypeId — тип головної задачі (предмет — послуга); порожній
+     * при створенні — створюється новий тип «Виконати …», при зміні — лишається поточний.
+     */
     public record ServiceTypeRequest(
             @NotBlank String code,
             @NotNull Map<String, String> name,
-            @NotNull @Valid List<FieldDefinition> fields) {
+            @NotNull @Valid List<FieldDefinition> fields,
+            UUID taskTypeId) {
     }
 
     /**
      * status: planned — заплановано, in_progress — в роботі, completed — завершено, cancelled — скасовано.
      * customerId / customerName — замовник послуги: власний (постійний проєкт) або замовник проєкту.
+     * mainTask* і assignee* — головна задача послуги та її виконавець (відповідальний); порожні для
+     * того, хто задач не бачить (портал замовника).
      */
     public record ServiceView(
             @NotNull UUID id,
@@ -56,11 +63,19 @@ public final class ServiceDtos {
             OffsetDateTime actualStart,
             OffsetDateTime actualEnd,
             String cancelReason,
+            UUID mainTaskId,
+            Long mainTaskNumber,
+            UUID mainTaskTypeId,
+            UUID assigneeId,
+            String assigneeName,
             @NotNull int version,
             @NotNull OffsetDateTime createdAt) {
     }
 
-    /** customerId — лише для проєкту без замовника. */
+    /**
+     * customerId — лише для проєкту без замовника. assigneeId — відповідальний (виконавець головної
+     * задачі); порожній — супервайзер проєкту. Замовник відповідального не обирає.
+     */
     public record ServiceCreateRequest(
             @NotNull UUID typeId,
             @NotBlank String code,
@@ -68,9 +83,11 @@ public final class ServiceDtos {
             UUID customerId,
             @NotNull Map<String, Object> attributes,
             LocalDate plannedStart,
-            LocalDate plannedEnd) {
+            LocalDate plannedEnd,
+            UUID assigneeId) {
     }
 
+    /** assigneeId змінює виконавця головної задачі (поки вона відкрита); замовник його не змінює. */
     public record ServiceUpdateRequest(
             @NotBlank String code,
             String name,
@@ -78,7 +95,12 @@ public final class ServiceDtos {
             @NotNull Map<String, Object> attributes,
             LocalDate plannedStart,
             LocalDate plannedEnd,
+            UUID assigneeId,
             @NotNull Integer version) {
+    }
+
+    /** Значення форми закриття головної задачі (фактична глибина тощо). */
+    public record CompleteServiceRequest(Map<String, Object> closingValues) {
     }
 
     public record CancelServiceRequest(@NotBlank String reason) {

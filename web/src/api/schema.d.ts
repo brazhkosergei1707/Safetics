@@ -1341,6 +1341,8 @@ export interface components {
             /** Format: uuid */
             assigneeId?: string;
             assigneeName?: string;
+            /** Format: uuid */
+            authorId?: string;
             authorName?: string;
             /** Format: uuid */
             serviceId?: string;
@@ -1392,6 +1394,22 @@ export interface components {
             max?: number;
             options?: string[];
         };
+        TaskRule: {
+            /** @enum {string} */
+            trigger: "created" | "status_category";
+            /** @enum {string} */
+            category?: "active" | "done" | "cancelled";
+            /** @enum {string} */
+            action?: "create_subtask";
+            taskType: string;
+            title?: string;
+            /** @enum {string} */
+            assignTo?: "supervisor" | "storekeeper" | "parent_assignee" | "author" | "none";
+            /** Format: int32 */
+            dueInDays?: number;
+            /** Format: int32 */
+            blockedBy?: number;
+        };
         TaskStatusDefinition: {
             code: string;
             label: {
@@ -1413,6 +1431,7 @@ export interface components {
             subjectKind?: "none" | "service" | "asset";
             syncService?: boolean;
             childrenBlockClose?: boolean;
+            rules?: components["schemas"]["TaskRule"][];
         };
         TaskTypeView: {
             /** Format: uuid */
@@ -1428,6 +1447,7 @@ export interface components {
             subjectKind: "none" | "service" | "asset";
             syncService: boolean;
             childrenBlockClose: boolean;
+            rules: components["schemas"]["TaskRule"][];
             templateKey?: string;
             archived: boolean;
         };
@@ -1443,6 +1463,8 @@ export interface components {
             plannedStart?: string;
             /** Format: date */
             plannedEnd?: string;
+            /** Format: uuid */
+            assigneeId?: string;
             /** Format: int32 */
             version: number;
         };
@@ -1473,6 +1495,15 @@ export interface components {
             /** Format: date-time */
             actualEnd?: string;
             cancelReason?: string;
+            /** Format: uuid */
+            mainTaskId?: string;
+            /** Format: int64 */
+            mainTaskNumber?: number;
+            /** Format: uuid */
+            mainTaskTypeId?: string;
+            /** Format: uuid */
+            assigneeId?: string;
+            assigneeName?: string;
             /** Format: int32 */
             version: number;
             /** Format: date-time */
@@ -1484,6 +1515,8 @@ export interface components {
                 [key: string]: string;
             };
             fields: components["schemas"]["FieldDefinition"][];
+            /** Format: uuid */
+            taskTypeId?: string;
         };
         ServiceTypeView: {
             /** Format: uuid */
@@ -1493,6 +1526,8 @@ export interface components {
                 [key: string]: string;
             };
             fields: components["schemas"]["FieldDefinition"][];
+            /** Format: uuid */
+            taskTypeId: string;
             templateKey?: string;
             archived: boolean;
         };
@@ -1803,6 +1838,11 @@ export interface components {
             status: string;
             statusCategory: string;
         };
+        CompleteServiceRequest: {
+            closingValues?: {
+                [key: string]: unknown;
+            };
+        };
         CancelServiceRequest: {
             reason: string;
         };
@@ -1856,6 +1896,8 @@ export interface components {
             plannedStart?: string;
             /** Format: date */
             plannedEnd?: string;
+            /** Format: uuid */
+            assigneeId?: string;
         };
         ShiftScheduleRequest: {
             /** Format: date */
@@ -1983,6 +2025,9 @@ export interface components {
             companies: components["schemas"]["CompanyView"][];
             permissions: string[];
             platformAdmin: boolean;
+            position?: {
+                [key: string]: string;
+            };
         };
         TokenResponse: {
             accessToken: string;
@@ -2964,7 +3009,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CompleteServiceRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

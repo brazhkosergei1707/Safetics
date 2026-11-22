@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.safetics.services.ServiceDtos.CancelServiceRequest;
+import com.safetics.services.ServiceDtos.CompleteServiceRequest;
 import com.safetics.services.ServiceDtos.ServiceCreateRequest;
 import com.safetics.services.ServiceDtos.ServiceTypeRequest;
 import com.safetics.services.ServiceDtos.ServiceTypeView;
@@ -108,8 +109,9 @@ public class ServiceController {
     }
 
     @PostMapping("/services/{id}/complete")
-    public ServiceView complete(@PathVariable("id") UUID id) {
-        return services.complete(id);
+    public ServiceView complete(@PathVariable("id") UUID id,
+                                @RequestBody(required = false) CompleteServiceRequest request) {
+        return services.complete(id, request == null ? null : request.closingValues());
     }
 
     @PostMapping("/services/{id}/cancel")

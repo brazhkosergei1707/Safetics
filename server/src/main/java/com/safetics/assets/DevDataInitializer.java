@@ -131,14 +131,17 @@ class DevDataInitializer implements ApplicationRunner {
         log.info("Created demo crew and assignments for project VALE-CRJ");
     }
 
-    /** Свердловини на VALE-CRJ у різних статусах. Статуси — напряму, бо в dev немає користувача з токеном. */
+    /**
+     * Свердловини на VALE-CRJ у різних статусах, кожна з головною задачею (Pedro). Напряму SQL, бо в dev
+     * немає користувача з токеном для перевірки прав.
+     */
     private void seedServices() {
         Long existing = db.sql("select count(*) from service where project_id = ?").param(VALE_PROJECT).query(Long.class).single();
         Long project = db.sql("select count(*) from project where id = ?").param(VALE_PROJECT).query(Long.class).single();
         if (existing > 0 || project == 0) {
             return;
         }
-        UUID holeType = serviceTypes.findByCode("drill_hole").orElseThrow().id();
+        var holeType = serviceTypes.findByCode("drill_hole").orElseThrow();
         Object[][] holes = {
                 {"BH-101", 350, 300.5, "HQ", "completed"},
                 {"BH-102", 400, 182.0, "HQ", "in_progress"},
@@ -160,39 +163,52 @@ class DevDataInitializer implements ApplicationRunner {
                             values (?, ?, ?, ?, ?, cast(? as jsonb), ?, ?, ?)
                             returning id
                             """)
-                    .params(DEMO_DRILLING, VALE_PROJECT, holeType, hole[0], hole[4],
+                    .params(DEMO_DRILLING, VALE_PROJECT, holeType.id(), hole[0], hole[4],
                             JsonMapper.builder().build().writeValueAsString(attributes),
                             LocalDate.of(2026, 10, 1),
                             "planned".equals(hole[4]) ? null : java.time.OffsetDateTime.parse("2026-10-05T07:00:00-03:00"),
                             "completed".equals(hole[4]) ? java.time.OffsetDateTime.parse("2026-10-20T19:00:00-03:00") : null)
                     .query(UUID.class).single();
-            log.debug("Demo service {}", id);
+            String category = switch ((String) hole[4]) {
+                case "completed" -> "done";
+                case "in_progress" -> "active";
+                default -> "new";
+            };
+            String status = switch (category) {
+                case "done" -> "done";
+                case "active" -> "in_progress";
+                default -> "new";
+            };
+            String typeName = taskTypes.get(holeType.taskTypeId()).name().getOrDefault("uk", "Буріння");
+            UUID task = demoTask(holeType.taskTypeId(), typeName + ": " + hole[0], status, category, DEMO_SUPERVISOR_USER, id,
+                    null, "{}");
+            db.sql("update service set main_task_id = ? where id = ?").params(task, id).update();
         }
         log.info("Created demo drill holes for project VALE-CRJ");
     }
 
-    /**
-     * Задачі на VALE-CRJ: буріння BH-102 (в роботі, Pedro), буріння BH-103 (нова, блокується BH-102),
-     * сервіс RIG-01. Напряму SQL, бо в dev немає користувача з токеном для перевірки прав.
-     */
+    /** Задачі на VALE-CRJ: буріння BH-103 блокується бурінням BH-102; сервіс RIG-01. */
     private void seedTasks() {
-        Long existing = db.sql("select count(*) from task where project_id = ?").param(VALE_PROJECT).query(Long.class).single();
+        Long existing = db.sql("select count(*) from task where project_id = ? and service_id is null")
+                .param(VALE_PROJECT).query(Long.class).single();
         Long services = db.sql("select count(*) from service where project_id = ?").param(VALE_PROJECT).query(Long.class).single();
         if (existing > 0 || services == 0) {
             return;
         }
-        UUID drilling = taskTypes.findByCode("drilling").orElseThrow().id();
         UUID service = taskTypes.findByCode("service").orElseThrow().id();
-        UUID bh102 = db.sql("select id from service where project_id = ? and code = 'BH-102'").param(VALE_PROJECT).query(UUID.class).single();
-        UUID bh103 = db.sql("select id from service where project_id = ? and code = 'BH-103'").param(VALE_PROJECT).query(UUID.class).single();
         UUID rig = db.sql("select id from asset where code = 'RIG-01'").query(UUID.class).single();
-
-        UUID t1 = demoTask(drilling, "Буріння BH-102", "in_progress", "active", DEMO_SUPERVISOR_USER, bh102, null, "{}");
-        UUID t2 = demoTask(drilling, "Буріння BH-103", "new", "new", DEMO_SUPERVISOR_USER, bh103, null, "{}");
         demoTask(service, "RIG-01: замінити шланг високого тиску", "new", "new", DEMO_SUPERVISOR_USER, null, rig,
                 "{\"criticality\": \"medium\"}");
-        db.sql("insert into task_link (company_id, from_task, to_task, kind) values (?, ?, ?, 'blocks')")
-                .params(DEMO_DRILLING, t1, t2).update();
+        List<UUID> drilling = db.sql("""
+                        select s.main_task_id from service s
+                        where s.project_id = ? and s.code in ('BH-102', 'BH-103') and s.main_task_id is not null
+                        order by s.code
+                        """)
+                .param(VALE_PROJECT).query(UUID.class).list();
+        if (drilling.size() == 2) {
+            db.sql("insert into task_link (company_id, from_task, to_task, kind) values (?, ?, ?, 'blocks') on conflict do nothing")
+                    .params(DEMO_DRILLING, drilling.get(0), drilling.get(1)).update();
+        }
         log.info("Created demo tasks for project VALE-CRJ");
     }
 
@@ -206,13 +222,15 @@ class DevDataInitializer implements ApplicationRunner {
                 .param(DEMO_DRILLING).query(Long.class).single();
         return db.sql("""
                         insert into task (company_id, project_id, task_type_id, number, title, status, status_category,
-                                          assignee_id, author_id, service_id, asset_id, attributes, actual_start)
-                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, cast(? as jsonb), ?)
+                                          assignee_id, author_id, service_id, asset_id, attributes, planned_start,
+                                          actual_start, actual_end)
+                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, cast(? as jsonb), ?, ?, ?)
                         returning id
                         """)
                 .params(DEMO_DRILLING, VALE_PROJECT, type, number, title, status, category, assignee, DEMO_ADMIN,
-                        serviceId, assetId, attributes,
-                        "active".equals(category) ? java.time.OffsetDateTime.parse("2026-10-21T07:00:00-03:00") : null)
+                        serviceId, assetId, attributes, serviceId == null ? null : LocalDate.of(2026, 10, 1),
+                        "new".equals(category) ? null : java.time.OffsetDateTime.parse("2026-10-05T07:00:00-03:00"),
+                        "done".equals(category) ? java.time.OffsetDateTime.parse("2026-10-20T19:00:00-03:00") : null)
                 .query(UUID.class).single();
     }
 

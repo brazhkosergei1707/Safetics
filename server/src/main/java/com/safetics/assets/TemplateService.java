@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.springframework.core.io.ClassPathResource;
@@ -34,10 +35,15 @@ public class TemplateService {
 
     private static final Pattern KEY = Pattern.compile("^[a-z0-9-]{1,50}$");
 
-    /** Вміст файлу шаблону. Пізніше сюди додадуться послуги, коди операцій, чек-листи. */
+    /** Вміст файлу шаблону. Пізніше сюди додадуться коди операцій, чек-листи. */
     public record TemplateDefinition(String key, Map<String, String> name, List<AssetTypeRequest> assetTypes,
-                                     List<PositionRequest> positions, List<ServiceTypeRequest> serviceTypes,
+                                     List<PositionRequest> positions, List<TemplateServiceType> serviceTypes,
                                      List<TaskTypeRequest> taskTypes) {
+    }
+
+    /** Тип послуги в шаблоні: taskType — код типу головної задачі з цього ж шаблону (порожній — «Виконати …»). */
+    public record TemplateServiceType(String code, Map<String, String> name, List<FieldDefinition> fields,
+                                      String taskType) {
     }
 
     private final JsonMapper json;
@@ -114,18 +120,22 @@ public class TemplateService {
                 installedPositions.add(position.code());
             }
         }
-        List<String> installedServiceTypes = new ArrayList<>();
-        for (ServiceTypeRequest serviceType : template.serviceTypes() == null ? List.<ServiceTypeRequest>of() : template.serviceTypes()) {
-            if (serviceTypes.findByCode(serviceType.code()).isEmpty()) {
-                serviceTypes.create(serviceType, key);
-                installedServiceTypes.add(serviceType.code());
-            }
-        }
+        // Спершу типи задач: тип послуги посилається на тип своєї головної задачі
         List<String> installedTaskTypes = new ArrayList<>();
         for (TaskTypeRequest taskType : template.taskTypes() == null ? List.<TaskTypeRequest>of() : template.taskTypes()) {
             if (taskTypes.findByCode(taskType.code()).isEmpty()) {
                 taskTypes.create(taskType, key);
                 installedTaskTypes.add(taskType.code());
+            }
+        }
+        List<String> installedServiceTypes = new ArrayList<>();
+        for (TemplateServiceType serviceType : template.serviceTypes() == null ? List.<TemplateServiceType>of() : template.serviceTypes()) {
+            if (serviceTypes.findByCode(serviceType.code()).isEmpty()) {
+                UUID taskTypeId = serviceType.taskType() == null ? null
+                        : taskTypes.findByCode(serviceType.taskType()).map(t -> t.id()).orElse(null);
+                serviceTypes.create(new ServiceTypeRequest(serviceType.code(), serviceType.name(),
+                        serviceType.fields() == null ? List.of() : serviceType.fields(), taskTypeId), key);
+                installedServiceTypes.add(serviceType.code());
             }
         }
         audit.record("template", key, "install", Map.of("installed", installed, "skipped", skipped,

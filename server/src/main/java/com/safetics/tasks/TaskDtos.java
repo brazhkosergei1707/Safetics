@@ -29,6 +29,24 @@ public final class TaskDtos {
     }
 
     /**
+     * Правило автоматизації. trigger: created — при створенні задачі, status_category — при переході
+     * в категорію category. Дія create_subtask: підзадача типу taskType (код), назва — шаблон з
+     * {type}, {title}, {number}, {service}, {asset} (порожньо — «{type}: {service або title}»),
+     * виконавець за роллю assignTo, план завершення через dueInDays днів, blockedBy — номер правила
+     * (від 0) з тим самим тригером, підзадача якого блокує цю.
+     */
+    public record TaskRule(
+            @NotBlank @Schema(allowableValues = {"created", "status_category"}) String trigger,
+            @Schema(allowableValues = {"active", "done", "cancelled"}) String category,
+            @Schema(allowableValues = {"create_subtask"}) String action,
+            @NotBlank String taskType,
+            String title,
+            @Schema(allowableValues = {"supervisor", "storekeeper", "parent_assignee", "author", "none"}) String assignTo,
+            Integer dueInDays,
+            Integer blockedBy) {
+    }
+
+    /**
      * subjectKind — предмет задачі (none / service / asset). syncService — задача керує статусом
      * послуги. childrenBlockClose — не закривати, поки є незавершені підзадачі. closingFields —
      * форма закриття.
@@ -43,6 +61,7 @@ public final class TaskDtos {
             @NotNull @Schema(allowableValues = {"none", "service", "asset"}) String subjectKind,
             @NotNull boolean syncService,
             @NotNull boolean childrenBlockClose,
+            @NotNull List<TaskRule> rules,
             String templateKey,
             @NotNull boolean archived) {
     }
@@ -55,7 +74,8 @@ public final class TaskDtos {
             @Valid List<FieldDefinition> closingFields,
             @Schema(allowableValues = {"none", "service", "asset"}) String subjectKind,
             Boolean syncService,
-            Boolean childrenBlockClose) {
+            Boolean childrenBlockClose,
+            @Valid List<TaskRule> rules) {
     }
 
     /**
@@ -75,6 +95,7 @@ public final class TaskDtos {
             @NotNull @Schema(allowableValues = {"new", "active", "done", "cancelled"}) String statusCategory,
             UUID assigneeId,
             String assigneeName,
+            UUID authorId,
             String authorName,
             UUID serviceId,
             String serviceCode,

@@ -37,14 +37,16 @@ public final class AuthDtos {
 
     /**
      * company == null: користувач працює в кількох компаніях і ще не обрав одну (або це адмін
-     * платформи без компанії). platformAdmin — може керувати компаніями платформи.
+     * платформи без компанії). platformAdmin — може керувати компаніями платформи. position — посада
+     * в поточній компанії (з запису виконавця) за мовами, якщо є.
      */
     public record SessionView(
             @NotNull UserView user,
             CompanyView company,
             @NotNull List<CompanyView> companies,
             @NotNull List<String> permissions,
-            @NotNull boolean platformAdmin) {
+            @NotNull boolean platformAdmin,
+            java.util.Map<String, String> position) {
     }
 
     /** Для Telegram-бота і мобільного застосунку: токени в тілі відповіді, а не в cookie. */

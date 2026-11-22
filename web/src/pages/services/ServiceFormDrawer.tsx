@@ -10,6 +10,7 @@ import type { Project } from '../../api/projects'
 import { type ServiceItem, type ServiceType, useCreateService, useUpdateService } from '../../api/services'
 import { AttributeField } from '../../components/AttributeField'
 import { localized } from '../../i18n/localized'
+import { useAssigneeOptions } from '../tasks/taskRights'
 
 interface FormValues {
   code: string
@@ -17,6 +18,7 @@ interface FormValues {
   customerId?: string
   plannedStart?: Dayjs
   plannedEnd?: Dayjs
+  assigneeId?: string
   attributes: Record<string, unknown>
 }
 
@@ -28,11 +30,13 @@ interface Props {
   service?: ServiceItem
   /** false — лише перегляд (закрита послуга або немає прав) */
   editable: boolean
+  /** Менеджер або супервайзер: обирає відповідального (замовник — ні, буде супервайзер) */
+  canAssign: boolean
   onClose: () => void
 }
 
 /** Форма послуги: поля будуються з типу послуги, як у обладнання. */
-export function ServiceFormDrawer({ open, project, type, service, editable, onClose }: Props) {
+export function ServiceFormDrawer({ open, project, type, service, editable, canAssign, onClose }: Props) {
   const { t, i18n } = useTranslation()
   const { message } = App.useApp()
   const { data: session } = useSession()
@@ -42,6 +46,7 @@ export function ServiceFormDrawer({ open, project, type, service, editable, onCl
   // Власний замовник — лише в постійному проєкті без замовника
   const ownCustomer = !project.customerId
   const customers = useCustomers({}, open && ownCustomer && hasPermission(session, 'client.view'))
+  const assignees = useAssigneeOptions(project, open && canAssign)
 
   useEffect(() => {
     if (!open) return
@@ -54,6 +59,7 @@ export function ServiceFormDrawer({ open, project, type, service, editable, onCl
             customerId: ownCustomer ? (service.customerId ?? undefined) : undefined,
             plannedStart: service.plannedStart ? dayjs(service.plannedStart) : undefined,
             plannedEnd: service.plannedEnd ? dayjs(service.plannedEnd) : undefined,
+            assigneeId: service.assigneeId ?? undefined,
             attributes: service.attributes,
           }
         : { attributes: {} },
@@ -72,6 +78,8 @@ export function ServiceFormDrawer({ open, project, type, service, editable, onCl
       customerId: ownCustomer ? values.customerId : undefined,
       plannedStart: values.plannedStart?.format('YYYY-MM-DD'),
       plannedEnd: values.plannedEnd?.format('YYYY-MM-DD'),
+      // Без права призначати — лишаємо поточного (сервер усе одно не змінить)
+      assigneeId: canAssign ? values.assigneeId : (service?.assigneeId ?? undefined),
       attributes,
     }
     const handlers = {
@@ -122,6 +130,9 @@ export function ServiceFormDrawer({ open, project, type, service, editable, onCl
             { label: t('services.actualStart'), children: fmt(service.actualStart) },
             { label: t('services.actualEnd'), children: fmt(service.actualEnd) },
             ...(service.customerName ? [{ label: t('projects.customer'), children: service.customerName }] : []),
+            ...(service.mainTaskNumber != null
+              ? [{ label: t('services.mainTask'), children: `#${service.mainTaskNumber}` }]
+              : []),
           ]}
         />
       )}
@@ -153,6 +164,17 @@ export function ServiceFormDrawer({ open, project, type, service, editable, onCl
             <DatePicker format="DD.MM.YYYY" />
           </Form.Item>
         </Flex>
+        {canAssign ? (
+          <Form.Item name="assigneeId" label={t('services.assignee')} extra={t('services.assigneeHint')}>
+            <Select allowClear showSearch={{ optionFilterProp: 'label' }} options={assignees} />
+          </Form.Item>
+        ) : (
+          service?.assigneeName && (
+            <Form.Item label={t('services.assignee')}>
+              <Input value={service.assigneeName} disabled />
+            </Form.Item>
+          )
+        )}
         {type.fields.map((field) => (
           <AttributeField key={field.key} field={field} language={i18n.language} />
         ))}

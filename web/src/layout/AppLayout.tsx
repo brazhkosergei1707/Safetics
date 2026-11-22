@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation, useNavigate } from 'react-router'
 import { hasPermission, useLogout, useSession, useSwitchCompany } from '../api/auth'
 import { LANGUAGES } from '../i18n'
+import { localized } from '../i18n/localized'
 
 const { Header, Sider, Content } = Layout
 
@@ -84,7 +85,18 @@ export function AppLayout() {
             ) : (
               <Typography.Text strong>{session?.company?.name}</Typography.Text>
             )}
-            <Typography.Text type="secondary">{session?.user.fullName}</Typography.Text>
+            <Flex vertical align="flex-end" style={{ lineHeight: 1.3 }}>
+              <Typography.Text>{session?.user.fullName}</Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                {[
+                  session?.company?.role ? t(`roles.${session.company.role}`, { defaultValue: session.company.role }) : null,
+                  session?.position ? localized(session.position, i18n.language) : null,
+                  session?.platformAdmin ? t('platform.platformAdmin') : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Typography.Text>
+            </Flex>
             <Select
               value={i18n.language}
               onChange={(lng) => i18n.changeLanguage(lng)}

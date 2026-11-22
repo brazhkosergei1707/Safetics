@@ -409,10 +409,11 @@
     {
       "code": "water_well",
       "name": {
-        "en": "Water well",
-        "uk": "Свердловина на воду",
-        "pt": "Poço de água"
+        "en": "Water well drilling",
+        "uk": "Буріння свердловини на воду",
+        "pt": "Perfuração de poço de água"
       },
+      "taskType": "drilling",
       "fields": [
         {
           "key": "address",
@@ -501,9 +502,9 @@
     {
       "code": "drilling",
       "name": {
-        "en": "Drilling a well",
-        "uk": "Буріння свердловини",
-        "pt": "Perfuração do poço"
+        "en": "Perform water well drilling",
+        "uk": "Виконати буріння свердловини на воду",
+        "pt": "Executar perfuração de poço de água"
       },
       "statuses": [
         {

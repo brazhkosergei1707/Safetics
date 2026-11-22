@@ -4,6 +4,7 @@ import { api, type Schemas, unwrap } from './client'
 export type TaskType = Schemas['TaskTypeView']
 export type TaskTypeRequest = Schemas['TaskTypeRequest']
 export type TaskStatusDefinition = Schemas['TaskStatusDefinition']
+export type TaskRule = Schemas['TaskRule']
 export type Task = Schemas['TaskView']
 export type TaskCategory = Task['statusCategory']
 export type TaskLinks = Schemas['TaskLinksView']

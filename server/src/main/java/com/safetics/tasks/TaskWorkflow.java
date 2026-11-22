@@ -36,6 +36,7 @@ import com.safetics.tasks.TaskDtos.TaskCreateRequest;
 import com.safetics.tasks.TaskDtos.TaskHistoryEntry;
 import com.safetics.tasks.TaskDtos.TaskLinksView;
 import com.safetics.tasks.TaskDtos.TaskRef;
+import com.safetics.tasks.TaskDtos.TaskRule;
 import com.safetics.tasks.TaskDtos.TaskStatusDefinition;
 import com.safetics.tasks.TaskDtos.TaskStatusRequest;
 import com.safetics.tasks.TaskDtos.TaskTypeView;
@@ -56,7 +57,8 @@ import tools.jackson.databind.json.JsonMapper;
  *   <li>з done / cancelled назад — лише менеджер або супервайзер проєкту.</li>
  * </ul>
  * Якщо тип синхронізує послугу: задача в роботі → послуга «в роботі», завершена → «завершено», а
- * значення форми закриття з ключами полів послуги (actualDepth) записуються в послугу.
+ * значення форми закриття з ключами полів послуги (actualDepth) записуються в послугу. Головна задача
+ * послуги (service.main_task_id) ще й скасовує / повертає послугу та переносить у неї планові дати.
  *
  * <p>Права: менеджер (project.manage) і супервайзер проєкту — усе; виконавець — статус, дати
  * (план / прогноз) і форма закриття своїх задач; решта з task.view — перегляд.
@@ -71,7 +73,7 @@ public class TaskWorkflow {
     private static final String SELECT = """
             select t.id, t.number, t.project_id, p.code as project_code, t.task_type_id, tt.code as type_code, t.title,
                    t.description, t.status, t.status_category, t.assignee_id, au.full_name as assignee_name,
-                   ou.full_name as author_name, t.service_id, s.code as service_code, t.asset_id, a.code as asset_code,
+                   t.author_id, ou.full_name as author_name, t.service_id, s.code as service_code, t.asset_id, a.code as asset_code,
                    t.parent_id, pt.number as parent_number, t.planned_start, t.planned_end, t.forecast_end,
                    t.actual_start, t.actual_end, t.attributes, t.closing_values, t.version, t.created_at,
                    (select count(*) from task_link l join task b on b.id = l.from_task
@@ -207,28 +209,12 @@ public class TaskWorkflow {
         Map<String, Object> attributes = validAttributes(type.fields(), request.attributes(), "attributes");
         TaskStatusDefinition initial = type.statuses().getFirst();
 
-        UUID companyId = TenantContext.requireCompanyId();
-        long number = db.sql("""
-                        insert into task_counter (company_id, last_number) values (?, 1)
-                        on conflict (company_id) do update set last_number = task_counter.last_number + 1
-                        returning last_number
-                        """)
-                .param(companyId).query(Long.class).single();
-        UUID id = db.sql("""
-                        insert into task (company_id, project_id, task_type_id, number, title, description, status,
-                                          status_category, assignee_id, author_id, service_id, asset_id, parent_id,
-                                          planned_start, planned_end, attributes)
-                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, cast(? as jsonb))
-                        returning id
-                        """)
-                .params(companyId, projectId, type.id(), number, request.title().trim(), blankToNull(request.description()),
-                        initial.code(), initial.category(), request.assigneeId(), actor.userId(),
-                        "service".equals(type.subjectKind()) ? request.serviceId() : null,
-                        "asset".equals(type.subjectKind()) ? request.assetId() : null,
-                        request.parentId(), request.plannedStart(), request.plannedEnd(), json.writeValueAsString(attributes))
-                .query(UUID.class).single();
+        UUID id = insertTask(projectId, type, initial, request.title().trim(), blankToNull(request.description()),
+                request.assigneeId(), actor.userId(), request.serviceId(), request.assetId(), request.parentId(),
+                request.plannedStart(), request.plannedEnd(), attributes);
         history(id, "create", Map.of("type", type.code(), "title", request.title().trim(), "status", initial.code()));
-        audit.record("task", id, "create", Map.of("number", number, "projectId", projectId));
+        audit.record("task", id, "create", Map.of("projectId", projectId));
+        runRules(get(id), type, project, "created", null, 0);
         return get(id);
     }
 
@@ -293,6 +279,19 @@ public class TaskWorkflow {
         if (!changes.isEmpty()) {
             history(id, "update", changes);
         }
+        // Головна задача: планові дати — і в послузі
+        if (saved.serviceId() != null && (!Objects.equals(existing.plannedStart(), saved.plannedStart())
+                || !Objects.equals(existing.plannedEnd(), saved.plannedEnd()))) {
+            int synced = db.sql("""
+                            update service set planned_start = ?, planned_end = ?, version = version + 1, updated_at = now()
+                            where id = ? and main_task_id = ? and status in ('planned', 'in_progress')
+                            """)
+                    .params(saved.plannedStart(), saved.plannedEnd(), saved.serviceId(), id).update();
+            if (synced > 0) {
+                audit.record("service", saved.serviceId(), "update", Map.of("byTask", saved.number(),
+                        "plannedStart", String.valueOf(saved.plannedStart()), "plannedEnd", String.valueOf(saved.plannedEnd())));
+            }
+        }
         return saved;
     }
 
@@ -322,6 +321,19 @@ public class TaskWorkflow {
         if ("cancelled".equals(to) && !actor.full()) {
             throw new ApiException(HttpStatus.FORBIDDEN, "cancel_not_allowed", Map.of());
         }
+        applyStatus(existing, type, project, target, request.closingValues());
+        return get(id);
+    }
+
+    /**
+     * Перехід у статус без перевірки прав (їх перевіряє той, хто викликає): блокери, підзадачі, форма
+     * закриття, фактичні дати, історія, синхронізація з послугою, правила автоматизації.
+     */
+    private void applyStatus(TaskView existing, TaskTypeView type, ProjectView project, TaskStatusDefinition target,
+                             Map<String, Object> closingValues) {
+        UUID id = existing.id();
+        String from = existing.statusCategory();
+        String to = target.category();
         if (("active".equals(to) || "done".equals(to)) && existing.openBlockers() > 0) {
             throw ApiException.conflict("blocked");
         }
@@ -330,7 +342,7 @@ public class TaskWorkflow {
             if (type.childrenBlockClose() && existing.childrenOpen() > 0) {
                 throw ApiException.conflict("open_children");
             }
-            closing = validAttributes(type.closingFields(), request.closingValues(), "closingValues");
+            closing = validAttributes(type.closingFields(), closingValues, "closingValues");
         }
 
         String actualStart = "active".equals(to) || "done".equals(to) ? "coalesce(actual_start, now())" : "actual_start";
@@ -351,9 +363,112 @@ public class TaskWorkflow {
         history(id, "status", changes);
 
         if (type.syncService() && existing.serviceId() != null) {
-            syncService(existing.serviceId(), to, closing);
+            syncService(existing, to, closing);
         }
-        return get(id);
+        if (!from.equals(to)) {
+            runRules(get(id), type, project, "status_category", to, 0);
+        }
+    }
+
+    // ---------------------------------------------------------------- головна задача послуги
+
+    /**
+     * Головна задача нової послуги: тип — з типу послуги, ті самі дати, виконавець — заданий або
+     * супервайзер проєкту; назва «тип: код послуги». Від імені системи: права на послугу вже
+     * перевірено, а замовник (портал) задач не бачить. Правила типу (підзадачі) виконуються.
+     */
+    @Transactional
+    public UUID createMainTask(ProjectView project, UUID taskTypeId, UUID serviceId, String serviceCode, UUID assigneeId,
+                               LocalDate plannedStart, LocalDate plannedEnd) {
+        return asSystem(() -> {
+            TaskTypeView type = types.get(taskTypeId);
+            if (assigneeId != null) {
+                checkAssignee(project, assigneeId);
+            }
+            UUID assignee = assigneeId != null ? assigneeId : roleHolder("supervisor", project);
+            String title = localizedName(type.name()) + ": " + serviceCode;
+            TaskStatusDefinition initial = type.statuses().getFirst();
+            UUID id = insertTask(project.id(), type, initial, title.length() > 300 ? title.substring(0, 300) : title, null,
+                    assignee, currentUserId(), serviceId, null, null, plannedStart, plannedEnd, new LinkedHashMap<>());
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("type", type.code());
+            details.put("title", title);
+            details.put("status", initial.code());
+            details.put("byService", serviceCode);
+            history(id, "create", details);
+            audit.record("task", id, "create", Map.of("projectId", project.id(), "serviceId", serviceId));
+            runRules(get(id), type, project, "created", null, 0);
+            return id;
+        });
+    }
+
+    /**
+     * Дія з послугою → статус головної задачі: перший статус потрібної категорії її типу. Нічого не
+     * робить, якщо задача вже в цій категорії або тип такого статусу не має. Права перевіряє послуга.
+     */
+    @Transactional
+    public void moveMainTask(UUID taskId, String category, Map<String, Object> closingValues) {
+        asSystem(() -> {
+            TaskView existing = get(taskId);
+            if (category.equals(existing.statusCategory())) {
+                return null;
+            }
+            TaskTypeView type = types.get(existing.typeId());
+            Optional<TaskStatusDefinition> target = type.statuses().stream()
+                    .filter(s -> category.equals(s.category())).findFirst();
+            if (target.isEmpty()) {
+                history(taskId, "automation_skipped", Map.of("reason", "no_status", "category", category));
+                return null;
+            }
+            applyStatus(existing, type, projects.get(existing.projectId()), target.get(), closingValues);
+            return null;
+        });
+    }
+
+    /** Зміна послуги → дати й виконавець головної задачі, поки вона відкрита. */
+    @Transactional
+    public void syncMainTask(UUID taskId, LocalDate plannedStart, LocalDate plannedEnd, boolean changeAssignee,
+                             UUID assigneeId) {
+        asSystem(() -> {
+            TaskView existing = get(taskId);
+            if (CLOSED.contains(existing.statusCategory())) {
+                return null;
+            }
+            UUID assignee = changeAssignee ? assigneeId : existing.assigneeId();
+            if (Objects.equals(plannedStart, existing.plannedStart()) && Objects.equals(plannedEnd, existing.plannedEnd())
+                    && Objects.equals(assignee, existing.assigneeId())) {
+                return null;
+            }
+            if (!Objects.equals(assignee, existing.assigneeId())) {
+                checkAssignee(projects.get(existing.projectId()), assignee);
+            }
+            db.sql("""
+                            update task set planned_start = ?, planned_end = ?, assignee_id = ?, version = version + 1,
+                                            updated_at = now()
+                            where id = ?
+                            """)
+                    .params(plannedStart, plannedEnd, assignee, taskId).update();
+            Map<String, Object> changes = changes(existing, get(taskId));
+            if (!changes.isEmpty()) {
+                changes.put("byService", existing.serviceCode());
+                history(taskId, "update", changes);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Дії системи (app.system у межах транзакції): задачі видно й без task.view. Попереднє значення
+     * відновлюється, тож вкладені виклики безпечні.
+     */
+    private <T> T asSystem(java.util.function.Supplier<T> action) {
+        String previous = db.sql("select coalesce(current_setting('app.system', true), '')").query(String.class).single();
+        db.sql("select set_config('app.system', 'on', true)").query(String.class).single();
+        try {
+            return action.get();
+        } finally {
+            db.sql("select set_config('app.system', ?, true)").param(previous).query(String.class).single();
+        }
     }
 
     /** kind: blocks — ця задача блокує taskId; blocked_by — taskId блокує цю; relates. */
@@ -423,10 +538,222 @@ public class TaskWorkflow {
         return links(id);
     }
 
+    // ---------------------------------------------------------------- автоматизація
+
+    /** Глибина вкладених правил (підзадача теж може мати правила): далі не йдемо, щоб не зациклитися. */
+    static final int MAX_RULE_DEPTH = 3;
+
+    /**
+     * Виконує правила типу для тригера: створює підзадачі, призначає їх за роллю на проєкті,
+     * ставить строк і зв'язки «блокує». Працює від імені системи (права людини вже перевірено).
+     */
+    private void runRules(TaskView task, TaskTypeView type, ProjectView project, String trigger, String category, int depth) {
+        List<TaskRule> rules = type.rules();
+        if (rules.isEmpty() || depth >= MAX_RULE_DEPTH) {
+            return;
+        }
+        Map<Integer, UUID> created = new LinkedHashMap<>();
+        List<Long> numbers = new ArrayList<>();
+        for (int i = 0; i < rules.size(); i++) {
+            TaskRule rule = rules.get(i);
+            if (!trigger.equals(rule.trigger()) || ("status_category".equals(trigger) && !Objects.equals(category, rule.category()))) {
+                continue;
+            }
+            Optional<TaskTypeView> childType = types.findByCode(rule.taskType()).filter(t -> !t.archived());
+            if (childType.isEmpty()) {
+                history(task.id(), "automation_skipped", Map.of("rule", i, "reason", "type_not_found", "taskType", rule.taskType()));
+                continue;
+            }
+            TaskTypeView ct = childType.get();
+            UUID serviceId = "service".equals(ct.subjectKind()) ? task.serviceId() : null;
+            UUID assetId = "asset".equals(ct.subjectKind()) ? task.assetId() : null;
+            if (("service".equals(ct.subjectKind()) && serviceId == null) || ("asset".equals(ct.subjectKind()) && assetId == null)) {
+                history(task.id(), "automation_skipped", Map.of("rule", i, "reason", "no_subject", "taskType", rule.taskType()));
+                continue;
+            }
+            UUID assignee = assigneeFor(rule.assignTo(), task, project);
+            LocalDate due = rule.dueInDays() == null ? null : projects.today(project).plusDays(rule.dueInDays());
+            String title = title(rule.title(), ct, task);
+            UUID childId = insertTask(project.id(), ct, ct.statuses().getFirst(), title, null, assignee, task.authorId(),
+                    serviceId, assetId, task.id(), null, due, new LinkedHashMap<>());
+            created.put(i, childId);
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("type", ct.code());
+            details.put("title", title);
+            details.put("byRule", i);
+            details.put("parent", task.number());
+            if (assignee == null && rule.assignTo() != null && !"none".equals(rule.assignTo())) {
+                details.put("assigneeNotFound", rule.assignTo());
+            }
+            history(childId, "auto_create", details);
+            if (rule.blockedBy() != null && created.containsKey(rule.blockedBy())) {
+                db.sql("insert into task_link (company_id, from_task, to_task, kind) values (?, ?, ?, 'blocks') on conflict do nothing")
+                        .params(TenantContext.requireCompanyId(), created.get(rule.blockedBy()), childId).update();
+            }
+            TaskView child = get(childId);
+            numbers.add(child.number());
+            runRules(child, ct, project, "created", null, depth + 1);
+        }
+        if (!numbers.isEmpty()) {
+            history(task.id(), "automation", Map.of("created", numbers));
+        }
+    }
+
+    /** Виконавець підзадачі за роллю: людина з входом, яка сьогодні на проєкті на посаді з цією роллю. */
+    private UUID assigneeFor(String assignTo, TaskView task, ProjectView project) {
+        if (assignTo == null) {
+            return null;
+        }
+        return switch (assignTo) {
+            case "parent_assignee" -> task.assigneeId();
+            case "author" -> task.authorId();
+            case "supervisor", "storekeeper" -> roleHolder(assignTo, project);
+            default -> null;
+        };
+    }
+
+    /** Людина з входом, яка сьогодні на проєкті на посаді з цією роллю (supervisor, storekeeper). */
+    private UUID roleHolder(String role, ProjectView project) {
+        LocalDate today = projects.today(project);
+        return db.sql("""
+                        select p.user_id
+                        from personnel_assignment a
+                                 join personnel p on p.id = a.personnel_id
+                                 join position pos on pos.id = a.position_id
+                                 join membership m on m.company_id = p.company_id and m.user_id = p.user_id
+                        where a.project_id = ?
+                          and pos.project_role = ?
+                          and p.user_id is not null
+                          and m.status = 'active'
+                          and a.start_date <= ?
+                          and (a.end_date is null or a.end_date >= ?)
+                        order by a.start_date
+                        limit 1
+                        """)
+                .params(project.id(), role, today, today).query(UUID.class).optional().orElse(null);
+    }
+
+    /** Шаблон назви: {type}, {title}, {number}, {service}, {asset}. Порожній — «{type}: {service або title}». */
+    private static String title(String template, TaskTypeView childType, TaskView parent) {
+        String typeName = localizedName(childType.name());
+        String pattern = template == null || template.isBlank()
+                ? "{type}: " + (parent.serviceCode() != null ? "{service}" : "{title}")
+                : template;
+        String result = pattern
+                .replace("{type}", typeName)
+                .replace("{title}", parent.title())
+                .replace("{number}", "#" + parent.number())
+                .replace("{service}", parent.serviceCode() == null ? "" : parent.serviceCode())
+                .replace("{asset}", parent.assetCode() == null ? "" : parent.assetCode())
+                .trim();
+        return result.length() > 300 ? result.substring(0, 300) : result.isEmpty() ? typeName : result;
+    }
+
+    /** Назва мовою запиту (заголовок Accept-Language; без нього — англійська), інакше першою наявною. */
+    static String localizedName(Map<String, String> name) {
+        String value = name.get(language());
+        if (value == null || value.isBlank()) {
+            value = name.getOrDefault("en", name.values().stream().findFirst().orElse(""));
+        }
+        return value;
+    }
+
+    /** Мова запиту: перша з Accept-Language, без нього — en. */
+    static String language() {
+        if (org.springframework.web.context.request.RequestContextHolder.getRequestAttributes()
+                instanceof org.springframework.web.context.request.ServletRequestAttributes attributes) {
+            String header = attributes.getRequest().getHeader("Accept-Language");
+            if (header != null && !header.isBlank()) {
+                try {
+                    List<java.util.Locale.LanguageRange> ranges = java.util.Locale.LanguageRange.parse(header);
+                    if (!ranges.isEmpty()) {
+                        return ranges.getFirst().getRange().split("-")[0].toLowerCase(java.util.Locale.ROOT);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // неправильний заголовок — англійська
+                }
+            }
+        }
+        return "en";
+    }
+
+    private UUID insertTask(UUID projectId, TaskTypeView type, TaskStatusDefinition status, String title, String description,
+                            UUID assigneeId, UUID authorId, UUID serviceId, UUID assetId, UUID parentId,
+                            LocalDate plannedStart, LocalDate plannedEnd, Map<String, Object> attributes) {
+        UUID companyId = TenantContext.requireCompanyId();
+        long number = db.sql("""
+                        insert into task_counter (company_id, last_number) values (?, 1)
+                        on conflict (company_id) do update set last_number = task_counter.last_number + 1
+                        returning last_number
+                        """)
+                .param(companyId).query(Long.class).single();
+        return db.sql("""
+                        insert into task (company_id, project_id, task_type_id, number, title, description, status,
+                                          status_category, assignee_id, author_id, service_id, asset_id, parent_id,
+                                          planned_start, planned_end, attributes)
+                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, cast(? as jsonb))
+                        returning id
+                        """)
+                .params(companyId, projectId, type.id(), number, title, description, status.code(), status.category(),
+                        assigneeId, authorId,
+                        "service".equals(type.subjectKind()) ? serviceId : null,
+                        "asset".equals(type.subjectKind()) ? assetId : null,
+                        parentId, plannedStart, plannedEnd, json.writeValueAsString(attributes))
+                .query(UUID.class).single();
+    }
+
     // ---------------------------------------------------------------- правила
 
-    /** Задача → послуга: в роботі → in_progress, завершено → completed; форма закриття → поля послуги. */
-    private void syncService(UUID serviceId, String category, Map<String, Object> closing) {
+    /**
+     * Задача → послуга: в роботі → in_progress, завершено → completed; форма закриття → поля послуги.
+     * Лише головна задача: скасовано → послуга скасована, повернення з done / cancelled повертає й послугу.
+     */
+    private void syncService(TaskView task, String category, Map<String, Object> closing) {
+        UUID serviceId = task.serviceId();
+        boolean main = Boolean.TRUE.equals(db.sql("select coalesce(main_task_id = ?, false) from service where id = ?")
+                .params(task.id(), serviceId).query(Boolean.class).optional().orElse(false));
+        if (main) {
+            switch (category) {
+                case "cancelled" -> {
+                    String reason = cancelReason(task.number());
+                    int cancelled = db.sql("""
+                                    update service set status = 'cancelled', cancel_reason = ?, version = version + 1,
+                                                       updated_at = now()
+                                    where id = ? and status in ('planned', 'in_progress')
+                                    """)
+                            .params(reason, serviceId).update();
+                    if (cancelled > 0) {
+                        audit.record("service", serviceId, "status", Map.of("to", "cancelled", "byTask", true, "reason", reason));
+                    }
+                }
+                case "new" -> {
+                    int reopened = db.sql("""
+                                    update service set status = 'planned', cancel_reason = null, actual_end = null,
+                                                       version = version + 1, updated_at = now()
+                                    where id = ? and status in ('cancelled', 'completed')
+                                    """)
+                            .param(serviceId).update();
+                    if (reopened > 0) {
+                        audit.record("service", serviceId, "status", Map.of("to", "planned", "byTask", true));
+                    }
+                }
+                case "active" -> {
+                    int reopened = db.sql("""
+                                    update service set status = 'in_progress', cancel_reason = null, actual_end = null,
+                                                       actual_start = coalesce(actual_start, now()), version = version + 1,
+                                                       updated_at = now()
+                                    where id = ? and status in ('cancelled', 'completed')
+                                    """)
+                            .param(serviceId).update();
+                    if (reopened > 0) {
+                        audit.record("service", serviceId, "status", Map.of("to", "in_progress", "byTask", true));
+                    }
+                }
+                default -> {
+                    // done — нижче, як для будь-якої задачі, що синхронізує послугу
+                }
+            }
+        }
         if ("active".equals(category) || "done".equals(category)) {
             int started = db.sql("""
                             update service set status = 'in_progress', actual_start = coalesce(actual_start, now()),
@@ -466,6 +793,15 @@ public class TaskWorkflow {
                         Map.of("from", "in_progress", "to", "completed", "byTask", true, "attributes", merge));
             }
         }
+    }
+
+    /** Причина скасування послуги мовою запиту. */
+    private static String cancelReason(long number) {
+        return switch (language()) {
+            case "uk" -> "Задачу #" + number + " скасовано";
+            case "pt" -> "Tarefa #" + number + " cancelada";
+            default -> "Task #" + number + " cancelled";
+        };
     }
 
     /** Чи можна дійти від start до target по зв'язках «блокує» (перевірка циклу). */
@@ -673,6 +1009,7 @@ public class TaskWorkflow {
                 rs.getString("status_category"),
                 rs.getObject("assignee_id", UUID.class),
                 rs.getString("assignee_name"),
+                rs.getObject("author_id", UUID.class),
                 rs.getString("author_name"),
                 rs.getObject("service_id", UUID.class),
                 rs.getString("service_code"),

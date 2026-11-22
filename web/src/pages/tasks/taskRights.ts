@@ -25,12 +25,12 @@ export function useTaskRights(project: Project) {
 }
 
 /** Кому можна призначити задачу: люди з входом, які бачать проєкт (бригада, доступ, «усі проєкти»). */
-export function useAssigneeOptions(project: Project) {
+export function useAssigneeOptions(project: Project, enabled = true) {
   const { data: session } = useSession()
   const manage = hasPermission(session, 'project.manage')
   const crew = useProjectPersonnel(project.id)
-  const access = useProjectAccess(project.id, manage)
-  const members = useMembers(manage)
+  const access = useProjectAccess(project.id, enabled && manage)
+  const members = useMembers(enabled && manage)
   const options = new Map<string, string>()
   for (const a of crew.data ?? []) {
     if (a.active && a.userId) options.set(a.userId, a.fullName)

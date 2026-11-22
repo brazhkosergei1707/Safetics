@@ -394,10 +394,11 @@
     {
       "code": "drill_hole",
       "name": {
-        "en": "Drill hole",
-        "uk": "Свердловина",
-        "pt": "Furo de sondagem"
+        "en": "Hole drilling",
+        "uk": "Буріння свердловини",
+        "pt": "Perfuração de furo"
       },
+      "taskType": "drilling",
       "fields": [
         {
           "key": "plannedDepth",
@@ -498,9 +499,9 @@
     {
       "code": "drilling",
       "name": {
-        "en": "Drilling a hole",
-        "uk": "Буріння свердловини",
-        "pt": "Perfuração do furo"
+        "en": "Perform hole drilling",
+        "uk": "Виконати буріння свердловини",
+        "pt": "Executar perfuração de furo"
       },
       "statuses": [
         {
