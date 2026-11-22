@@ -19,6 +19,10 @@ import com.safetics.core.audit.AuditService;
 import com.safetics.core.web.ApiException;
 import com.safetics.personnel.PersonnelDtos.PositionRequest;
 import com.safetics.personnel.PositionService;
+import com.safetics.reports.ActivityCodeService;
+import com.safetics.reports.ConsumableItemService;
+import com.safetics.reports.ReportCatalogDtos.ActivityCodeRequest;
+import com.safetics.reports.ReportCatalogDtos.ConsumableItemRequest;
 import com.safetics.services.ServiceDtos.ServiceTypeRequest;
 import com.safetics.services.ServiceTypeService;
 import com.safetics.tasks.TaskDtos.TaskTypeRequest;
@@ -38,12 +42,13 @@ public class TemplateService {
     /** Вміст файлу шаблону. Пізніше сюди додадуться коди операцій, чек-листи. */
     public record TemplateDefinition(String key, Map<String, String> name, List<AssetTypeRequest> assetTypes,
                                      List<PositionRequest> positions, List<TemplateServiceType> serviceTypes,
-                                     List<TaskTypeRequest> taskTypes) {
+                                     List<TaskTypeRequest> taskTypes, List<ActivityCodeRequest> activityCodes,
+                                     List<ConsumableItemRequest> consumableItems) {
     }
 
     /** Тип послуги в шаблоні: taskType — код типу головної задачі з цього ж шаблону (порожній — «Виконати …»). */
     public record TemplateServiceType(String code, Map<String, String> name, List<FieldDefinition> fields,
-                                      String taskType) {
+                                      String taskType, String unit) {
     }
 
     private final JsonMapper json;
@@ -51,11 +56,16 @@ public class TemplateService {
     private final PositionService positions;
     private final ServiceTypeService serviceTypes;
     private final TaskTypeService taskTypes;
+    private final ActivityCodeService activityCodes;
+    private final ConsumableItemService consumableItems;
     private final AuditService audit;
 
     public TemplateService(JsonMapper json, AssetTypeService types, PositionService positions,
-                           ServiceTypeService serviceTypes, TaskTypeService taskTypes, AuditService audit) {
+                           ServiceTypeService serviceTypes, TaskTypeService taskTypes, ActivityCodeService activityCodes,
+                           ConsumableItemService consumableItems, AuditService audit) {
         this.taskTypes = taskTypes;
+        this.activityCodes = activityCodes;
+        this.consumableItems = consumableItems;
         this.json = json;
         this.types = types;
         this.positions = positions;
@@ -134,12 +144,27 @@ public class TemplateService {
                 UUID taskTypeId = serviceType.taskType() == null ? null
                         : taskTypes.findByCode(serviceType.taskType()).map(t -> t.id()).orElse(null);
                 serviceTypes.create(new ServiceTypeRequest(serviceType.code(), serviceType.name(),
-                        serviceType.fields() == null ? List.of() : serviceType.fields(), taskTypeId), key);
+                        serviceType.fields() == null ? List.of() : serviceType.fields(), taskTypeId, serviceType.unit()), key);
                 installedServiceTypes.add(serviceType.code());
             }
         }
+        List<String> installedCodes = new ArrayList<>();
+        for (ActivityCodeRequest code : template.activityCodes() == null ? List.<ActivityCodeRequest>of() : template.activityCodes()) {
+            if (activityCodes.findByCode(code.code()).isEmpty()) {
+                activityCodes.create(code, key);
+                installedCodes.add(code.code());
+            }
+        }
+        List<String> installedItems = new ArrayList<>();
+        for (ConsumableItemRequest item : template.consumableItems() == null ? List.<ConsumableItemRequest>of() : template.consumableItems()) {
+            if (consumableItems.findByCode(item.code()).isEmpty()) {
+                consumableItems.create(item, key);
+                installedItems.add(item.code());
+            }
+        }
         audit.record("template", key, "install", Map.of("installed", installed, "skipped", skipped,
-                "positions", installedPositions, "serviceTypes", installedServiceTypes, "taskTypes", installedTaskTypes));
+                "positions", installedPositions, "serviceTypes", installedServiceTypes, "taskTypes", installedTaskTypes,
+                "activityCodes", installedCodes, "consumableItems", installedItems));
         return new InstallTemplateResponse(installed, skipped, installedPositions, installedServiceTypes,
                 installedTaskTypes);
     }

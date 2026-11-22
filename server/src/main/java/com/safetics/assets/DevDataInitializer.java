@@ -24,6 +24,10 @@ import com.safetics.personnel.PositionService;
 import com.safetics.projects.AssignmentDtos.EquipmentAssignmentRequest;
 import com.safetics.projects.AssignmentDtos.PersonnelAssignmentRequest;
 import com.safetics.projects.AssignmentService;
+import com.safetics.projects.ProjectService;
+import com.safetics.reports.ActivityCodeService;
+import com.safetics.shifts.RigTaskService;
+import com.safetics.shifts.WorkShiftService;
 import com.safetics.services.ServiceTypeService;
 import com.safetics.tasks.TaskTypeService;
 
@@ -59,10 +63,19 @@ class DevDataInitializer implements ApplicationRunner {
     private final AssignmentService assignments;
     private final ServiceTypeService serviceTypes;
     private final TaskTypeService taskTypes;
+    private final ActivityCodeService activityCodes;
+    private final ProjectService projects;
+    private final RigTaskService rigTasks;
+    private final WorkShiftService shifts;
 
     DevDataInitializer(JdbcClient db, TemplateService templates, AssetTypeService types, AssetService assets,
                        PositionService positions, PersonnelService personnel, AssignmentService assignments,
-                       ServiceTypeService serviceTypes, TaskTypeService taskTypes) {
+                       ServiceTypeService serviceTypes, TaskTypeService taskTypes, ActivityCodeService activityCodes,
+                       ProjectService projects, RigTaskService rigTasks, WorkShiftService shifts) {
+        this.activityCodes = activityCodes;
+        this.projects = projects;
+        this.rigTasks = rigTasks;
+        this.shifts = shifts;
         this.serviceTypes = serviceTypes;
         this.taskTypes = taskTypes;
         this.db = db;
@@ -83,6 +96,7 @@ class DevDataInitializer implements ApplicationRunner {
         TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedCrew);
         TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedServices);
         TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedTasks);
+        TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedShifts);
     }
 
     private void seed(UUID companyId) {
@@ -92,7 +106,7 @@ class DevDataInitializer implements ApplicationRunner {
         }
         // Повторне встановлення лише додає відсутнє (посади з'явилися в шаблоні в кроці 2б)
         if (types.list(true).isEmpty() || positions.list(true).isEmpty() || serviceTypes.list(true).isEmpty()
-                || taskTypes.list(true).isEmpty()) {
+                || taskTypes.list(true).isEmpty() || activityCodes.list(true).isEmpty()) {
             templates.install("exploration-drilling");
             log.info("Installed exploration-drilling template for demo company {}", companyId);
         }
@@ -210,6 +224,58 @@ class DevDataInitializer implements ApplicationRunner {
                     .params(DEMO_DRILLING, drilling.get(0), drilling.get(1)).update();
         }
         log.info("Created demo tasks for project VALE-CRJ");
+    }
+
+    /**
+     * «Бурова на проєкті» для RIG-01 і вчорашня денна зміна з бригадою (Marcos — бурильник зміни,
+     * Lucas — помбур): з неї планувальник заповнить бригаду наступної денної зміни.
+     */
+    private void seedShifts() {
+        Long project = db.sql("select count(*) from project where id = ?").param(VALE_PROJECT).query(Long.class).single();
+        if (project == 0) {
+            return;
+        }
+        for (UUID assignment : db.sql("select id from equipment_assignment where project_id = ? and exclusive")
+                .param(VALE_PROJECT).query(UUID.class).list()) {
+            rigTasks.ensureFor(assignment);
+        }
+        Long existing = db.sql("select count(*) from work_shift where project_id = ?").param(VALE_PROJECT).query(Long.class).single();
+        UUID rig = db.sql("select id from asset where code = 'RIG-01'").query(UUID.class).optional().orElse(null);
+        if (existing > 0 || rig == null) {
+            return;
+        }
+        var view = projects.get(VALE_PROJECT);
+        if (view.shifts().isEmpty()) {
+            return;
+        }
+        var shift = view.shifts().getFirst();
+        UUID shiftId = shifts.create(view, rig, projects.today(view).minusDays(1), shift, "manual");
+        if (shiftId == null) {
+            return;
+        }
+        int order = 0;
+        for (String name : List.of("Marcos Oliveira", "Lucas Rocha")) {
+            var member = db.sql("""
+                            select p.id, a.position_id from personnel p
+                                     join personnel_assignment a on a.personnel_id = p.id and a.project_id = ?
+                            where p.full_name = ?
+                            limit 1
+                            """)
+                    .params(VALE_PROJECT, name)
+                    .query((rs, n) -> new UUID[] {rs.getObject("id", UUID.class), rs.getObject("position_id", UUID.class)})
+                    .optional();
+            if (member.isEmpty()) {
+                continue;
+            }
+            db.sql("""
+                            insert into work_shift_crew (company_id, shift_id, personnel_id, position_id, is_lead, minutes, sort_order)
+                            values (?, ?, ?, ?, ?, ?, ?)
+                            """)
+                    .params(DEMO_DRILLING, shiftId, member.get()[0], member.get()[1], order == 0, shift.durationMinutes(), order)
+                    .update();
+            order++;
+        }
+        log.info("Created demo shift for RIG-01 on VALE-CRJ");
     }
 
     private UUID demoTask(UUID type, String title, String status, String category, UUID assignee, UUID serviceId,

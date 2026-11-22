@@ -366,7 +366,8 @@
           },
           "type": "string"
         }
-      ]
+      ],
+      "unit": "order"
     }
   ],
   "taskTypes": [

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.safetics.assets.AssetDtos.AssetView;
 import com.safetics.assets.AssetService;
 import com.safetics.core.audit.AuditService;
+import com.safetics.shifts.RigTaskService;
 import com.safetics.core.tenancy.TenantContext;
 import com.safetics.core.web.ApiException;
 import com.safetics.personnel.PersonnelDtos.PersonnelRequest;
@@ -76,10 +77,13 @@ public class AssignmentService {
     private final AssetService assets;
     private final AuditService audit;
     private final ProjectRoles roles;
+    private final RigTaskService rigTasks;
 
     public AssignmentService(JdbcClient db, JsonMapper json, ProjectService projects, PersonnelService personnel,
-                             PositionService positions, AssetService assets, AuditService audit, ProjectRoles roles) {
+                             PositionService positions, AssetService assets, AuditService audit, ProjectRoles roles,
+                             RigTaskService rigTasks) {
         this.roles = roles;
+        this.rigTasks = rigTasks;
         this.db = db;
         this.json = json;
         this.projects = projects;
@@ -247,6 +251,7 @@ public class AssignmentService {
                 .query(UUID.class).single());
         audit.record("project", projectId, "assign_equipment", Map.of(
                 "assetId", request.assetId(), "code", asset.code(), "dates", dates(request.startDate(), request.endDate())));
+        rigTasks.ensureFor(id);
         return getEquipmentAssignment(projectId, id);
     }
 
@@ -263,15 +268,75 @@ public class AssignmentService {
                 "assetId", existing.assetId(),
                 "before", dates(existing.startDate(), existing.endDate()),
                 "after", dates(request.startDate(), request.endDate())));
+        rigTasks.syncFor(id);
         return getEquipmentAssignment(projectId, id);
     }
 
+    @Transactional
     public void deleteEquipmentAssignment(UUID projectId, UUID id) {
         openProject(projectId);
         EquipmentAssignmentView existing = getEquipmentAssignment(projectId, id);
+        rigTasks.releaseFor(id);
         db.sql("delete from equipment_assignment where id = ?").param(id).update();
         audit.record("project", projectId, "delete_equipment_assignment", Map.of(
                 "assetId", existing.assetId(), "dates", dates(existing.startDate(), existing.endDate())));
+    }
+
+    // ---------------------------------------------------------------- закриття проєкту
+
+    /**
+     * Закриття проєкту звільняє людей і обладнання: призначення, що почались раніше дня закриття,
+     * закінчуються напередодні (у день закриття їх уже можна призначити на інший проєкт), пізніші —
+     * видаляються. Задачі «Бурова на проєкті» завершуються.
+     */
+    @Transactional
+    public ProjectView closeProject(UUID projectId) {
+        ProjectView before = projects.get(projectId);
+        ProjectView closed = projects.close(projectId);
+        if ("closed".equals(before.status())) {
+            return closed;
+        }
+        LocalDate today = projects.today(closed);
+        LocalDate release = closed.endDate().isBefore(today) ? closed.endDate() : today;
+        if (release.isBefore(closed.startDate())) {
+            release = closed.startDate();
+        }
+        int people = releasePeople(projectId, release);
+        int equipment = 0;
+        for (UUID id : db.sql("""
+                        select id from equipment_assignment
+                        where project_id = ? and (end_date is null or end_date >= ?)
+                        """)
+                .params(projectId, release).query(UUID.class).list()) {
+            LocalDate start = db.sql("select start_date from equipment_assignment where id = ?").param(id)
+                    .query(LocalDate.class).single();
+            if (!start.isBefore(release)) {
+                rigTasks.releaseFor(id);
+                db.sql("delete from equipment_assignment where id = ?").param(id).update();
+            } else {
+                db.sql("update equipment_assignment set end_date = ?, updated_at = now() where id = ?")
+                        .params(release.minusDays(1), id).update();
+                rigTasks.finishFor(id);
+            }
+            equipment++;
+        }
+        audit.record("project", projectId, "release_on_close", Map.of("releaseDate", release.toString(),
+                "personnel", people, "equipment", equipment));
+        return closed;
+    }
+
+    private int releasePeople(UUID projectId, LocalDate release) {
+        int deleted = db.sql("""
+                        delete from personnel_assignment
+                        where project_id = ? and start_date >= ?
+                        """)
+                .params(projectId, release).update();
+        int ended = db.sql("""
+                        update personnel_assignment set end_date = ?, updated_at = now()
+                        where project_id = ? and start_date < ? and (end_date is null or end_date >= ?)
+                        """)
+                .params(release.minusDays(1), projectId, release, release).update();
+        return deleted + ended;
     }
 
     // ---------------------------------------------------------------- правила

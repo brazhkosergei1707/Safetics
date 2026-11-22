@@ -74,7 +74,7 @@ public class TaskWorkflow {
             select t.id, t.number, t.project_id, p.code as project_code, t.task_type_id, tt.code as type_code, t.title,
                    t.description, t.status, t.status_category, t.assignee_id, au.full_name as assignee_name,
                    t.author_id, ou.full_name as author_name, t.service_id, s.code as service_code, t.asset_id, a.code as asset_code,
-                   t.parent_id, pt.number as parent_number, t.planned_start, t.planned_end, t.forecast_end,
+                   t.parent_id, pt.number as parent_number, t.work_shift_id, t.planned_start, t.planned_end, t.forecast_end,
                    t.actual_start, t.actual_end, t.attributes, t.closing_values, t.version, t.created_at,
                    (select count(*) from task_link l join task b on b.id = l.from_task
                     where l.to_task = t.id and l.kind = 'blocks' and b.status_category not in ('done', 'cancelled')) as open_blockers,
@@ -457,6 +457,66 @@ public class TaskWorkflow {
         });
     }
 
+    // ---------------------------------------------------------------- задачі обладнання й зміни
+
+    /**
+     * Задача про обладнання на проєкті («Бурова на проєкті»): від імені системи, одразу в першому
+     * статусі категорії «в роботі» (якщо є), виконавець — супервайзер проєкту.
+     */
+    @Transactional
+    public UUID createAssetTask(ProjectView project, TaskTypeView type, UUID assetId, String assetCode) {
+        return asSystem(() -> {
+            TaskStatusDefinition status = type.statuses().stream().filter(s -> "active".equals(s.category())).findFirst()
+                    .orElse(type.statuses().getFirst());
+            String title = localizedName(type.name()) + ": " + assetCode;
+            UUID id = insertTask(project.id(), type, status, title, null, roleHolder("supervisor", project), currentUserId(),
+                    null, assetId, null, projects.today(project), null, new LinkedHashMap<>());
+            if ("active".equals(status.category())) {
+                db.sql("update task set actual_start = now() where id = ?").param(id).update();
+            }
+            history(id, "create", Map.of("type", type.code(), "title", title, "status", status.code(), "byAssignment", assetCode));
+            runRules(get(id), type, project, "created", null, 0);
+            return id;
+        });
+    }
+
+    /** Нова зміна → правила shift_created задачі обладнання (змінний рапорт, далі — чек-лист). */
+    @Transactional
+    public void runShiftCreated(UUID taskId, ShiftContext shift) {
+        asSystem(() -> {
+            TaskView task = find(taskId).orElse(null);
+            if (task == null || CLOSED.contains(task.statusCategory())) {
+                return null;
+            }
+            runRules(task, types.get(task.typeId()), projects.get(task.projectId()), "shift_created", null, 0, shift);
+            return null;
+        });
+    }
+
+    /** Змінився бурильник зміни: відкриті задачі зміни, що були на попередньому (або без виконавця), — на нового. */
+    @Transactional
+    public void reassignShiftTasks(UUID shiftId, UUID previousLead, UUID newLead) {
+        if (newLead == null || newLead.equals(previousLead)) {
+            return;
+        }
+        asSystem(() -> {
+            List<UUID> ids = db.sql("""
+                            select id from task
+                            where work_shift_id = ? and status_category in ('new', 'active')
+                              and (assignee_id is null or assignee_id = ?)
+                            """)
+                    .params(shiftId, previousLead).query(UUID.class).list();
+            for (UUID id : ids) {
+                TaskView before = get(id);
+                db.sql("update task set assignee_id = ?, version = version + 1, updated_at = now() where id = ?")
+                        .params(newLead, id).update();
+                history(id, "update", Map.of("assignee", Arrays.asList(before.assigneeName(), get(id).assigneeName()),
+                        "byShift", true));
+            }
+            return null;
+        });
+    }
+
     /**
      * Дії системи (app.system у межах транзакції): задачі видно й без task.view. Попереднє значення
      * відновлюється, тож вкладені виклики безпечні.
@@ -547,7 +607,16 @@ public class TaskWorkflow {
      * Виконує правила типу для тригера: створює підзадачі, призначає їх за роллю на проєкті,
      * ставить строк і зв'язки «блокує». Працює від імені системи (права людини вже перевірено).
      */
+    /** Зміна, у контексті якої виконуються правила (shift_created і вкладені): підзадачі — задачі зміни. */
+    public record ShiftContext(UUID shiftId, UUID leadUserId, String label) {
+    }
+
     private void runRules(TaskView task, TaskTypeView type, ProjectView project, String trigger, String category, int depth) {
+        runRules(task, type, project, trigger, category, depth, null);
+    }
+
+    private void runRules(TaskView task, TaskTypeView type, ProjectView project, String trigger, String category, int depth,
+                          ShiftContext shift) {
         List<TaskRule> rules = type.rules();
         if (rules.isEmpty() || depth >= MAX_RULE_DEPTH) {
             return;
@@ -571,11 +640,17 @@ public class TaskWorkflow {
                 history(task.id(), "automation_skipped", Map.of("rule", i, "reason", "no_subject", "taskType", rule.taskType()));
                 continue;
             }
-            UUID assignee = assigneeFor(rule.assignTo(), task, project);
+            UUID assignee = "shift_lead".equals(rule.assignTo())
+                    ? (shift != null && shift.leadUserId() != null ? shift.leadUserId() : roleHolder("supervisor", project))
+                    : assigneeFor(rule.assignTo(), task, project);
             LocalDate due = rule.dueInDays() == null ? null : projects.today(project).plusDays(rule.dueInDays());
-            String title = title(rule.title(), ct, task);
+            String title = title(rule.title(), ct, task, shift == null ? null : shift.label());
             UUID childId = insertTask(project.id(), ct, ct.statuses().getFirst(), title, null, assignee, task.authorId(),
                     serviceId, assetId, task.id(), null, due, new LinkedHashMap<>());
+            UUID shiftId = shift != null ? shift.shiftId() : task.workShiftId();
+            if (shiftId != null) {
+                db.sql("update task set work_shift_id = ? where id = ?").params(shiftId, childId).update();
+            }
             created.put(i, childId);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("type", ct.code());
@@ -592,7 +667,7 @@ public class TaskWorkflow {
             }
             TaskView child = get(childId);
             numbers.add(child.number());
-            runRules(child, ct, project, "created", null, depth + 1);
+            runRules(child, ct, project, "created", null, depth + 1, shift);
         }
         if (!numbers.isEmpty()) {
             history(task.id(), "automation", Map.of("created", numbers));
@@ -633,8 +708,8 @@ public class TaskWorkflow {
                 .params(project.id(), role, today, today).query(UUID.class).optional().orElse(null);
     }
 
-    /** Шаблон назви: {type}, {title}, {number}, {service}, {asset}. Порожній — «{type}: {service або title}». */
-    private static String title(String template, TaskTypeView childType, TaskView parent) {
+    /** Шаблон назви: {type}, {title}, {number}, {service}, {asset}, {shift}. Порожній — «{type}: {service або title}». */
+    private static String title(String template, TaskTypeView childType, TaskView parent, String shiftLabel) {
         String typeName = localizedName(childType.name());
         String pattern = template == null || template.isBlank()
                 ? "{type}: " + (parent.serviceCode() != null ? "{service}" : "{title}")
@@ -645,6 +720,7 @@ public class TaskWorkflow {
                 .replace("{number}", "#" + parent.number())
                 .replace("{service}", parent.serviceCode() == null ? "" : parent.serviceCode())
                 .replace("{asset}", parent.assetCode() == null ? "" : parent.assetCode())
+                .replace("{shift}", shiftLabel == null ? "" : shiftLabel)
                 .trim();
         return result.length() > 300 ? result.substring(0, 300) : result.isEmpty() ? typeName : result;
     }
@@ -1017,6 +1093,7 @@ public class TaskWorkflow {
                 rs.getString("asset_code"),
                 rs.getObject("parent_id", UUID.class),
                 parentNumber,
+                rs.getObject("work_shift_id", UUID.class),
                 rs.getObject("planned_start", LocalDate.class),
                 rs.getObject("planned_end", LocalDate.class),
                 rs.getObject("forecast_end", LocalDate.class),

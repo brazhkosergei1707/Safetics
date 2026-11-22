@@ -26,19 +26,22 @@ public final class ServiceDtos {
             @NotNull Map<String, String> name,
             @NotNull List<FieldDefinition> fields,
             @NotNull UUID taskTypeId,
+            @Schema(allowableValues = {"m", "m2", "m3", "pcs", "order", "h"}) String unit,
             String templateKey,
             @NotNull boolean archived) {
     }
 
     /**
      * code після створення не змінюється. taskTypeId — тип головної задачі (предмет — послуга); порожній
-     * при створенні — створюється новий тип «Виконати …», при зміні — лишається поточний.
+     * при створенні — створюється новий тип «Виконати …», при зміні — лишається поточний. unit —
+     * одиниця обліку обсягів (м, м², шт, замовлення…), для зведених звітів і цін.
      */
     public record ServiceTypeRequest(
             @NotBlank String code,
             @NotNull Map<String, String> name,
             @NotNull @Valid List<FieldDefinition> fields,
-            UUID taskTypeId) {
+            UUID taskTypeId,
+            @Schema(allowableValues = {"m", "m2", "m3", "pcs", "order", "h"}) String unit) {
     }
 
     /**

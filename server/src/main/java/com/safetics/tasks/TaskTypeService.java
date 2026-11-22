@@ -46,12 +46,13 @@ public class TaskTypeService {
     private static final TypeReference<List<TaskRule>> RULES = new TypeReference<>() {
     };
 
-    static final Set<String> TRIGGERS = Set.of("created", "status_category");
-    static final Set<String> ASSIGN_TO = Set.of("supervisor", "storekeeper", "parent_assignee", "author", "none");
+    static final Set<String> TRIGGERS = Set.of("created", "status_category", "shift_created");
+    static final Set<String> ASSIGN_TO = Set.of("supervisor", "storekeeper", "parent_assignee", "author", "shift_lead", "none");
+    static final Set<String> AUTO_CREATE = Set.of("none", "primary_assignment");
 
     private static final String SELECT = """
             select id, code, name, statuses, fields, closing_fields, subject_kind, sync_service, children_block_close,
-                   rules, template_key, archived_at
+                   rules, auto_create, template_key, archived_at
             from task_type
             """;
 
@@ -89,16 +90,16 @@ public class TaskTypeService {
         }
         UUID id = db.sql("""
                         insert into task_type (company_id, code, name, statuses, fields, closing_fields, subject_kind,
-                                               sync_service, children_block_close, rules, template_key)
+                                               sync_service, children_block_close, rules, auto_create, template_key)
                         values (?, ?, cast(? as jsonb), cast(? as jsonb), cast(? as jsonb), cast(? as jsonb), ?, ?, ?,
-                                cast(? as jsonb), ?)
+                                cast(? as jsonb), ?, ?)
                         returning id
                         """)
                 .params(TenantContext.requireCompanyId(), request.code(), json.writeValueAsString(request.name()),
                         json.writeValueAsString(request.statuses()), json.writeValueAsString(fields(request.fields())),
                         json.writeValueAsString(fields(request.closingFields())), subject(request),
                         Boolean.TRUE.equals(request.syncService()), Boolean.TRUE.equals(request.childrenBlockClose()),
-                        json.writeValueAsString(rules(request.rules())), templateKey)
+                        json.writeValueAsString(rules(request.rules())), autoCreate(request), templateKey)
                 .query(UUID.class).single();
         audit.record("task_type", id, "create", Map.of("code", request.code()));
         return get(id);
@@ -130,13 +131,14 @@ public class TaskTypeService {
                         update task_type
                         set name = cast(? as jsonb), statuses = cast(? as jsonb), fields = cast(? as jsonb),
                             closing_fields = cast(? as jsonb), subject_kind = ?, sync_service = ?,
-                            children_block_close = ?, rules = cast(? as jsonb), updated_at = now()
+                            children_block_close = ?, rules = cast(? as jsonb), auto_create = ?, updated_at = now()
                         where id = ?
                         """)
                 .params(json.writeValueAsString(request.name()), json.writeValueAsString(request.statuses()),
                         json.writeValueAsString(fields(request.fields())), json.writeValueAsString(fields(request.closingFields())),
                         subject(request), Boolean.TRUE.equals(request.syncService()),
-                        Boolean.TRUE.equals(request.childrenBlockClose()), json.writeValueAsString(rules(request.rules())), id)
+                        Boolean.TRUE.equals(request.childrenBlockClose()), json.writeValueAsString(rules(request.rules())),
+                        autoCreate(request), id)
                 .update();
         // Категорія статусу могла змінитися — переносимо в задачі
         for (TaskStatusDefinition status : request.statuses()) {
@@ -174,7 +176,7 @@ public class TaskTypeService {
             }
         });
         return create(new TaskTypeRequest(code, name, standardStatuses(), List.of(), List.of(), "service", true, false,
-                List.of()), templateKey);
+                List.of(), "none"), templateKey);
     }
 
     private static final Map<String, String> PERFORM = Map.of("en", "Perform", "uk", "Виконати", "pt", "Executar");
@@ -243,6 +245,11 @@ public class TaskTypeService {
             }
         }
         validateRules(rules(request.rules()), errors);
+        if (!AUTO_CREATE.contains(autoCreate(request))) {
+            errors.put("autoCreate", "invalid_option");
+        } else if ("primary_assignment".equals(autoCreate(request)) && !"asset".equals(request.subjectKind())) {
+            errors.put("autoCreate", "requires_asset_subject");
+        }
         AssetTypeService.validateFields(fields(request.fields()), errors, "fields");
         AssetTypeService.validateFields(fields(request.closingFields()), errors, "closingFields");
         if (!errors.isEmpty()) {
@@ -297,6 +304,16 @@ public class TaskTypeService {
         return fields == null ? List.of() : fields;
     }
 
+    private static String autoCreate(TaskTypeRequest request) {
+        return request.autoCreate() == null || request.autoCreate().isBlank() ? "none" : request.autoCreate();
+    }
+
+    /** Тип задачі «Бурова на проєкті» (створюється при призначенні основного обладнання), якщо є. */
+    public Optional<TaskTypeView> forPrimaryAssignment() {
+        return db.sql(SELECT + " where auto_create = 'primary_assignment' and archived_at is null order by created_at limit 1")
+                .query(this::map).optional();
+    }
+
     private static String subject(TaskTypeRequest request) {
         return request.subjectKind() == null || request.subjectKind().isBlank() ? "none" : request.subjectKind();
     }
@@ -313,6 +330,7 @@ public class TaskTypeService {
                 rs.getBoolean("sync_service"),
                 rs.getBoolean("children_block_close"),
                 json.readValue(rs.getString("rules"), RULES),
+                rs.getString("auto_create"),
                 rs.getString("template_key"),
                 rs.getObject("archived_at") != null);
     }

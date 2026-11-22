@@ -618,7 +618,8 @@
           "unit": "m²",
           "min": 0
         }
-      ]
+      ],
+      "unit": "m2"
     }
   ],
   "taskTypes": [

@@ -11,6 +11,7 @@ import { ProjectEquipmentTab } from './ProjectEquipmentTab'
 import { ProjectGeneralTab } from './ProjectGeneralTab'
 import { ProjectPeopleTab } from './ProjectPeopleTab'
 import { ProjectServicesTab } from '../services/ProjectServicesTab'
+import { ProjectShiftsTab } from '../shifts/ProjectShiftsTab'
 import { ProjectTasksTab } from '../tasks/ProjectTasksTab'
 import { ShiftSchedulesTab } from './ShiftSchedulesTab'
 
@@ -69,7 +70,10 @@ export function ProjectDetailPage() {
         items={[
           { key: 'services', label: t('projects.tabs.services'), children: <ProjectServicesTab project={p} /> },
           ...(hasPermission(session, 'task.view')
-            ? [{ key: 'tasks', label: t('projects.tabs.tasks'), children: <ProjectTasksTab project={p} /> }]
+            ? [
+                { key: 'tasks', label: t('projects.tabs.tasks'), children: <ProjectTasksTab project={p} /> },
+                { key: 'workShifts', label: t('projects.tabs.workShifts'), children: <ProjectShiftsTab project={p} /> },
+              ]
             : []),
           { key: 'general', label: t('projects.tabs.general'), children: <ProjectGeneralTab project={p} /> },
           { key: 'shifts', label: t('projects.tabs.shifts'), children: <ShiftSchedulesTab project={p} /> },

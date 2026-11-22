@@ -14,7 +14,10 @@ interface FormValues {
   name: string
   fields: FieldFormValues[]
   taskTypeId?: string
+  unit?: ServiceType['unit']
 }
+
+const UNITS = ['m', 'm2', 'm3', 'pcs', 'order', 'h'] as const
 
 /** Типи послуг компанії (свердловина, замовлення…): назва, поля й тип головної задачі. catalog.manage. */
 export function ServiceTypesDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -32,7 +35,7 @@ export function ServiceTypesDrawer({ open, onClose }: { open: boolean; onClose: 
     form.resetFields()
     form.setFieldsValue(
       type
-        ? { code: type.code, name: localized(type.name, lang), fields: fieldsToForm(type.fields, lang), taskTypeId: type.taskTypeId }
+        ? { code: type.code, name: localized(type.name, lang), fields: fieldsToForm(type.fields, lang), taskTypeId: type.taskTypeId, unit: type.unit }
         : { fields: [] },
     )
     setEditing({ type })
@@ -47,6 +50,7 @@ export function ServiceTypesDrawer({ open, onClose }: { open: boolean; onClose: 
           name: { ...(editing?.type?.name ?? {}), [lang]: values.name },
           fields: fieldsFromForm(values.fields, lang),
           taskTypeId: values.taskTypeId,
+          unit: values.unit,
         },
       },
       {
@@ -137,6 +141,9 @@ export function ServiceTypesDrawer({ open, onClose }: { open: boolean; onClose: 
                 .filter((tt) => tt.subjectKind === 'service' && tt.syncService)
                 .map((tt) => ({ value: tt.id, label: localized(tt.name, lang) }))}
             />
+          </Form.Item>
+          <Form.Item name="unit" label={t('serviceTypes.unit')} extra={t('serviceTypes.unitHint')}>
+            <Select allowClear style={{ width: 200 }} options={UNITS.map((u) => ({ value: u, label: t(`serviceTypes.units.${u}`) }))} />
           </Form.Item>
           <Divider titlePlacement="start">{t('assetTypes.fields')}</Divider>
           <FieldsEditor form={form} />

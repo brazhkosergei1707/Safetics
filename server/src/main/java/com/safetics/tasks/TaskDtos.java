@@ -30,18 +30,19 @@ public final class TaskDtos {
 
     /**
      * Правило автоматизації. trigger: created — при створенні задачі, status_category — при переході
-     * в категорію category. Дія create_subtask: підзадача типу taskType (код), назва — шаблон з
-     * {type}, {title}, {number}, {service}, {asset} (порожньо — «{type}: {service або title}»),
-     * виконавець за роллю assignTo, план завершення через dueInDays днів, blockedBy — номер правила
-     * (від 0) з тим самим тригером, підзадача якого блокує цю.
+     * в категорію category, shift_created — при створенні зміни обладнання задачі (задача «Бурова на
+     * проєкті»). Дія create_subtask: підзадача типу taskType (код), назва — шаблон з {type}, {title},
+     * {number}, {service}, {asset}, {shift} (порожньо — «{type}: {service або title}»), виконавець за
+     * роллю assignTo (shift_lead — бурильник зміни, інакше супервайзер), план завершення через
+     * dueInDays днів, blockedBy — номер правила (від 0) з тим самим тригером, підзадача якого блокує цю.
      */
     public record TaskRule(
-            @NotBlank @Schema(allowableValues = {"created", "status_category"}) String trigger,
+            @NotBlank @Schema(allowableValues = {"created", "status_category", "shift_created"}) String trigger,
             @Schema(allowableValues = {"active", "done", "cancelled"}) String category,
             @Schema(allowableValues = {"create_subtask"}) String action,
             @NotBlank String taskType,
             String title,
-            @Schema(allowableValues = {"supervisor", "storekeeper", "parent_assignee", "author", "none"}) String assignTo,
+            @Schema(allowableValues = {"supervisor", "storekeeper", "parent_assignee", "author", "shift_lead", "none"}) String assignTo,
             Integer dueInDays,
             Integer blockedBy) {
     }
@@ -49,7 +50,8 @@ public final class TaskDtos {
     /**
      * subjectKind — предмет задачі (none / service / asset). syncService — задача керує статусом
      * послуги. childrenBlockClose — не закривати, поки є незавершені підзадачі. closingFields —
-     * форма закриття.
+     * форма закриття. autoCreate: primary_assignment — задача створюється на кожне призначення
+     * основного обладнання на проєкт («Бурова на проєкті»; предмет — обладнання).
      */
     public record TaskTypeView(
             @NotNull UUID id,
@@ -62,6 +64,7 @@ public final class TaskDtos {
             @NotNull boolean syncService,
             @NotNull boolean childrenBlockClose,
             @NotNull List<TaskRule> rules,
+            @NotNull @Schema(allowableValues = {"none", "primary_assignment"}) String autoCreate,
             String templateKey,
             @NotNull boolean archived) {
     }
@@ -75,7 +78,8 @@ public final class TaskDtos {
             @Schema(allowableValues = {"none", "service", "asset"}) String subjectKind,
             Boolean syncService,
             Boolean childrenBlockClose,
-            @Valid List<TaskRule> rules) {
+            @Valid List<TaskRule> rules,
+            @Schema(allowableValues = {"none", "primary_assignment"}) String autoCreate) {
     }
 
     /**
@@ -103,6 +107,7 @@ public final class TaskDtos {
             String assetCode,
             UUID parentId,
             Long parentNumber,
+            UUID workShiftId,
             LocalDate plannedStart,
             LocalDate plannedEnd,
             LocalDate forecastEnd,

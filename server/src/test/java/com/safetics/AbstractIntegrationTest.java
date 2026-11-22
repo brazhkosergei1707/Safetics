@@ -45,6 +45,8 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.flyway.placeholders.appdbpassword", () -> APP_DB_PASSWORD);
         registry.add("safetics.security.jwt-secret", () -> TEST_JWT_SECRET);
         registry.add("safetics.security.secure-cookies", () -> "false");
+        // Планувальник змін у тестах не запускається сам: прохід викликається напряму
+        registry.add("safetics.scheduler.enabled", () -> "false");
     }
 
     /** Суперкористувач бази: оминає RLS, лише для підготовки даних у тестах. */

@@ -492,10 +492,132 @@
           "type": "number",
           "unit": "m"
         }
-      ]
+      ],
+      "unit": "m"
     }
   ],
   "taskTypes": [
+    {
+      "code": "rig_on_project",
+      "name": {
+        "en": "Rig on project",
+        "uk": "Бурова на проєкті",
+        "pt": "Sonda no projeto"
+      },
+      "statuses": [
+        {
+          "code": "new",
+          "label": {
+            "en": "New",
+            "uk": "Нова",
+            "pt": "Nova"
+          },
+          "category": "new",
+          "color": "default"
+        },
+        {
+          "code": "on_project",
+          "label": {
+            "en": "On project",
+            "uk": "На проєкті",
+            "pt": "No projeto"
+          },
+          "category": "active",
+          "color": "blue"
+        },
+        {
+          "code": "released",
+          "label": {
+            "en": "Released",
+            "uk": "Знята з проєкту",
+            "pt": "Liberada"
+          },
+          "category": "done",
+          "color": "green"
+        },
+        {
+          "code": "cancelled",
+          "label": {
+            "en": "Cancelled",
+            "uk": "Скасовано",
+            "pt": "Cancelada"
+          },
+          "category": "cancelled"
+        }
+      ],
+      "subjectKind": "asset",
+      "autoCreate": "primary_assignment",
+      "rules": [
+        {
+          "trigger": "shift_created",
+          "action": "create_subtask",
+          "taskType": "shift_report",
+          "title": "{type}: {asset} · {shift}",
+          "assignTo": "shift_lead",
+          "dueInDays": 1
+        }
+      ]
+    },
+    {
+      "code": "shift_report",
+      "name": {
+        "en": "Shift report",
+        "uk": "Змінний рапорт",
+        "pt": "Boletim de turno"
+      },
+      "statuses": [
+        {
+          "code": "expected",
+          "label": {
+            "en": "Expected",
+            "uk": "Очікується",
+            "pt": "Aguardado"
+          },
+          "category": "new",
+          "color": "default"
+        },
+        {
+          "code": "draft",
+          "label": {
+            "en": "Draft",
+            "uk": "Чернетка",
+            "pt": "Rascunho"
+          },
+          "category": "active",
+          "color": "blue"
+        },
+        {
+          "code": "submitted",
+          "label": {
+            "en": "Submitted",
+            "uk": "Подано",
+            "pt": "Enviado"
+          },
+          "category": "active",
+          "color": "orange"
+        },
+        {
+          "code": "reviewed",
+          "label": {
+            "en": "Reviewed",
+            "uk": "Перевірено",
+            "pt": "Revisado"
+          },
+          "category": "done",
+          "color": "green"
+        },
+        {
+          "code": "cancelled",
+          "label": {
+            "en": "Cancelled",
+            "uk": "Скасовано",
+            "pt": "Cancelado"
+          },
+          "category": "cancelled"
+        }
+      ],
+      "subjectKind": "asset"
+    },
     {
       "code": "drilling",
       "name": {
@@ -728,6 +850,263 @@
       "subjectKind": "none",
       "syncService": false,
       "childrenBlockClose": false
+    }
+  ],
+  "activityCodes": [
+    {
+      "code": "DRL",
+      "name": {
+        "en": "Drilling",
+        "uk": "Буріння",
+        "pt": "Perfuração"
+      },
+      "category": "productive",
+      "sortOrder": 10
+    },
+    {
+      "code": "CORE",
+      "name": {
+        "en": "Core retrieval (wireline)",
+        "uk": "Підйом керна (знімний керноприймач)",
+        "pt": "Recuperação de testemunho"
+      },
+      "category": "productive",
+      "sortOrder": 20
+    },
+    {
+      "code": "TRIP_BIT",
+      "name": {
+        "en": "Tripping to change bit",
+        "uk": "СПО для заміни коронки",
+        "pt": "Manobra para troca de coroa"
+      },
+      "category": "productive",
+      "sortOrder": 30
+    },
+    {
+      "code": "TRIP",
+      "name": {
+        "en": "Tripping",
+        "uk": "СПО",
+        "pt": "Manobra"
+      },
+      "category": "productive",
+      "sortOrder": 40
+    },
+    {
+      "code": "CASING",
+      "name": {
+        "en": "Casing",
+        "uk": "Обсадка",
+        "pt": "Revestimento"
+      },
+      "category": "productive",
+      "sortOrder": 50
+    },
+    {
+      "code": "SURVEY",
+      "name": {
+        "en": "Downhole survey",
+        "uk": "Інклінометрія",
+        "pt": "Medição de desvio"
+      },
+      "category": "productive",
+      "sortOrder": 60
+    },
+    {
+      "code": "MOVE",
+      "name": {
+        "en": "Move to next hole",
+        "uk": "Переїзд на нову свердловину",
+        "pt": "Mudança de furo"
+      },
+      "category": "productive",
+      "sortOrder": 70
+    },
+    {
+      "code": "RIG_UP",
+      "name": {
+        "en": "Rig up / rig down",
+        "uk": "Монтаж / демонтаж бурової",
+        "pt": "Montagem / desmontagem"
+      },
+      "category": "productive",
+      "sortOrder": 80
+    },
+    {
+      "code": "SAFETY",
+      "name": {
+        "en": "Safety meeting",
+        "uk": "Інструктаж з безпеки",
+        "pt": "Reunião de segurança"
+      },
+      "category": "other",
+      "sortOrder": 90,
+      "billable": true
+    },
+    {
+      "code": "MAINT",
+      "name": {
+        "en": "Rig maintenance",
+        "uk": "ТО бурової",
+        "pt": "Manutenção da sonda"
+      },
+      "category": "contractor_npt",
+      "sortOrder": 100
+    },
+    {
+      "code": "REPAIR",
+      "name": {
+        "en": "Rig repair",
+        "uk": "Ремонт бурової",
+        "pt": "Reparo da sonda"
+      },
+      "category": "contractor_npt",
+      "sortOrder": 110
+    },
+    {
+      "code": "FISH",
+      "name": {
+        "en": "Fishing / downhole problem",
+        "uk": "Ліквідація аварії",
+        "pt": "Pescaria"
+      },
+      "category": "contractor_npt",
+      "sortOrder": 120
+    },
+    {
+      "code": "WAIT_CLIENT",
+      "name": {
+        "en": "Waiting on client",
+        "uk": "Очікування замовника",
+        "pt": "Aguardando cliente"
+      },
+      "category": "client_standby",
+      "sortOrder": 130
+    },
+    {
+      "code": "WEATHER",
+      "name": {
+        "en": "Weather",
+        "uk": "Погода",
+        "pt": "Clima"
+      },
+      "category": "other",
+      "sortOrder": 140,
+      "billable": false
+    },
+    {
+      "code": "MEAL",
+      "name": {
+        "en": "Meal break",
+        "uk": "Обідня перерва",
+        "pt": "Refeição"
+      },
+      "category": "other",
+      "sortOrder": 150,
+      "billable": false
+    }
+  ],
+  "consumableItems": [
+    {
+      "code": "bit_hq",
+      "name": {
+        "en": "HQ core bit",
+        "uk": "Коронка HQ",
+        "pt": "Coroa HQ"
+      },
+      "unit": "pcs",
+      "serialTracked": true
+    },
+    {
+      "code": "bit_nq",
+      "name": {
+        "en": "NQ core bit",
+        "uk": "Коронка NQ",
+        "pt": "Coroa NQ"
+      },
+      "unit": "pcs",
+      "serialTracked": true
+    },
+    {
+      "code": "reamer_hq",
+      "name": {
+        "en": "HQ reaming shell",
+        "uk": "Розширювач HQ",
+        "pt": "Alargador HQ"
+      },
+      "unit": "pcs",
+      "serialTracked": true
+    },
+    {
+      "code": "reamer_nq",
+      "name": {
+        "en": "NQ reaming shell",
+        "uk": "Розширювач NQ",
+        "pt": "Alargador NQ"
+      },
+      "unit": "pcs",
+      "serialTracked": true
+    },
+    {
+      "code": "diesel",
+      "name": {
+        "en": "Diesel fuel",
+        "uk": "Дизельне паливо",
+        "pt": "Óleo diesel"
+      },
+      "unit": "l",
+      "serialTracked": false
+    },
+    {
+      "code": "mud_polymer",
+      "name": {
+        "en": "Drilling polymer",
+        "uk": "Полімер бурового розчину",
+        "pt": "Polímero de perfuração"
+      },
+      "unit": "kg",
+      "serialTracked": false
+    },
+    {
+      "code": "bentonite",
+      "name": {
+        "en": "Bentonite",
+        "uk": "Бентоніт",
+        "pt": "Bentonita"
+      },
+      "unit": "kg",
+      "serialTracked": false
+    },
+    {
+      "code": "grease",
+      "name": {
+        "en": "Rod grease",
+        "uk": "Мастило для штанг",
+        "pt": "Graxa para hastes"
+      },
+      "unit": "kg",
+      "serialTracked": false
+    },
+    {
+      "code": "core_box_hq",
+      "name": {
+        "en": "HQ core box",
+        "uk": "Ящик для керна HQ",
+        "pt": "Caixa de testemunho HQ"
+      },
+      "unit": "pcs",
+      "serialTracked": false
+    },
+    {
+      "code": "core_box_nq",
+      "name": {
+        "en": "NQ core box",
+        "uk": "Ящик для керна NQ",
+        "pt": "Caixa de testemunho NQ"
+      },
+      "unit": "pcs",
+      "serialTracked": false
     }
   ]
 }

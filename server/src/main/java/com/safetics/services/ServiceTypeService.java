@@ -37,7 +37,7 @@ public class ServiceTypeService {
     private static final TypeReference<Map<String, String>> NAME = new TypeReference<>() {
     };
 
-    private static final String SELECT = "select id, code, name, fields, task_type_id, template_key, archived_at from service_type";
+    private static final String SELECT = "select id, code, name, fields, task_type_id, unit, template_key, archived_at from service_type";
 
     private final JdbcClient db;
     private final JsonMapper json;
@@ -79,12 +79,12 @@ public class ServiceTypeService {
                 ? checkTaskType(request.taskTypeId())
                 : taskTypes.createPerformType(request.code(), request.name(), templateKey).id();
         UUID id = db.sql("""
-                        insert into service_type (company_id, code, name, fields, task_type_id, template_key)
-                        values (?, ?, cast(? as jsonb), cast(? as jsonb), ?, ?)
+                        insert into service_type (company_id, code, name, fields, task_type_id, unit, template_key)
+                        values (?, ?, cast(? as jsonb), cast(? as jsonb), ?, ?, ?)
                         returning id
                         """)
                 .params(TenantContext.requireCompanyId(), request.code(), json.writeValueAsString(request.name()),
-                        json.writeValueAsString(request.fields()), taskTypeId, templateKey)
+                        json.writeValueAsString(request.fields()), taskTypeId, blankToNull(request.unit()), templateKey)
                 .query(UUID.class).single();
         audit.record("service_type", id, "create", Map.of("code", request.code()));
         return get(id);
@@ -104,10 +104,11 @@ public class ServiceTypeService {
         }
         db.sql("""
                         update service_type set name = cast(? as jsonb), fields = cast(? as jsonb), task_type_id = ?,
-                                                updated_at = now()
+                                                unit = ?, updated_at = now()
                         where id = ?
                         """)
-                .params(json.writeValueAsString(request.name()), json.writeValueAsString(request.fields()), taskTypeId, id)
+                .params(json.writeValueAsString(request.name()), json.writeValueAsString(request.fields()), taskTypeId,
+                        blankToNull(request.unit()), id)
                 .update();
         audit.record("service_type", id, "update", Map.of("code", request.code()));
         return get(id);
@@ -145,9 +146,18 @@ public class ServiceTypeService {
             errors.put("name", "required");
         }
         AssetTypeService.validateFields(request.fields(), errors);
+        if (request.unit() != null && !request.unit().isBlank() && !UNITS.contains(request.unit())) {
+            errors.put("unit", "invalid_option");
+        }
         if (!errors.isEmpty()) {
             throw ApiException.validation(errors);
         }
+    }
+
+    static final java.util.Set<String> UNITS = java.util.Set.of("m", "m2", "m3", "pcs", "order", "h");
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 
     private ServiceTypeView map(ResultSet rs, int rowNum) throws SQLException {
@@ -157,6 +167,7 @@ public class ServiceTypeService {
                 json.readValue(rs.getString("name"), NAME),
                 json.readValue(rs.getString("fields"), FIELDS),
                 rs.getObject("task_type_id", UUID.class),
+                rs.getString("unit"),
                 rs.getString("template_key"),
                 rs.getObject("archived_at") != null);
     }

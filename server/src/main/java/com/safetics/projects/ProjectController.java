@@ -88,7 +88,7 @@ public class ProjectController {
     @PostMapping("/{id}/close")
     @PreAuthorize("hasAuthority('project.manage')")
     public ProjectView close(@PathVariable("id") UUID id) {
-        return projects.close(id);
+        return assignments.closeProject(id);
     }
 
     @PostMapping("/{id}/reopen")

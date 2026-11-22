@@ -172,6 +172,47 @@
         }
       }
     },
+    "/api/v1/shifts/{id}/crew": {
+      "put": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "updateCrew",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrewUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkShiftView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/services/{id}": {
       "get": {
         "tags": [
@@ -737,6 +778,47 @@
         }
       }
     },
+    "/api/v1/consumable-items/{id}": {
+      "put": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "updateItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsumableItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsumableItemView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/assets/{id}": {
       "get": {
         "tags": [
@@ -870,6 +952,47 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/activity-codes/{id}": {
+      "put": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "updateCode",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityCodeView"
                 }
               }
             }
@@ -1678,6 +1801,47 @@
         }
       }
     },
+    "/api/v1/projects/{projectId}/shifts": {
+      "post": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "create_2",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkShiftCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkShiftView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{projectId}/services": {
       "get": {
         "tags": [
@@ -1732,7 +1896,7 @@
         "tags": [
           "services"
         ],
-        "operationId": "create_2",
+        "operationId": "create_3",
         "parameters": [
           {
             "name": "projectId",
@@ -2319,7 +2483,7 @@
         "tags": [
           "platform"
         ],
-        "operationId": "create_3",
+        "operationId": "create_4",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2460,7 +2624,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "create_4",
+        "operationId": "create_5",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2662,7 +2826,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "create_5",
+        "operationId": "create_6",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2963,6 +3127,130 @@
         }
       }
     },
+    "/api/v1/consumable-items": {
+      "get": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "items",
+        "parameters": [
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConsumableItemView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "createItem",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsumableItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsumableItemView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consumable-items/{id}/restore": {
+      "post": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "restoreItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsumableItemView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consumable-items/{id}/archive": {
+      "post": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "archiveItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsumableItemView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/token": {
       "post": {
         "tags": [
@@ -3209,7 +3497,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_6",
+        "operationId": "create_7",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3333,7 +3621,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_7",
+        "operationId": "create_8",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3450,6 +3738,130 @@
         }
       }
     },
+    "/api/v1/activity-codes": {
+      "get": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "codes",
+        "parameters": [
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityCodeView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "createCode",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityCodeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/activity-codes/{id}/restore": {
+      "post": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "restoreCode",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityCodeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/activity-codes/{id}/archive": {
+      "post": {
+        "tags": [
+          "report-catalogs"
+        ],
+        "operationId": "archiveCode",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityCodeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/tasks/{id}/history": {
       "get": {
         "tags": [
@@ -3511,6 +3923,86 @@
                   "items": {
                     "$ref": "#/components/schemas/TaskView"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shifts/{id}": {
+      "get": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "get_7",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkShiftView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/shift-board": {
+      "get": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "board",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftBoardView"
                 }
               }
             }
@@ -4010,6 +4502,10 @@
             "type": "integer",
             "format": "int64"
           },
+          "workShiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "plannedStart": {
             "type": "string",
             "format": "date"
@@ -4135,7 +4631,8 @@
             "type": "string",
             "enum": [
               "created",
-              "status_category"
+              "status_category",
+              "shift_created"
             ],
             "minLength": 1
           },
@@ -4167,6 +4664,7 @@
               "storekeeper",
               "parent_assignee",
               "author",
+              "shift_lead",
               "none"
             ]
           },
@@ -4267,6 +4765,13 @@
             "items": {
               "$ref": "#/components/schemas/TaskRule"
             }
+          },
+          "autoCreate": {
+            "type": "string",
+            "enum": [
+              "none",
+              "primary_assignment"
+            ]
           }
         },
         "required": [
@@ -4329,6 +4834,13 @@
               "$ref": "#/components/schemas/TaskRule"
             }
           },
+          "autoCreate": {
+            "type": "string",
+            "enum": [
+              "none",
+              "primary_assignment"
+            ]
+          },
           "templateKey": {
             "type": "string"
           },
@@ -4338,6 +4850,7 @@
         },
         "required": [
           "archived",
+          "autoCreate",
           "childrenBlockClose",
           "closingFields",
           "code",
@@ -4348,6 +4861,215 @@
           "statuses",
           "subjectKind",
           "syncService"
+        ]
+      },
+      "CrewEntry": {
+        "type": "object",
+        "properties": {
+          "personnelId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lead": {
+            "type": "boolean"
+          },
+          "minutes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "personnelId"
+        ]
+      },
+      "CrewUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "crew": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrewEntry"
+            }
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "crew",
+          "version"
+        ]
+      },
+      "CrewMemberView": {
+        "type": "object",
+        "properties": {
+          "personnelId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "positionName": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "lead": {
+            "type": "boolean"
+          },
+          "minutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "fullName",
+          "lead",
+          "minutes",
+          "personnelId",
+          "positionId",
+          "positionName"
+        ]
+      },
+      "ShiftTaskRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "statusCategory": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "statusCategory",
+          "title",
+          "typeCode"
+        ]
+      },
+      "WorkShiftView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "assetName": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "shiftCode": {
+            "type": "string"
+          },
+          "shiftName": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "upcoming",
+              "running",
+              "finished"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "schedule",
+              "manual"
+            ]
+          },
+          "crew": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrewMemberView"
+            }
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShiftTaskRef"
+            }
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "assetCode",
+          "assetId",
+          "crew",
+          "date",
+          "durationMinutes",
+          "endsAt",
+          "id",
+          "projectId",
+          "shiftCode",
+          "shiftName",
+          "source",
+          "startsAt",
+          "state",
+          "tasks",
+          "version"
         ]
       },
       "ServiceUpdateRequest": {
@@ -4516,6 +5238,17 @@
           "taskTypeId": {
             "type": "string",
             "format": "uuid"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "m2",
+              "m3",
+              "pcs",
+              "order",
+              "h"
+            ]
           }
         },
         "required": [
@@ -4549,6 +5282,17 @@
           "taskTypeId": {
             "type": "string",
             "format": "uuid"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "m",
+              "m2",
+              "m3",
+              "pcs",
+              "order",
+              "h"
+            ]
           },
           "templateKey": {
             "type": "string"
@@ -5186,6 +5930,71 @@
           "version"
         ]
       },
+      "ConsumableItemRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "serialTracked": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "unit"
+        ]
+      },
+      "ConsumableItemView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "unit": {
+            "type": "string"
+          },
+          "serialTracked": {
+            "type": "boolean"
+          },
+          "templateKey": {
+            "type": "string"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "archived",
+          "code",
+          "id",
+          "name",
+          "serialTracked",
+          "unit"
+        ]
+      },
       "AssetUpdateRequest": {
         "type": "object",
         "properties": {
@@ -5404,6 +6213,92 @@
           "id",
           "name",
           "statuses"
+        ]
+      },
+      "ActivityCodeRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "productive",
+              "contractor_npt",
+              "client_standby",
+              "other"
+            ],
+            "minLength": 1
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "category",
+          "code",
+          "name"
+        ]
+      },
+      "ActivityCodeView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "productive",
+              "contractor_npt",
+              "client_standby",
+              "other"
+            ]
+          },
+          "billable": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "templateKey": {
+            "type": "string"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "archived",
+          "billable",
+          "category",
+          "code",
+          "id",
+          "name",
+          "sortOrder"
         ]
       },
       "AddUserRequest": {
@@ -5658,6 +6553,27 @@
         "required": [
           "title",
           "typeId"
+        ]
+      },
+      "WorkShiftCreateRequest": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "shiftCode": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "date",
+          "shiftCode"
         ]
       },
       "ServiceCreateRequest": {
@@ -6324,6 +7240,62 @@
           "action",
           "createdAt",
           "id"
+        ]
+      },
+      "BoardAsset": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "assetId",
+          "code",
+          "startDate"
+        ]
+      },
+      "ShiftBoardView": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BoardAsset"
+            }
+          },
+          "scheduleShifts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Shift"
+            }
+          },
+          "shifts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkShiftView"
+            }
+          }
+        },
+        "required": [
+          "assets",
+          "scheduleShifts",
+          "shifts"
         ]
       },
       "AvailableEquipmentView": {

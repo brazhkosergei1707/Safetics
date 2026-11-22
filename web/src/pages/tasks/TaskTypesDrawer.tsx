@@ -38,7 +38,7 @@ interface FormValues {
   rules: TaskRule[]
 }
 
-const ASSIGN_TO = ['supervisor', 'storekeeper', 'parent_assignee', 'author', 'none'] as const
+const ASSIGN_TO = ['supervisor', 'storekeeper', 'parent_assignee', 'author', 'shift_lead', 'none'] as const
 
 /** Типи задач: статуси з категоріями, поля, форма закриття, предмет, синхронізація з послугою. */
 export function TaskTypesDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -102,6 +102,8 @@ export function TaskTypesDrawer({ open, onClose }: { open: boolean; onClose: () 
           subjectKind: values.subjectKind,
           syncService: values.subjectKind === 'service' && values.syncService,
           childrenBlockClose: values.childrenBlockClose,
+          // Задається шаблоном («Бурова на проєкті»), у редакторі не змінюється
+          autoCreate: editing?.type?.autoCreate,
           statuses: values.statuses.map((s) => ({
             code: s.code,
             label: { ...(s.otherLabels ?? {}), [lang]: s.label },
@@ -279,7 +281,7 @@ export function TaskTypesDrawer({ open, onClose }: { open: boolean; onClose: () 
                         <Form.Item name={[item.name, 'trigger']} rules={required} label={t('taskTypes.trigger')}>
                           <Select
                             style={{ width: 170 }}
-                            options={(['created', 'status_category'] as const).map((tr) => ({ value: tr, label: t(`taskTypes.triggers.${tr}`) }))}
+                            options={(['created', 'status_category', 'shift_created'] as const).map((tr) => ({ value: tr, label: t(`taskTypes.triggers.${tr}`) }))}
                           />
                         </Form.Item>
                         {rule?.trigger === 'status_category' && (

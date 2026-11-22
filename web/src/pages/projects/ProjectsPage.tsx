@@ -7,6 +7,7 @@ import { Link } from 'react-router'
 import { hasPermission, useSession } from '../../api/auth'
 import { type Project, shiftsSummary, useProjects } from '../../api/projects'
 import { ServiceTypesDrawer } from '../services/ServiceTypesDrawer'
+import { ReportCatalogsDrawer } from '../shifts/ReportCatalogsDrawer'
 import { TaskTypesDrawer } from '../tasks/TaskTypesDrawer'
 import { ProjectCreateDrawer } from './ProjectCreateDrawer'
 
@@ -18,6 +19,7 @@ export function ProjectsPage() {
   const [creating, setCreating] = useState(false)
   const [typesOpen, setTypesOpen] = useState(false)
   const [taskTypesOpen, setTaskTypesOpen] = useState(false)
+  const [catalogsOpen, setCatalogsOpen] = useState(false)
   const projects = useProjects({ status: status === 'all' ? undefined : status, q: query })
   const canManage = hasPermission(session, 'project.manage')
 
@@ -35,6 +37,9 @@ export function ProjectsPage() {
               </Button>
               <Button icon={<SettingOutlined />} onClick={() => setTaskTypesOpen(true)}>
                 {t('taskTypes.title')}
+              </Button>
+              <Button icon={<SettingOutlined />} onClick={() => setCatalogsOpen(true)}>
+                {t('reportCatalogs.button')}
               </Button>
             </>
           )}
@@ -104,6 +109,7 @@ export function ProjectsPage() {
       <ProjectCreateDrawer open={creating} onClose={() => setCreating(false)} />
       <ServiceTypesDrawer open={typesOpen} onClose={() => setTypesOpen(false)} />
       <TaskTypesDrawer open={taskTypesOpen} onClose={() => setTaskTypesOpen(false)} />
+      <ReportCatalogsDrawer open={catalogsOpen} onClose={() => setCatalogsOpen(false)} />
     </>
   )
 }
