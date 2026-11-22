@@ -9,6 +9,7 @@ import { useGenerateShifts } from '../../api/shiftReports'
 import { type WorkShift, useCreateShift, useShiftBoard } from '../../api/shifts'
 import { CATEGORY_COLORS, type TaskType, useTaskTypes } from '../../api/tasks'
 import { localized } from '../../i18n/localized'
+import { ServiceLevelTag } from '../assets/ServiceLevelTag'
 import { TaskDrawer } from '../tasks/TaskDrawer'
 import type { TaskDrawerState } from '../tasks/ProjectTasksTab'
 import { useTaskRights } from '../tasks/taskRights'
@@ -22,6 +23,7 @@ interface Row {
   code: string
   name?: string
   ranges: { start: string; end?: string }[]
+  serviceLevel: string
 }
 
 /**
@@ -52,13 +54,19 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
   const rows: Row[] = useMemo(() => {
     const byAsset = new Map<string, Row>()
     for (const a of board.data?.assets ?? []) {
-      const row = byAsset.get(a.assetId) ?? { assetId: a.assetId, code: a.code, name: a.name ?? undefined, ranges: [] }
+      const row = byAsset.get(a.assetId) ?? {
+        assetId: a.assetId,
+        code: a.code,
+        name: a.name ?? undefined,
+        ranges: [],
+        serviceLevel: a.serviceLevel,
+      }
       row.ranges.push({ start: a.startDate, end: a.endDate ?? undefined })
       byAsset.set(a.assetId, row)
     }
     for (const s of board.data?.shifts ?? []) {
       if (!byAsset.has(s.assetId)) {
-        byAsset.set(s.assetId, { assetId: s.assetId, code: s.assetCode, name: s.assetName ?? undefined, ranges: [] })
+        byAsset.set(s.assetId, { assetId: s.assetId, code: s.assetCode, name: s.assetName ?? undefined, ranges: [], serviceLevel: 'ok' })
       }
     }
     return [...byAsset.values()]
@@ -198,6 +206,9 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
                 <Flex vertical>
                   <Typography.Text strong>{row.code}</Typography.Text>
                   {row.name && <Typography.Text type="secondary">{row.name}</Typography.Text>}
+                  <span>
+                    <ServiceLevelTag level={row.serviceLevel} />
+                  </span>
                 </Flex>
               ),
             },

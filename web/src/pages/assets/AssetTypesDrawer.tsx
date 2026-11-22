@@ -1,5 +1,5 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
-import { App, Button, Divider, Drawer, Flex, Form, Input, List, Select, Space, Tag, Typography } from 'antd'
+import { App, Button, Checkbox, Divider, Drawer, Flex, Form, Input, List, Select, Space, Tag, Typography } from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type AssetType, useAllAssetTypes, useArchiveAssetType, useSaveAssetType } from '../../api/assets'
@@ -24,6 +24,7 @@ interface FormValues {
   fields: FieldFormValues[]
   statuses: StatusValues[]
   allowedChildTypes: string[]
+  checklist: { key?: string; label: string; critical?: boolean; otherLabels?: Record<string, string> }[]
 }
 
 /**
@@ -49,6 +50,12 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
             name: localized(type.name, lang),
             category: type.category,
             allowedChildTypes: type.allowedChildTypes,
+            checklist: (type.checklist ?? []).map((c) => ({
+              key: c.key,
+              label: localized(c.label, lang),
+              critical: c.critical,
+              otherLabels: c.label,
+            })),
             fields: fieldsToForm(type.fields, lang),
             statuses: type.statuses.map((s) => ({
               code: s.code,
@@ -61,6 +68,7 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
             category: 'auxiliary',
             fields: [],
             allowedChildTypes: [],
+            checklist: [],
             statuses: [{ code: 'active', label: t('assetTypes.defaultActive'), color: 'green' }],
           },
     )
@@ -73,6 +81,7 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
       name: { ...(editing?.type?.name ?? {}), [lang]: values.name },
       category: values.category,
       allowedChildTypes: values.allowedChildTypes ?? [],
+      checklist: checklistFromForm(values.checklist ?? [], lang),
       fields: fieldsFromForm(values.fields, lang),
       statuses: (values.statuses ?? []).map((s) => ({
         code: s.code,
@@ -188,6 +197,32 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
           <Divider titlePlacement="start">{t('assetTypes.fields')}</Divider>
           <FieldsEditor form={form} />
 
+          <Divider titlePlacement="start">{t('assetTypes.checklist')}</Divider>
+          <Typography.Paragraph type="secondary">{t('assetTypes.checklistHint')}</Typography.Paragraph>
+          <Form.List name="checklist">
+            {(items, { add, remove, move }) => (
+              <>
+                {items.map((item, index) => (
+                  <Space key={item.key} align="start" style={{ display: 'flex', marginBottom: 4 }}>
+                    <Form.Item name={[item.name, 'label']} rules={required} style={{ marginBottom: 8 }}>
+                      <Input placeholder={t('assetTypes.checklistItem')} style={{ width: 380 }} />
+                    </Form.Item>
+                    <Form.Item name={[item.name, 'critical']} valuePropName="checked" style={{ marginBottom: 8 }}>
+                      <Checkbox>{t('checklists.critical')}</Checkbox>
+                    </Form.Item>
+                    <Button size="small" disabled={index === 0} onClick={() => move(index, index - 1)}>
+                      ↑
+                    </Button>
+                    <Button icon={<DeleteOutlined />} onClick={() => remove(item.name)} />
+                  </Space>
+                ))}
+                <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ critical: false })}>
+                  {t('assetTypes.addChecklistItem')}
+                </Button>
+              </>
+            )}
+          </Form.List>
+
           <Divider titlePlacement="start">{t('assetTypes.statuses')}</Divider>
           <Form.List name="statuses">
             {(statuses, { add, remove }) => (
@@ -222,4 +257,27 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
       )}
     </Drawer>
   )
+}
+
+/** Пункти чек-листа з форми: наявні ключі зберігаються, нові — з назви (латиниця) або item_N. */
+function checklistFromForm(
+  rows: { key?: string; label: string; critical?: boolean; otherLabels?: Record<string, string> }[],
+  lang: string,
+): { key: string; label: Record<string, string>; critical: boolean }[] {
+  const used = new Set(rows.map((r) => r.key).filter(Boolean) as string[])
+  let n = 1
+  return rows.map((r) => {
+    let key = r.key
+    if (!key) {
+      const slug = r.label
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .slice(0, 40)
+      key = /^[a-z]/.test(slug) ? slug : ''
+      while (!key || used.has(key)) key = `item_${n++}`
+      used.add(key)
+    }
+    return { key, label: { ...(r.otherLabels ?? {}), [lang]: r.label }, critical: !!r.critical }
+  })
 }

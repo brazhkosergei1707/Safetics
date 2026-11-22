@@ -39,10 +39,23 @@ public class ShiftController {
 
     private final WorkShiftService shifts;
     private final ShiftReportService reports;
+    private final ShiftChecklistService checklists;
 
-    public ShiftController(WorkShiftService shifts, ShiftReportService reports) {
+    public ShiftController(WorkShiftService shifts, ShiftReportService reports, ShiftChecklistService checklists) {
         this.shifts = shifts;
         this.reports = reports;
+        this.checklists = checklists;
+    }
+
+    @GetMapping("/shifts/{id}/checklist")
+    public ShiftChecklistService.ShiftChecklistView checklist(@PathVariable("id") UUID id) {
+        return checklists.get(id);
+    }
+
+    @PostMapping("/shifts/{id}/checklist")
+    public ShiftChecklistService.ShiftChecklistView submitChecklist(
+            @PathVariable("id") UUID id, @Valid @RequestBody ShiftChecklistService.ChecklistSubmitRequest request) {
+        return checklists.submit(id, request);
     }
 
     @PostMapping("/projects/{projectId}/shifts/generate")

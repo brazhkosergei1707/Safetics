@@ -104,7 +104,99 @@
           "color": "red"
         }
       ],
-      "allowedChildTypes": []
+      "allowedChildTypes": [],
+      "checklist": [
+        {
+          "key": "fire_extinguishers",
+          "label": {
+            "en": "Fire extinguishers in place and charged",
+            "uk": "Вогнегасники на місці й заряджені",
+            "pt": "Extintores no lugar e carregados"
+          },
+          "critical": true
+        },
+        {
+          "key": "emergency_stops",
+          "label": {
+            "en": "Emergency stops work",
+            "uk": "Аварійні зупинки працюють",
+            "pt": "Paradas de emergência funcionam"
+          },
+          "critical": true
+        },
+        {
+          "key": "guards",
+          "label": {
+            "en": "Rotating parts guards in place",
+            "uk": "Огородження обертових частин на місці",
+            "pt": "Proteções das partes rotativas no lugar"
+          },
+          "critical": true
+        },
+        {
+          "key": "hp_hoses",
+          "label": {
+            "en": "High-pressure hoses and whip checks intact",
+            "uk": "Шланги високого тиску й страхувальні тросики цілі",
+            "pt": "Mangueiras de alta pressão e travas intactas"
+          },
+          "critical": true
+        },
+        {
+          "key": "wire_rope",
+          "label": {
+            "en": "Wire rope and winch without damage",
+            "uk": "Трос і лебідка без пошкоджень",
+            "pt": "Cabo de aço e guincho sem danos"
+          },
+          "critical": true
+        },
+        {
+          "key": "hydraulic_leaks",
+          "label": {
+            "en": "No hydraulic or fuel leaks",
+            "uk": "Немає витоків гідравліки й палива",
+            "pt": "Sem vazamentos hidráulicos ou de combustível"
+          },
+          "critical": false
+        },
+        {
+          "key": "fluid_levels",
+          "label": {
+            "en": "Oil, coolant and hydraulic levels OK",
+            "uk": "Рівні мастила, охолоджувальної і гідравлічної рідини в нормі",
+            "pt": "Níveis de óleo, arrefecimento e hidráulico OK"
+          },
+          "critical": false
+        },
+        {
+          "key": "ppe",
+          "label": {
+            "en": "Crew PPE available",
+            "uk": "ЗІЗ бригади в наявності",
+            "pt": "EPI da equipe disponível"
+          },
+          "critical": false
+        },
+        {
+          "key": "first_aid",
+          "label": {
+            "en": "First aid kit complete",
+            "uk": "Аптечка укомплектована",
+            "pt": "Kit de primeiros socorros completo"
+          },
+          "critical": false
+        },
+        {
+          "key": "housekeeping",
+          "label": {
+            "en": "Site tidy, no trip hazards",
+            "uk": "Порядок на майданчику, немає перешкод",
+            "pt": "Área organizada, sem riscos de tropeço"
+          },
+          "critical": false
+        }
+      ]
     },
     {
       "code": "vehicle",

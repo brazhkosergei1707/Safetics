@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.safetics.assets.AssetDtos.AssetTypeRequest;
 import com.safetics.assets.AssetDtos.AssetTypeView;
+import com.safetics.assets.AssetDtos.ChecklistItem;
 import com.safetics.core.audit.AuditService;
 import com.safetics.core.tenancy.TenantContext;
 import com.safetics.core.web.ApiException;
@@ -45,8 +46,10 @@ public class AssetTypeService {
     private static final TypeReference<Map<String, String>> LABELS = new TypeReference<>() {
     };
 
+    private static final TypeReference<List<ChecklistItem>> CHECKLIST = new TypeReference<>() {
+    };
     private static final String SELECT = """
-            select id, code, name, category, fields, statuses, allowed_child_types, template_key, archived_at
+            select id, code, name, category, fields, statuses, allowed_child_types, checklist, template_key, archived_at
             from asset_type
             """;
 
@@ -84,13 +87,15 @@ public class AssetTypeService {
             throw ApiException.validation("code", "duplicate");
         }
         UUID id = db.sql("""
-                        insert into asset_type (company_id, code, name, category, fields, statuses, allowed_child_types, template_key)
-                        values (?, ?, cast(? as jsonb), ?, cast(? as jsonb), cast(? as jsonb), cast(? as jsonb), ?)
+                        insert into asset_type (company_id, code, name, category, fields, statuses, allowed_child_types,
+                                                checklist, template_key)
+                        values (?, ?, cast(? as jsonb), ?, cast(? as jsonb), cast(? as jsonb), cast(? as jsonb), cast(? as jsonb), ?)
                         returning id
                         """)
                 .params(TenantContext.requireCompanyId(), request.code(), json.writeValueAsString(request.name()), category(request),
                         json.writeValueAsString(request.fields()), json.writeValueAsString(request.statuses()),
-                        json.writeValueAsString(childTypes(request)), templateKey)
+                        json.writeValueAsString(childTypes(request)),
+                        json.writeValueAsString(request.checklist() == null ? List.of() : request.checklist()), templateKey)
                 .query(UUID.class)
                 .single();
         audit.record("asset_type", id, "create", Map.of("code", request.code()));
@@ -106,11 +111,12 @@ public class AssetTypeService {
         db.sql("""
                         update asset_type
                         set name = cast(? as jsonb), category = ?, fields = cast(? as jsonb), statuses = cast(? as jsonb),
-                            allowed_child_types = cast(? as jsonb), updated_at = now()
+                            allowed_child_types = cast(? as jsonb), checklist = cast(? as jsonb), updated_at = now()
                         where id = ?
                         """)
                 .params(json.writeValueAsString(request.name()), category(request), json.writeValueAsString(request.fields()),
-                        json.writeValueAsString(request.statuses()), json.writeValueAsString(childTypes(request)), id)
+                        json.writeValueAsString(request.statuses()), json.writeValueAsString(childTypes(request)),
+                        json.writeValueAsString(request.checklist() == null ? existing.checklist() : request.checklist()), id)
                 .update();
         audit.record("asset_type", id, "update", Map.of("code", request.code()));
         return get(id);
@@ -142,6 +148,7 @@ public class AssetTypeService {
         }
 
         validateFields(request.fields(), errors);
+        validateChecklist(request.checklist(), errors);
 
         if (request.statuses().isEmpty()) {
             errors.put("statuses", "required");
@@ -198,6 +205,26 @@ public class AssetTypeService {
         return request.category() == null ? DEFAULT_CATEGORY : request.category();
     }
 
+    /** Пункти чек-листа: ключ латиницею (унікальний), назва хоча б однією мовою. */
+    static void validateChecklist(List<ChecklistItem> checklist, Map<String, String> errors) {
+        if (checklist == null) {
+            return;
+        }
+        Set<String> keys = new HashSet<>();
+        for (int i = 0; i < checklist.size(); i++) {
+            ChecklistItem item = checklist.get(i);
+            String prefix = "checklist[" + i + "].";
+            if (item.key() == null || !item.key().matches("[a-z][a-z0-9_]{0,49}")) {
+                errors.put(prefix + "key", "invalid_format");
+            } else if (!keys.add(item.key())) {
+                errors.put(prefix + "key", "duplicate");
+            }
+            if (item.label() == null || item.label().values().stream().allMatch(v -> v == null || v.isBlank())) {
+                errors.put(prefix + "label", "required");
+            }
+        }
+    }
+
     private static List<String> childTypes(AssetTypeRequest request) {
         return request.allowedChildTypes() == null ? List.of() : request.allowedChildTypes();
     }
@@ -211,6 +238,7 @@ public class AssetTypeService {
                 json.readValue(rs.getString("fields"), FIELDS),
                 json.readValue(rs.getString("statuses"), STATUSES),
                 json.readValue(rs.getString("allowed_child_types"), STRINGS),
+                json.readValue(rs.getString("checklist"), CHECKLIST),
                 rs.getString("template_key"),
                 rs.getObject("archived_at") != null);
     }

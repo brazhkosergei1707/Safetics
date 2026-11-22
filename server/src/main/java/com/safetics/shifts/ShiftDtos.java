@@ -69,7 +69,8 @@ public final class ShiftDtos {
             @NotNull String code,
             String name,
             @NotNull LocalDate startDate,
-            LocalDate endDate) {
+            LocalDate endDate,
+            @NotNull @Schema(allowableValues = {"ok", "low", "medium", "high"}) String serviceLevel) {
     }
 
     /** Дошка «Обладнання × зміни»: рядки — обладнання, зміни графіка (на кінцеву дату) — для колонок. */

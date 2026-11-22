@@ -28,8 +28,16 @@ public final class AssetDtos {
             @NotNull List<FieldDefinition> fields,
             @NotNull List<StatusDefinition> statuses,
             @NotNull List<String> allowedChildTypes,
+            @NotNull List<ChecklistItem> checklist,
             String templateKey,
             @NotNull boolean archived) {
+    }
+
+    /** Пункт чек-листа зміни: critical — непройдений пункт дає «Сервіс» з критичністю high і алерт менеджеру. */
+    public record ChecklistItem(
+            @NotBlank String key,
+            @NotNull Map<String, String> label,
+            @NotNull Boolean critical) {
     }
 
     /** Створення і зміна типу. code після створення не змінюється; category за замовчуванням auxiliary. */
@@ -39,7 +47,8 @@ public final class AssetDtos {
             @Schema(allowableValues = {"primary", "auxiliary"}) String category,
             @NotNull @Valid List<FieldDefinition> fields,
             @NotNull @Valid List<StatusDefinition> statuses,
-            List<String> allowedChildTypes) {
+            List<String> allowedChildTypes,
+            @Valid List<ChecklistItem> checklist) {
     }
 
     public record InstallTemplateRequest(@NotBlank String templateKey) {
@@ -68,7 +77,9 @@ public final class AssetDtos {
             @NotNull int version,
             @NotNull boolean archived,
             @NotNull OffsetDateTime createdAt,
-            @NotNull OffsetDateTime updatedAt) {
+            @NotNull OffsetDateTime updatedAt,
+            @NotNull @Schema(allowableValues = {"ok", "low", "medium", "high"}) String serviceLevel,
+            @NotNull int openServiceTasks) {
     }
 
     /** status == null — перший статус типу. */

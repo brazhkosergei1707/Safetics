@@ -1500,6 +1500,76 @@
         }
       }
     },
+    "/api/v1/shifts/{id}/checklist": {
+      "get": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "checklist",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftChecklistView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "submitChecklist",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChecklistSubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftChecklistView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/services/{id}/start": {
       "post": {
         "tags": [
@@ -3931,6 +4001,43 @@
         }
       }
     },
+    "/api/v1/alerts/{id}/read": {
+      "post": {
+        "tags": [
+          "alerts"
+        ],
+        "operationId": "read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/alerts/read-all": {
+      "post": {
+        "tags": [
+          "alerts"
+        ],
+        "operationId": "readAll",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/v1/activity-codes": {
       "get": {
         "tags": [
@@ -4469,6 +4576,26 @@
                   "items": {
                     "$ref": "#/components/schemas/AuditEntry"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/alerts": {
+      "get": {
+        "tags": [
+          "alerts"
+        ],
+        "operationId": "mine_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertsView"
                 }
               }
             }
@@ -6929,6 +7056,19 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "serviceLevel": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "openServiceTasks": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "required": [
@@ -6937,6 +7077,8 @@
           "code",
           "createdAt",
           "id",
+          "openServiceTasks",
+          "serviceLevel",
           "status",
           "typeCode",
           "typeId",
@@ -6981,6 +7123,12 @@
             "items": {
               "type": "string"
             }
+          },
+          "checklist": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChecklistItem"
+            }
           }
         },
         "required": [
@@ -6988,6 +7136,29 @@
           "fields",
           "name",
           "statuses"
+        ]
+      },
+      "ChecklistItem": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "critical": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "critical",
+          "key",
+          "label"
         ]
       },
       "StatusDefinition": {
@@ -7053,6 +7224,12 @@
               "type": "string"
             }
           },
+          "checklist": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChecklistItem"
+            }
+          },
           "templateKey": {
             "type": "string"
           },
@@ -7064,6 +7241,7 @@
           "allowedChildTypes",
           "archived",
           "category",
+          "checklist",
           "code",
           "fields",
           "id",
@@ -7303,6 +7481,142 @@
         },
         "required": [
           "version"
+        ]
+      },
+      "ChecklistAnswer": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "na"
+            ]
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "result"
+        ]
+      },
+      "ChecklistSubmitRequest": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChecklistAnswer"
+            }
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "answers"
+        ]
+      },
+      "ChecklistItemView": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "critical": {
+            "type": "boolean"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "na"
+            ]
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "critical",
+          "key",
+          "label"
+        ]
+      },
+      "ShiftChecklistView": {
+        "type": "object",
+        "properties": {
+          "shiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "passed",
+              "failed"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChecklistItemView"
+            }
+          },
+          "comment": {
+            "type": "string"
+          },
+          "canEdit": {
+            "type": "boolean"
+          },
+          "checklistTaskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceTaskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceTaskNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "submittedByName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCode",
+          "assetId",
+          "canEdit",
+          "items",
+          "shiftId",
+          "status"
         ]
       },
       "CompleteServiceRequest": {
@@ -8433,11 +8747,21 @@
           "endDate": {
             "type": "string",
             "format": "date"
+          },
+          "serviceLevel": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "low",
+              "medium",
+              "high"
+            ]
           }
         },
         "required": [
           "assetId",
           "code",
+          "serviceLevel",
           "startDate"
         ]
       },
@@ -8626,6 +8950,66 @@
         "required": [
           "items",
           "total"
+        ]
+      },
+      "AlertView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "taskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "taskNumber": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "read": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "kind",
+          "read",
+          "title"
+        ]
+      },
+      "AlertsView": {
+        "type": "object",
+        "properties": {
+          "unread": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertView"
+            }
+          }
+        },
+        "required": [
+          "items",
+          "unread"
         ]
       }
     },

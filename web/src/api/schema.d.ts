@@ -452,6 +452,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shifts/{id}/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["checklist"];
+        put?: never;
+        post: operations["submitChecklist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/services/{id}/start": {
         parameters: {
             query?: never;
@@ -1284,6 +1300,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/alerts/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["readAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/activity-codes": {
         parameters: {
             query?: never;
@@ -1500,6 +1548,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["latest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["mine_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2308,6 +2372,10 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            /** @enum {string} */
+            serviceLevel: "ok" | "low" | "medium" | "high";
+            /** Format: int32 */
+            openServiceTasks: number;
         };
         AssetTypeRequest: {
             code: string;
@@ -2319,6 +2387,14 @@ export interface components {
             fields: components["schemas"]["FieldDefinition"][];
             statuses: components["schemas"]["StatusDefinition"][];
             allowedChildTypes?: string[];
+            checklist?: components["schemas"]["ChecklistItem"][];
+        };
+        ChecklistItem: {
+            key: string;
+            label: {
+                [key: string]: string;
+            };
+            critical: boolean;
         };
         StatusDefinition: {
             code: string;
@@ -2339,6 +2415,7 @@ export interface components {
             fields: components["schemas"]["FieldDefinition"][];
             statuses: components["schemas"]["StatusDefinition"][];
             allowedChildTypes: string[];
+            checklist: components["schemas"]["ChecklistItem"][];
             templateKey?: string;
             archived: boolean;
         };
@@ -2408,6 +2485,47 @@ export interface components {
         ReportActionRequest: {
             /** Format: int32 */
             version: number;
+        };
+        ChecklistAnswer: {
+            key: string;
+            /** @enum {string} */
+            result: "pass" | "fail" | "na";
+            comment?: string;
+        };
+        ChecklistSubmitRequest: {
+            answers: components["schemas"]["ChecklistAnswer"][];
+            comment?: string;
+        };
+        ChecklistItemView: {
+            key: string;
+            label: {
+                [key: string]: string;
+            };
+            critical: boolean;
+            /** @enum {string} */
+            result?: "pass" | "fail" | "na";
+            comment?: string;
+        };
+        ShiftChecklistView: {
+            /** Format: uuid */
+            shiftId: string;
+            /** Format: uuid */
+            assetId: string;
+            assetCode: string;
+            /** @enum {string} */
+            status: "new" | "passed" | "failed";
+            items: components["schemas"]["ChecklistItemView"][];
+            comment?: string;
+            canEdit: boolean;
+            /** Format: uuid */
+            checklistTaskId?: string;
+            /** Format: uuid */
+            serviceTaskId?: string;
+            /** Format: int64 */
+            serviceTaskNumber?: number;
+            /** Format: date-time */
+            submittedAt?: string;
+            submittedByName?: string;
         };
         CompleteServiceRequest: {
             closingValues?: {
@@ -2763,6 +2881,8 @@ export interface components {
             startDate: string;
             /** Format: date */
             endDate?: string;
+            /** @enum {string} */
+            serviceLevel: "ok" | "low" | "medium" | "high";
         };
         ShiftBoardView: {
             assets: components["schemas"]["BoardAsset"][];
@@ -2817,6 +2937,26 @@ export interface components {
             items: components["schemas"]["AssetView"][];
             /** Format: int64 */
             total: number;
+        };
+        AlertView: {
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            title: string;
+            /** Format: uuid */
+            projectId?: string;
+            /** Format: uuid */
+            taskId?: string;
+            /** Format: int64 */
+            taskNumber?: number;
+            /** Format: date-time */
+            createdAt: string;
+            read: boolean;
+        };
+        AlertsView: {
+            /** Format: int64 */
+            unread: number;
+            items: components["schemas"]["AlertView"][];
         };
     };
     responses: never;
@@ -3815,6 +3955,54 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ShiftReportView"];
+                };
+            };
+        };
+    };
+    checklist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiftChecklistView"];
+                };
+            };
+        };
+    };
+    submitChecklist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChecklistSubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiftChecklistView"];
                 };
             };
         };
@@ -5456,6 +5644,44 @@ export interface operations {
             };
         };
     };
+    read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     codes: {
         parameters: {
             query?: {
@@ -5790,6 +6016,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AuditEntry"][];
+                };
+            };
+        };
+    };
+    mine_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AlertsView"];
                 };
             };
         };

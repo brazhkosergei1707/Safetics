@@ -8,6 +8,7 @@ import { type Project, useProjectPersonnel } from '../../api/projects'
 import { useUpdateCrew, useWorkShift } from '../../api/shifts'
 import { CATEGORY_COLORS, type TaskType } from '../../api/tasks'
 import { localized } from '../../i18n/localized'
+import { ShiftChecklistDrawer } from './ShiftChecklistDrawer'
 import { ShiftReportDrawer } from './ShiftReportDrawer'
 
 interface CrewRow {
@@ -42,6 +43,7 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
   const current = shift.data
   const crew = Form.useWatch('crew', form)
   const [reportOpen, setReportOpen] = useState(false)
+  const [checklistOpen, setChecklistOpen] = useState(false)
 
   useEffect(() => {
     if (!current) return
@@ -130,9 +132,12 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
             ]}
           />
 
-          <Button type="primary" ghost style={{ marginTop: 12 }} onClick={() => setReportOpen(true)}>
-            {t('reports.open')}
-          </Button>
+          <Flex gap={8} style={{ marginTop: 12 }}>
+            <Button onClick={() => setChecklistOpen(true)}>{t('checklists.open')}</Button>
+            <Button type="primary" ghost onClick={() => setReportOpen(true)}>
+              {t('reports.open')}
+            </Button>
+          </Flex>
 
           <Divider titlePlacement="start">{t('shifts.tasks')}</Divider>
           {current.tasks.length === 0 ? (
@@ -208,6 +213,12 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
           </Form>
         </>
       )}
+      <ShiftChecklistDrawer
+        shiftId={checklistOpen ? shiftId : undefined}
+        title={current ? `${current.assetCode} · ${dayjs(current.date).format('DD.MM.YYYY')} · ${current.shiftName}` : undefined}
+        onClose={() => setChecklistOpen(false)}
+        onOpenTask={onOpenTask}
+      />
       <ShiftReportDrawer
         project={project}
         shiftId={reportOpen ? shiftId : undefined}

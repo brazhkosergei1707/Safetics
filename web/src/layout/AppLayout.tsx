@@ -16,6 +16,7 @@ import {
 import { Button, Flex, Layout, Menu, Select, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation, useNavigate } from 'react-router'
+import { AlertsBell } from './AlertsBell'
 import { hasPermission, useLogout, useSession, useSwitchCompany } from '../api/auth'
 import { LANGUAGES } from '../i18n'
 import { localized } from '../i18n/localized'
@@ -97,6 +98,7 @@ export function AppLayout() {
                   .join(' · ')}
               </Typography.Text>
             </Flex>
+            {session?.company && <AlertsBell />}
             <Select
               value={i18n.language}
               onChange={(lng) => i18n.changeLanguage(lng)}

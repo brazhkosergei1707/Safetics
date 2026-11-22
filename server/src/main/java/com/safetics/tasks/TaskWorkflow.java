@@ -510,6 +510,34 @@ public class TaskWorkflow {
         });
     }
 
+    /**
+     * Задача, створена документом (непройдений чек-лист → «Сервіс»): тип за кодом, предмет —
+     * обладнання, зв'язок «пов'язана» з задачею документа. Від імені системи. Порожньо, якщо типу немає.
+     */
+    @Transactional
+    public Optional<UUID> createLinkedTask(ProjectView project, String typeCode, UUID assetId, String title,
+                                           String description, Map<String, Object> attributes, UUID relatedTaskId) {
+        return asSystem(() -> {
+            Optional<TaskTypeView> found = types.findByCode(typeCode).filter(t -> !t.archived());
+            if (found.isEmpty()) {
+                return Optional.<UUID>empty();
+            }
+            TaskTypeView type = found.get();
+            String trimmed = title.length() > 300 ? title.substring(0, 300) : title;
+            UUID id = insertTask(project.id(), type, type.statuses().getFirst(), trimmed, description,
+                    roleHolder("supervisor", project), currentUserId(), null, assetId, null, projects.today(project), null,
+                    new LinkedHashMap<>(attributes));
+            history(id, "create", Map.of("type", type.code(), "title", trimmed, "status", type.statuses().getFirst().code()));
+            if (relatedTaskId != null) {
+                db.sql("insert into task_link (company_id, from_task, to_task, kind) values (?, ?, ?, 'relates') on conflict do nothing")
+                        .params(TenantContext.requireCompanyId(), relatedTaskId, id).update();
+            }
+            audit.record("task", id, "create", Map.of("projectId", project.id(), "byDocument", relatedTaskId == null ? "" : relatedTaskId));
+            runRules(get(id), type, project, "created", null, 0);
+            return Optional.of(id);
+        });
+    }
+
     /** Нова зміна → правила shift_created задачі обладнання (змінний рапорт, далі — чек-лист). */
     @Transactional
     public void runShiftCreated(UUID taskId, ShiftContext shift) {
@@ -756,7 +784,7 @@ public class TaskWorkflow {
     }
 
     /** Назва мовою запиту (заголовок Accept-Language; без нього — англійська), інакше першою наявною. */
-    static String localizedName(Map<String, String> name) {
+    public static String localizedName(Map<String, String> name) {
         String value = name.get(language());
         if (value == null || value.isBlank()) {
             value = name.getOrDefault("en", name.values().stream().findFirst().orElse(""));

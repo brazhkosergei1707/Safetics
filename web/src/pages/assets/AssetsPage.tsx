@@ -16,6 +16,7 @@ import {
 import { hasPermission, useSession } from '../../api/auth'
 import { ApiError } from '../../api/client'
 import { localized } from '../../i18n/localized'
+import { ServiceLevelTag } from './ServiceLevelTag'
 import { AssetFormDrawer } from './AssetFormDrawer'
 import { AssetTypesDrawer } from './AssetTypesDrawer'
 
@@ -170,6 +171,11 @@ function buildColumns(
         canEdit ? <Typography.Link onClick={() => actions.edit(asset)}>{code}</Typography.Link> : code,
     },
     { title: t('assets.name'), dataIndex: 'name' },
+    {
+      title: t('assets.service'),
+      key: 'service',
+      render: (_: unknown, asset: Asset) => <ServiceLevelTag level={asset.serviceLevel} count={asset.openServiceTasks} />,
+    },
     {
       title: t('assets.status'),
       dataIndex: 'status',

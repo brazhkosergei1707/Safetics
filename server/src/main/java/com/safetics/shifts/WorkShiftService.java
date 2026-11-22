@@ -114,7 +114,11 @@ public class WorkShiftService {
             throw ApiException.validation("to", "too_large");
         }
         List<BoardAsset> assets = db.sql("""
-                        select ea.asset_id, a.code, a.name, ea.start_date, ea.end_date
+                        select ea.asset_id, a.code, a.name, ea.start_date, ea.end_date,
+                               (select max(case st.attributes ->> 'criticality' when 'high' then 3 when 'low' then 1 else 2 end)
+                                from task st join task_type stt on stt.id = st.task_type_id
+                                where st.asset_id = a.id and stt.code = 'service'
+                                  and st.status_category in ('new', 'active')) as service_level
                         from equipment_assignment ea join asset a on a.id = ea.asset_id
                         where ea.project_id = ? and ea.exclusive
                           and ea.start_date <= ? and (ea.end_date is null or ea.end_date >= ?)
@@ -123,7 +127,13 @@ public class WorkShiftService {
                 .params(projectId, end, start)
                 .query((rs, n) -> new BoardAsset(rs.getObject("asset_id", UUID.class), rs.getString("code"),
                         rs.getString("name"), rs.getObject("start_date", LocalDate.class),
-                        rs.getObject("end_date", LocalDate.class)))
+                        rs.getObject("end_date", LocalDate.class),
+                        switch (rs.getObject("service_level") == null ? 0 : rs.getInt("service_level")) {
+                            case 3 -> "high";
+                            case 2 -> "medium";
+                            case 1 -> "low";
+                            default -> "ok";
+                        }))
                 .list();
         List<WorkShiftView> shifts = views(db.sql(SELECT + """
                          where s.project_id = ? and s.shift_date between ? and ?

@@ -46,6 +46,7 @@ import {
 } from '../../api/tasks'
 import { AttributeField } from '../../components/AttributeField'
 import { localized } from '../../i18n/localized'
+import { ShiftChecklistDrawer } from '../shifts/ShiftChecklistDrawer'
 import { ShiftReportDrawer } from '../shifts/ShiftReportDrawer'
 import { useAssigneeOptions, useTaskRights } from './taskRights'
 
@@ -100,6 +101,7 @@ export function TaskDrawer({ open, project, types, taskId, newType, parentId, on
 
   const current = task.data
   const [reportShift, setReportShift] = useState<string>()
+  const [checklistShift, setChecklistShift] = useState<string>()
   const type = current ? types.find((tt) => tt.id === current.typeId) : newType
   const services = useProjectServices(project.id)
   const assets = useAssets({}, open && type?.subjectKind === 'asset')
@@ -281,6 +283,11 @@ export function TaskDrawer({ open, project, types, taskId, newType, parentId, on
               <Tag>{t('tasks.childrenProgress', { done: current.childrenTotal - current.childrenOpen, total: current.childrenTotal })}</Tag>
             )}
           </Flex>
+          {current.workShiftId && type.code === 'shift_checklist' && (
+            <Button type="primary" ghost style={{ marginBottom: 12 }} onClick={() => setChecklistShift(current.workShiftId ?? undefined)}>
+              {t('checklists.open')}
+            </Button>
+          )}
           {current.workShiftId && type.code === 'shift_report' && (
             <Button type="primary" ghost style={{ marginBottom: 12 }} onClick={() => setReportShift(current.workShiftId ?? undefined)}>
               {t('reports.open')}
@@ -518,6 +525,12 @@ export function TaskDrawer({ open, project, types, taskId, newType, parentId, on
           </Form.Item>
         </Form>
       </Modal>
+      <ShiftChecklistDrawer
+        shiftId={checklistShift}
+        title={current?.title}
+        onClose={() => setChecklistShift(undefined)}
+        onOpenTask={onOpenTask}
+      />
       <ShiftReportDrawer
         project={project}
         shiftId={reportShift}

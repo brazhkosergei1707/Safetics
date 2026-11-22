@@ -49,9 +49,17 @@ public class AssetService {
 
     private static final String SELECT = """
             select a.id, a.asset_type_id, t.code as type_code, a.parent_id, a.code, a.name, a.status,
-                   a.attributes, a.version, a.archived_at, a.created_at, a.updated_at
+                   a.attributes, a.version, a.archived_at, a.created_at, a.updated_at,
+                   sv.level as service_level, coalesce(sv.open, 0) as open_service
             from asset a
                      join asset_type t on t.id = a.asset_type_id
+                     left join lateral (
+                         -- Сервісний статус: відкриті задачі «Сервіс» на обладнання, найвища критичність
+                         select max(case st.attributes ->> 'criticality' when 'high' then 3 when 'low' then 1 else 2 end) as level,
+                                count(*) as open
+                         from task st join task_type stt on stt.id = st.task_type_id
+                         where st.asset_id = a.id and stt.code = 'service' and st.status_category in ('new', 'active')
+                         ) sv on true
             """;
 
     private final JdbcClient db;
@@ -309,6 +317,17 @@ public class AssetService {
                 rs.getInt("version"),
                 rs.getObject("archived_at") != null,
                 rs.getObject("created_at", OffsetDateTime.class),
-                rs.getObject("updated_at", OffsetDateTime.class));
+                rs.getObject("updated_at", OffsetDateTime.class),
+                serviceLevel(rs.getObject("service_level") == null ? 0 : rs.getInt("service_level")),
+                rs.getInt("open_service"));
+    }
+
+    static String serviceLevel(int level) {
+        return switch (level) {
+            case 3 -> "high";
+            case 2 -> "medium";
+            case 1 -> "low";
+            default -> "ok";
+        };
     }
 }
