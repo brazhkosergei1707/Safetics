@@ -7,179 +7,13 @@
   },
   "assetTypes": [
     {
-      "code": "drill_hole",
-      "name": {
-        "en": "Drill hole",
-        "uk": "Свердловина",
-        "pt": "Furo de sondagem"
-      },
-      "fields": [
-        {
-          "key": "easting",
-          "label": {
-            "en": "Easting",
-            "uk": "Схід (X)",
-            "pt": "Este (X)"
-          },
-          "type": "number",
-          "unit": "m"
-        },
-        {
-          "key": "northing",
-          "label": {
-            "en": "Northing",
-            "uk": "Північ (Y)",
-            "pt": "Norte (Y)"
-          },
-          "type": "number",
-          "unit": "m"
-        },
-        {
-          "key": "elevation",
-          "label": {
-            "en": "Collar elevation",
-            "uk": "Висота устя",
-            "pt": "Cota da boca"
-          },
-          "type": "number",
-          "unit": "m"
-        },
-        {
-          "key": "azimuth",
-          "label": {
-            "en": "Azimuth",
-            "uk": "Азимут",
-            "pt": "Azimute"
-          },
-          "type": "number",
-          "unit": "°",
-          "min": 0,
-          "max": 360
-        },
-        {
-          "key": "dip",
-          "label": {
-            "en": "Dip",
-            "uk": "Кут нахилу",
-            "pt": "Inclinação"
-          },
-          "type": "number",
-          "unit": "°",
-          "min": -90,
-          "max": 90
-        },
-        {
-          "key": "plannedDepth",
-          "label": {
-            "en": "Planned depth",
-            "uk": "Проєктна глибина",
-            "pt": "Profundidade planejada"
-          },
-          "type": "number",
-          "unit": "m",
-          "min": 0
-        },
-        {
-          "key": "actualDepth",
-          "label": {
-            "en": "Actual depth",
-            "uk": "Фактична глибина",
-            "pt": "Profundidade real"
-          },
-          "type": "number",
-          "unit": "m",
-          "min": 0
-        },
-        {
-          "key": "coreSize",
-          "label": {
-            "en": "Core size",
-            "uk": "Діаметр керна",
-            "pt": "Diâmetro do testemunho"
-          },
-          "type": "enum",
-          "options": [
-            "BQ",
-            "NQ",
-            "HQ",
-            "PQ"
-          ]
-        },
-        {
-          "key": "startDate",
-          "label": {
-            "en": "Start date",
-            "uk": "Дата початку",
-            "pt": "Data de início"
-          },
-          "type": "date"
-        },
-        {
-          "key": "endDate",
-          "label": {
-            "en": "End date",
-            "uk": "Дата завершення",
-            "pt": "Data de término"
-          },
-          "type": "date"
-        },
-        {
-          "key": "notes",
-          "label": {
-            "en": "Notes",
-            "uk": "Примітки",
-            "pt": "Observações"
-          },
-          "type": "text"
-        }
-      ],
-      "statuses": [
-        {
-          "code": "planned",
-          "label": {
-            "en": "Planned",
-            "uk": "Планується",
-            "pt": "Planejado"
-          },
-          "color": "default"
-        },
-        {
-          "code": "drilling",
-          "label": {
-            "en": "Drilling",
-            "uk": "Буриться",
-            "pt": "Em perfuração"
-          },
-          "color": "blue"
-        },
-        {
-          "code": "completed",
-          "label": {
-            "en": "Completed",
-            "uk": "Завершена",
-            "pt": "Concluído"
-          },
-          "color": "green"
-        },
-        {
-          "code": "abandoned",
-          "label": {
-            "en": "Abandoned",
-            "uk": "Ліквідована",
-            "pt": "Abandonado"
-          },
-          "color": "red"
-        }
-      ],
-      "allowedChildTypes": []
-    },
-    {
       "code": "drill_rig",
       "name": {
         "en": "Drill rig",
         "uk": "Бурова установка",
         "pt": "Sonda"
       },
+      "category": "primary",
       "fields": [
         {
           "key": "model",
@@ -279,6 +113,7 @@
         "uk": "Автомобіль",
         "pt": "Veículo"
       },
+      "category": "auxiliary",
       "fields": [
         {
           "key": "plate",
@@ -349,6 +184,7 @@
         "uk": "Табір",
         "pt": "Acampamento"
       },
+      "category": "auxiliary",
       "fields": [
         {
           "key": "capacity",
@@ -401,6 +237,7 @@
         "uk": "Ємність ПММ",
         "pt": "Tanque de combustível"
       },
+      "category": "auxiliary",
       "fields": [
         {
           "key": "capacity",

@@ -749,6 +749,13 @@
               "type": "string"
             }
           },
+          "category": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "auxiliary"
+            ]
+          },
           "fields": {
             "type": "array",
             "items": {
@@ -864,6 +871,13 @@
               "type": "string"
             }
           },
+          "category": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "auxiliary"
+            ]
+          },
           "fields": {
             "type": "array",
             "items": {
@@ -892,6 +906,7 @@
         "required": [
           "allowedChildTypes",
           "archived",
+          "category",
           "code",
           "fields",
           "id",

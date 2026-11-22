@@ -24,7 +24,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Типи об'єктів компанії. Компанія фільтрується RLS, тому в запитах немає {@code where company_id}.
+ * Типи обладнання компанії (в коді — asset). Компанія фільтрується RLS, тому в запитах немає {@code where company_id}.
  * Зміна схеми полів не чіпає наявні об'єкти: нові правила діють при наступному збереженні.
  */
 @Service
@@ -33,6 +33,8 @@ public class AssetTypeService {
     static final Pattern CODE = Pattern.compile("^[a-z][a-z0-9_]{1,49}$");
     static final Pattern FIELD_KEY = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]{0,49}$");
     static final Pattern STATUS_CODE = Pattern.compile("^[a-z][a-z0-9_]{0,49}$");
+    static final List<String> CATEGORIES = List.of("primary", "auxiliary");
+    static final String DEFAULT_CATEGORY = "auxiliary";
 
     private static final TypeReference<List<FieldDefinition>> FIELDS = new TypeReference<>() {
     };
@@ -44,7 +46,7 @@ public class AssetTypeService {
     };
 
     private static final String SELECT = """
-            select id, code, name, fields, statuses, allowed_child_types, template_key, archived_at
+            select id, code, name, category, fields, statuses, allowed_child_types, template_key, archived_at
             from asset_type
             """;
 
@@ -82,11 +84,11 @@ public class AssetTypeService {
             throw ApiException.validation("code", "duplicate");
         }
         UUID id = db.sql("""
-                        insert into asset_type (company_id, code, name, fields, statuses, allowed_child_types, template_key)
-                        values (?, ?, cast(? as jsonb), cast(? as jsonb), cast(? as jsonb), cast(? as jsonb), ?)
+                        insert into asset_type (company_id, code, name, category, fields, statuses, allowed_child_types, template_key)
+                        values (?, ?, cast(? as jsonb), ?, cast(? as jsonb), cast(? as jsonb), cast(? as jsonb), ?)
                         returning id
                         """)
-                .params(TenantContext.requireCompanyId(), request.code(), json.writeValueAsString(request.name()),
+                .params(TenantContext.requireCompanyId(), request.code(), json.writeValueAsString(request.name()), category(request),
                         json.writeValueAsString(request.fields()), json.writeValueAsString(request.statuses()),
                         json.writeValueAsString(childTypes(request)), templateKey)
                 .query(UUID.class)
@@ -103,11 +105,11 @@ public class AssetTypeService {
         validateDefinition(request);
         db.sql("""
                         update asset_type
-                        set name = cast(? as jsonb), fields = cast(? as jsonb), statuses = cast(? as jsonb),
+                        set name = cast(? as jsonb), category = ?, fields = cast(? as jsonb), statuses = cast(? as jsonb),
                             allowed_child_types = cast(? as jsonb), updated_at = now()
                         where id = ?
                         """)
-                .params(json.writeValueAsString(request.name()), json.writeValueAsString(request.fields()),
+                .params(json.writeValueAsString(request.name()), category(request), json.writeValueAsString(request.fields()),
                         json.writeValueAsString(request.statuses()), json.writeValueAsString(childTypes(request)), id)
                 .update();
         audit.record("asset_type", id, "update", Map.of("code", request.code()));
@@ -119,6 +121,9 @@ public class AssetTypeService {
         Map<String, String> errors = new LinkedHashMap<>();
         if (!CODE.matcher(request.code()).matches()) {
             errors.put("code", "invalid_format");
+        }
+        if (request.category() != null && !CATEGORIES.contains(request.category())) {
+            errors.put("category", "invalid_option");
         }
         if (request.name().isEmpty() || request.name().values().stream().allMatch(v -> v == null || v.isBlank())) {
             errors.put("name", "required");
@@ -167,6 +172,10 @@ public class AssetTypeService {
         }
     }
 
+    private static String category(AssetTypeRequest request) {
+        return request.category() == null ? DEFAULT_CATEGORY : request.category();
+    }
+
     private static List<String> childTypes(AssetTypeRequest request) {
         return request.allowedChildTypes() == null ? List.of() : request.allowedChildTypes();
     }
@@ -176,6 +185,7 @@ public class AssetTypeService {
                 rs.getObject("id", UUID.class),
                 rs.getString("code"),
                 json.readValue(rs.getString("name"), LABELS),
+                rs.getString("category"),
                 json.readValue(rs.getString("fields"), FIELDS),
                 json.readValue(rs.getString("statuses"), STATUSES),
                 json.readValue(rs.getString("allowed_child_types"), STRINGS),

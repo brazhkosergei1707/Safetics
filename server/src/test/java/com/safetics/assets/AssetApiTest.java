@@ -20,8 +20,8 @@ import com.safetics.TestApi;
 import com.safetics.TestApi.Response;
 
 /**
- * Об'єкти через HTTP: шаблон, перевірка полів за схемою, статуси, ієрархія, версії, ізоляція компаній
- * і дозволи (тип змінює лише власник/адмін, об'єкти — і виконавець).
+ * Обладнання через HTTP: шаблон, категорії, перевірка полів за схемою, статуси, ієрархія, версії,
+ * ізоляція компаній і дозволи (тип змінює лише адмін, обладнання — і виконавець).
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AssetApiTest extends AbstractIntegrationTest {
@@ -34,9 +34,9 @@ class AssetApiTest extends AbstractIntegrationTest {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    TestApi ownerX;
+    TestApi adminX;
     TestApi workerX;
-    TestApi ownerY;
+    TestApi adminY;
 
     Map<String, String> typeIdsX = new HashMap<>();
 
@@ -46,21 +46,21 @@ class AssetApiTest extends AbstractIntegrationTest {
         UUID companyX = admin.sql("insert into company (name) values ('Assets X') returning id").query(UUID.class).single();
         UUID companyY = admin.sql("insert into company (name) values ('Assets Y') returning id").query(UUID.class).single();
         String hash = passwordEncoder.encode(PASSWORD);
-        addUser(admin, companyX, "+380672000001", hash, "owner");
+        addUser(admin, companyX, "+380672000001", hash, "admin");
         addUser(admin, companyX, "+380672000002", hash, "worker");
-        addUser(admin, companyY, "+380672000003", hash, "owner");
+        addUser(admin, companyY, "+380672000003", hash, "admin");
 
-        ownerX = TestApi.loggedIn(port, "+380672000001", PASSWORD);
+        adminX = TestApi.loggedIn(port, "+380672000001", PASSWORD);
         workerX = TestApi.loggedIn(port, "+380672000002", PASSWORD);
-        ownerY = TestApi.loggedIn(port, "+380672000003", PASSWORD);
+        adminY = TestApi.loggedIn(port, "+380672000003", PASSWORD);
 
-        Response installed = ownerX.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
+        Response installed = adminX.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
         assertThat(installed.status()).isEqualTo(200);
-        assertThat(installed.str("installed")).contains("drill_hole", "drill_rig", "vehicle", "camp", "fuel_tank");
-        assertThat(ownerY.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling")).status())
+        assertThat(installed.str("installed")).contains("drill_rig", "vehicle", "camp", "fuel_tank");
+        assertThat(adminY.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling")).status())
                 .isEqualTo(200);
 
-        for (Object type : ownerX.get("/api/v1/asset-types").list()) {
+        for (Object type : adminX.get("/api/v1/asset-types").list()) {
             @SuppressWarnings("unchecked")
             Map<String, Object> t = (Map<String, Object>) type;
             typeIdsX.put((String) t.get("code"), (String) t.get("id"));
@@ -70,16 +70,25 @@ class AssetApiTest extends AbstractIntegrationTest {
     // ---------------------------------------------------------------- шаблон і типи
 
     @Test
+    void templateHasEquipmentCategoriesAndNoDrillHole() {
+        assertThat(typeIdsX).containsOnlyKeys("drill_rig", "vehicle", "camp", "fuel_tank");
+        Response rig = adminX.get("/api/v1/asset-types/" + typeIdsX.get("drill_rig"));
+        assertThat(rig.str("category")).isEqualTo("primary");
+        Response vehicle = adminX.get("/api/v1/asset-types/" + typeIdsX.get("vehicle"));
+        assertThat(vehicle.str("category")).isEqualTo("auxiliary");
+    }
+
+    @Test
     void installingTemplateAgainSkipsExistingTypes() {
-        Response again = ownerX.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
+        Response again = adminX.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
         assertThat(again.status()).isEqualTo(200);
         assertThat((List<?>) again.at("installed")).isEmpty();
-        assertThat((List<?>) again.at("skipped")).hasSize(5);
+        assertThat((List<?>) again.at("skipped")).hasSize(4);
     }
 
     @Test
     void unknownTemplateIsRejected() {
-        Response r = ownerX.post("/api/v1/asset-types/install-template", Map.of("templateKey", "../etc"));
+        Response r = adminX.post("/api/v1/asset-types/install-template", Map.of("templateKey", "../etc"));
         assertThat(r.status()).isEqualTo(400);
         assertThat(r.str("fields.templateKey")).isEqualTo("unknown_template");
     }
@@ -93,9 +102,10 @@ class AssetApiTest extends AbstractIntegrationTest {
                 "statuses", List.of(Map.of("code", "active", "label", Map.of("en", "Active"))));
 
         assertThat(workerX.post("/api/v1/asset-types", type).status()).isEqualTo(403);
-        Response created = ownerX.post("/api/v1/asset-types", type);
+        Response created = adminX.post("/api/v1/asset-types", type);
         assertThat(created.status()).isEqualTo(201);
         assertThat(created.str("code")).isEqualTo("generator");
+        assertThat(created.str("category")).isEqualTo("auxiliary");
     }
 
     @Test
@@ -103,96 +113,90 @@ class AssetApiTest extends AbstractIntegrationTest {
         Map<String, Object> type = Map.of(
                 "code", "Bad Code",
                 "name", Map.of("en", "Bad"),
+                "category", "secondary",
                 "fields", List.of(
                         Map.of("key", "size", "label", Map.of(), "type", "enum"),
                         Map.of("key", "size", "label", Map.of(), "type", "colour")),
                 "statuses", List.of());
 
-        Response r = ownerX.post("/api/v1/asset-types", type);
+        Response r = adminX.post("/api/v1/asset-types", type);
         assertThat(r.status()).isEqualTo(400);
-        assertThat(r.map().get("fields")).isInstanceOf(Map.class);
-        @SuppressWarnings("unchecked")
-        Map<String, Object> errors = (Map<String, Object>) r.map().get("fields");
-        assertThat(errors).containsEntry("code", "invalid_format")
+        assertThat(errors(r)).containsEntry("code", "invalid_format")
+                .containsEntry("category", "invalid_option")
                 .containsEntry("fields[0].options", "required")
                 .containsEntry("fields[1].key", "duplicate")
                 .containsEntry("fields[1].type", "invalid_option")
                 .containsEntry("statuses", "required");
     }
 
-    // ---------------------------------------------------------------- об'єкти
+    // ---------------------------------------------------------------- обладнання
 
     @Test
-    void workerCreatesDrillHoleWithDefaultStatus() {
-        Map<String, Object> attributes = Map.of("azimuth", 90, "dip", -60, "plannedDepth", "250", "coreSize", "NQ");
-        Response r = workerX.post("/api/v1/assets", hole("DDH-100", attributes, null));
+    void workerCreatesRigWithDefaultStatus() {
+        Response r = workerX.post("/api/v1/assets", rig("RIG-100", Map.of("year", "2018", "engineHours", 1200), null));
 
         assertThat(r.status()).isEqualTo(201);
-        assertThat(r.str("status")).isEqualTo("planned");
-        assertThat(r.str("typeCode")).isEqualTo("drill_hole");
-        assertThat(((Number) r.at("attributes.plannedDepth")).intValue()).isEqualTo(250);
+        assertThat(r.str("status")).isEqualTo("active");
+        assertThat(r.str("typeCode")).isEqualTo("drill_rig");
+        assertThat(((Number) r.at("attributes.year")).intValue()).isEqualTo(2018);
         assertThat(r.at("version")).isEqualTo(1);
 
         Response read = workerX.get("/api/v1/assets/" + r.str("id"));
         assertThat(read.status()).isEqualTo(200);
-        assertThat(read.str("code")).isEqualTo("DDH-100");
+        assertThat(read.str("code")).isEqualTo("RIG-100");
     }
 
     @Test
     void attributesAreValidatedAgainstTypeSchema() {
-        Response r = ownerX.post("/api/v1/assets", hole("DDH-101", Map.of("dip", 120, "colour", "red"), null));
+        Response r = adminX.post("/api/v1/assets", rig("RIG-101", Map.of("year", 1900, "colour", "red"), null));
         assertThat(r.status()).isEqualTo(400);
         assertThat(r.str("error")).isEqualTo("validation_failed");
-        @SuppressWarnings("unchecked")
-        Map<String, Object> errors = (Map<String, Object>) r.map().get("fields");
-        assertThat(errors).containsEntry("attributes.dip", "too_large").containsEntry("attributes.colour", "unknown_field");
+        assertThat(errors(r)).containsEntry("attributes.year", "too_small").containsEntry("attributes.colour", "unknown_field");
     }
 
     @Test
     void requiredAttributeAndUnknownStatusAreRejected() {
-        Response noModel = ownerX.post("/api/v1/assets", Map.of("typeId", typeIdsX.get("drill_rig"), "code", "RIG-X"));
+        Response noModel = adminX.post("/api/v1/assets", Map.of("typeId", typeIdsX.get("drill_rig"), "code", "RIG-X"));
         assertThat(noModel.status()).isEqualTo(400);
-        @SuppressWarnings("unchecked")
-        Map<String, Object> errors = (Map<String, Object>) noModel.map().get("fields");
-        assertThat(errors).containsEntry("attributes.model", "required");
+        assertThat(errors(noModel)).containsEntry("attributes.model", "required");
 
-        Response badStatus = ownerX.post("/api/v1/assets", hole("DDH-102", Map.of(), "flying"));
+        Response badStatus = adminX.post("/api/v1/assets", rig("RIG-102", Map.of(), "flying"));
         assertThat(badStatus.status()).isEqualTo(400);
         assertThat(badStatus.str("fields.status")).isEqualTo("invalid_option");
     }
 
     @Test
     void duplicateCodeWithinTypeIsConflict() {
-        assertThat(ownerX.post("/api/v1/assets", hole("DDH-103", Map.of(), null)).status()).isEqualTo(201);
-        Response duplicate = ownerX.post("/api/v1/assets", hole("DDH-103", Map.of(), null));
+        assertThat(adminX.post("/api/v1/assets", rig("RIG-103", Map.of(), null)).status()).isEqualTo(201);
+        Response duplicate = adminX.post("/api/v1/assets", rig("RIG-103", Map.of(), null));
         assertThat(duplicate.status()).isEqualTo(409);
         assertThat(duplicate.str("error")).isEqualTo("duplicate");
     }
 
     @Test
     void updateRequiresCurrentVersion() {
-        Response created = ownerX.post("/api/v1/assets", hole("DDH-104", Map.of("plannedDepth", 200), null));
+        Response created = adminX.post("/api/v1/assets", rig("RIG-104", Map.of("engineHours", 100), null));
         String id = created.str("id");
 
         Map<String, Object> update = new HashMap<>();
-        update.put("code", "DDH-104");
-        update.put("status", "drilling");
-        update.put("attributes", Map.of("plannedDepth", 200, "actualDepth", 35.5));
+        update.put("code", "RIG-104");
+        update.put("status", "maintenance");
+        update.put("attributes", Map.of("model", "LF90", "engineHours", 135.5));
         update.put("version", 1);
-        Response updated = ownerX.put("/api/v1/assets/" + id, update);
+        Response updated = adminX.put("/api/v1/assets/" + id, update);
         assertThat(updated.status()).isEqualTo(200);
         assertThat(updated.at("version")).isEqualTo(2);
-        assertThat(updated.str("status")).isEqualTo("drilling");
+        assertThat(updated.str("status")).isEqualTo("maintenance");
 
         // Хтось інший зберігає зі старою версією
-        Response stale = ownerX.put("/api/v1/assets/" + id, update);
+        Response stale = adminX.put("/api/v1/assets/" + id, update);
         assertThat(stale.status()).isEqualTo(409);
         assertThat(stale.str("error")).isEqualTo("stale_version");
     }
 
     @Test
     void hierarchyFollowsAllowedChildTypes() {
-        Response camp = ownerX.post("/api/v1/assets",
+        Response camp = adminX.post("/api/v1/assets",
                 Map.of("typeId", typeIdsX.get("camp"), "code", "CAMP-1", "attributes", Map.of("capacity", 40)));
         assertThat(camp.status()).isEqualTo(201);
 
@@ -201,54 +205,54 @@ class AssetApiTest extends AbstractIntegrationTest {
         tank.put("code", "TANK-1");
         tank.put("parentId", camp.str("id"));
         tank.put("attributes", Map.of("capacity", 20000, "fuelType", "diesel"));
-        assertThat(ownerX.post("/api/v1/assets", tank).status()).isEqualTo(201);
+        assertThat(adminX.post("/api/v1/assets", tank).status()).isEqualTo(201);
 
-        // Ємність не може бути вкладена у свердловину
-        Response hole = ownerX.post("/api/v1/assets", hole("DDH-105", Map.of(), null));
+        // Ємність не може бути вкладена в бурову
+        Response rig = adminX.post("/api/v1/assets", rig("RIG-105", Map.of(), null));
         tank.put("code", "TANK-2");
-        tank.put("parentId", hole.str("id"));
-        Response wrongParent = ownerX.post("/api/v1/assets", tank);
+        tank.put("parentId", rig.str("id"));
+        Response wrongParent = adminX.post("/api/v1/assets", tank);
         assertThat(wrongParent.status()).isEqualTo(400);
         assertThat(wrongParent.str("fields.parentId")).isEqualTo("child_type_not_allowed");
 
         // Табір з активною ємністю не архівується
-        Response archive = ownerX.post("/api/v1/assets/" + camp.str("id") + "/archive", Map.of());
+        Response archive = adminX.post("/api/v1/assets/" + camp.str("id") + "/archive", Map.of());
         assertThat(archive.status()).isEqualTo(409);
         assertThat(archive.str("error")).isEqualTo("has_active_children");
     }
 
     @Test
     void archivedAssetsAreHiddenFromListByDefault() {
-        Response created = ownerX.post("/api/v1/assets", hole("DDH-106", Map.of(), null));
+        Response created = adminX.post("/api/v1/assets", rig("RIG-106", Map.of(), null));
         String id = created.str("id");
-        assertThat(ownerX.post("/api/v1/assets/" + id + "/archive", Map.of()).str("archived")).isEqualTo("true");
+        assertThat(adminX.post("/api/v1/assets/" + id + "/archive", Map.of()).str("archived")).isEqualTo("true");
 
-        Response list = ownerX.get("/api/v1/assets?q=DDH-106");
+        Response list = adminX.get("/api/v1/assets?q=RIG-106");
         assertThat(((Number) list.at("total")).intValue()).isZero();
-        Response withArchived = ownerX.get("/api/v1/assets?q=DDH-106&includeArchived=true");
+        Response withArchived = adminX.get("/api/v1/assets?q=RIG-106&includeArchived=true");
         assertThat(((Number) withArchived.at("total")).intValue()).isEqualTo(1);
 
-        assertThat(ownerX.post("/api/v1/assets/" + id + "/restore", Map.of()).str("archived")).isEqualTo("false");
+        assertThat(adminX.post("/api/v1/assets/" + id + "/restore", Map.of()).str("archived")).isEqualTo("false");
     }
 
     @Test
     void otherCompanyCannotSeeAssets() {
-        Response created = ownerX.post("/api/v1/assets", hole("DDH-107", Map.of(), null));
+        Response created = adminX.post("/api/v1/assets", rig("RIG-107", Map.of(), null));
         String id = created.str("id");
 
-        assertThat(ownerY.get("/api/v1/assets/" + id).status()).isEqualTo(404);
-        assertThat(((Number) ownerY.get("/api/v1/assets?q=DDH-107").at("total")).intValue()).isZero();
+        assertThat(adminY.get("/api/v1/assets/" + id).status()).isEqualTo(404);
+        assertThat(((Number) adminY.get("/api/v1/assets?q=RIG-107").at("total")).intValue()).isZero();
 
         // Тип компанії X для компанії Y не існує
-        Response foreignType = ownerY.post("/api/v1/assets", hole("DDH-107", Map.of(), null));
+        Response foreignType = adminY.post("/api/v1/assets", rig("RIG-107", Map.of(), null));
         assertThat(foreignType.status()).isEqualTo(400);
         assertThat(foreignType.str("fields.typeId")).isEqualTo("not_found");
     }
 
     @Test
     void changesAreWrittenToAuditLog() {
-        Response created = ownerX.post("/api/v1/assets", hole("DDH-108", Map.of(), null));
-        Response audit = ownerX.get("/api/v1/audit-log?limit=200");
+        Response created = adminX.post("/api/v1/assets", rig("RIG-108", Map.of(), null));
+        Response audit = adminX.get("/api/v1/audit-log?limit=200");
         assertThat(audit.list()).anySatisfy(entry -> {
             @SuppressWarnings("unchecked")
             Map<String, Object> e = (Map<String, Object>) entry;
@@ -260,15 +264,23 @@ class AssetApiTest extends AbstractIntegrationTest {
 
     // ---------------------------------------------------------------- допоміжне
 
-    private Map<String, Object> hole(String code, Map<String, Object> attributes, String status) {
+    /** Бурова установка: модель обов'язкова, тож підставляється завжди. */
+    private Map<String, Object> rig(String code, Map<String, Object> attributes, String status) {
+        Map<String, Object> values = new HashMap<>(attributes);
+        values.putIfAbsent("model", "LF90");
         Map<String, Object> body = new HashMap<>();
-        body.put("typeId", typeIdsX.get("drill_hole"));
+        body.put("typeId", typeIdsX.get("drill_rig"));
         body.put("code", code);
-        body.put("attributes", attributes);
+        body.put("attributes", values);
         if (status != null) {
             body.put("status", status);
         }
         return body;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> errors(Response r) {
+        return (Map<String, Object>) r.map().get("fields");
     }
 
     private static void addUser(JdbcClient admin, UUID company, String phone, String hash, String role) {

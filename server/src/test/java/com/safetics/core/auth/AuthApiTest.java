@@ -47,7 +47,7 @@ class AuthApiTest extends AbstractIntegrationTest {
     UUID companyB;
 
     /**
-     * SINGLE: власник A. MULTI: виконавець (worker) у A і власник B.
+     * SINGLE: адмін A. MULTI: виконавець (worker) у A і адмін B.
      * Журнал: два записи в A, один у B.
      */
     @BeforeAll
@@ -62,9 +62,9 @@ class AuthApiTest extends AbstractIntegrationTest {
         UUID multi = admin.sql("insert into app_user (phone, full_name, password_hash) values (?, 'Multi', ?) returning id")
                 .params(MULTI_PHONE, hash).query(UUID.class).single();
 
-        addMember(admin, companyA, single, "owner");
+        addMember(admin, companyA, single, "admin");
         addMember(admin, companyA, multi, "worker");
-        addMember(admin, companyB, multi, "owner");
+        addMember(admin, companyB, multi, "admin");
 
         for (UUID company : List.of(companyA, companyA, companyB)) {
             admin.sql("insert into audit_log (company_id, entity, entity_id, action) values (?, 'company', '1', 'create')")
@@ -145,7 +145,7 @@ class AuthApiTest extends AbstractIntegrationTest {
         // Компанію не обрано — дозволів немає
         assertThat(get("/api/v1/audit-log", login.cookies(), null).status()).isEqualTo(403);
 
-        // Власник у B: бачить лише журнал B
+        // Адмін у B: бачить лише журнал B
         Response inB = post("/api/v1/auth/switch-company", Map.of("companyId", companyB.toString()), login.cookies(), null);
         assertThat(inB.status()).isEqualTo(200);
         assertThat(map(inB.map().get("company")).get("name")).isEqualTo("Auth Co B");
@@ -161,7 +161,7 @@ class AuthApiTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void ownerSeesOnlyOwnCompanyAuditLog() {
+    void adminSeesOnlyOwnCompanyAuditLog() {
         Response login = login(SINGLE_PHONE);
         Response audit = get("/api/v1/audit-log", login.cookies(), null);
         assertThat(audit.status()).isEqualTo(200);

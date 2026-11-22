@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /** Запити й відповіді API типів об'єктів і об'єктів. Поля без @NotNull можуть бути null. */
 public final class AssetDtos {
 
@@ -17,10 +19,12 @@ public final class AssetDtos {
 
     // ---------------------------------------------------------------- типи
 
+    /** category: primary — основне (виконує послуги, напр. бурова), auxiliary — допоміжне (авто, табір). */
     public record AssetTypeView(
             @NotNull UUID id,
             @NotNull String code,
             @NotNull Map<String, String> name,
+            @NotNull @Schema(allowableValues = {"primary", "auxiliary"}) String category,
             @NotNull List<FieldDefinition> fields,
             @NotNull List<StatusDefinition> statuses,
             @NotNull List<String> allowedChildTypes,
@@ -28,10 +32,11 @@ public final class AssetDtos {
             @NotNull boolean archived) {
     }
 
-    /** Створення і зміна типу. code після створення не змінюється. */
+    /** Створення і зміна типу. code після створення не змінюється; category за замовчуванням auxiliary. */
     public record AssetTypeRequest(
             @NotBlank String code,
             @NotNull Map<String, String> name,
+            @Schema(allowableValues = {"primary", "auxiliary"}) String category,
             @NotNull @Valid List<FieldDefinition> fields,
             @NotNull @Valid List<StatusDefinition> statuses,
             List<String> allowedChildTypes) {

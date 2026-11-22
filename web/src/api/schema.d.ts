@@ -287,6 +287,8 @@ export interface components {
             name: {
                 [key: string]: string;
             };
+            /** @enum {string} */
+            category?: "primary" | "auxiliary";
             fields: components["schemas"]["FieldDefinition"][];
             statuses: components["schemas"]["StatusDefinition"][];
             allowedChildTypes?: string[];
@@ -318,6 +320,8 @@ export interface components {
             name: {
                 [key: string]: string;
             };
+            /** @enum {string} */
+            category: "primary" | "auxiliary";
             fields: components["schemas"]["FieldDefinition"][];
             statuses: components["schemas"]["StatusDefinition"][];
             allowedChildTypes: string[];

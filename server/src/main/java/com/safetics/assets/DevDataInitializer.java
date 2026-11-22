@@ -17,8 +17,8 @@ import com.safetics.assets.AssetDtos.AssetTypeView;
 import com.safetics.core.tenancy.TenantContext;
 
 /**
- * Лише профіль dev: встановлює шаблон «Розвідувальне буріння» демо-компаніям і додає кілька
- * об'єктів, щоб у вебі було на що дивитися. Повторний запуск нічого не дублює.
+ * Лише профіль dev: встановлює шаблон «Розвідувальне буріння» демо-компаніям і додає бурову та авто,
+ * щоб у вебі було на що дивитися. Повторний запуск нічого не дублює.
  */
 @Component
 @Profile("dev")
@@ -62,7 +62,6 @@ class DevDataInitializer implements ApplicationRunner {
         if (assets.list(new AssetService.Filter(null, null, null, null, true, 1, 0)).total() > 0) {
             return;
         }
-        AssetTypeView hole = types.findByCode("drill_hole").orElseThrow();
         AssetTypeView rig = types.findByCode("drill_rig").orElseThrow();
         AssetTypeView vehicle = types.findByCode("vehicle").orElseThrow();
 
@@ -70,14 +69,6 @@ class DevDataInitializer implements ApplicationRunner {
                 Map.of("model", "LF90", "manufacturer", "Boart Longyear", "year", 2018, "engineHours", 12450)));
         assets.create(new AssetCreateRequest(vehicle.id(), null, "TRK-07", "Toyota Hilux", "active",
                 Map.of("plate", "AA1234BC", "model", "Hilux", "odometer", 148200)));
-        assets.create(new AssetCreateRequest(hole.id(), null, "DDH-001", null, "completed",
-                Map.of("azimuth", 90, "dip", -60, "plannedDepth", 250, "actualDepth", 262.4, "coreSize", "NQ",
-                        "startDate", "2026-10-02", "endDate", "2026-10-11")));
-        assets.create(new AssetCreateRequest(hole.id(), null, "DDH-002", null, "drilling",
-                Map.of("azimuth", 90, "dip", -60, "plannedDepth", 300, "actualDepth", 148.5, "coreSize", "HQ",
-                        "startDate", "2026-11-14")));
-        assets.create(new AssetCreateRequest(hole.id(), null, "DDH-003", null, "planned",
-                Map.of("azimuth", 270, "dip", -55, "plannedDepth", 200)));
         log.info("Created demo assets for company {}", companyId);
     }
 }

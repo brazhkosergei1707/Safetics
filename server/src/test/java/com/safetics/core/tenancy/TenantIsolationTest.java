@@ -43,13 +43,13 @@ class TenantIsolationTest extends AbstractIntegrationTest {
         userB = insertReturningId(admin,
                 "insert into app_user (phone, full_name) values ('+380500000002', 'User B') returning id");
 
-        UUID ownerRole = admin.sql("select id from role where code = 'owner' and company_id is null")
+        UUID adminRole = admin.sql("select id from role where code = 'admin' and company_id is null")
                 .query(UUID.class).single();
 
         admin.sql("insert into membership (company_id, user_id, role_id) values (?, ?, ?)")
-                .params(companyA, userA, ownerRole).update();
+                .params(companyA, userA, adminRole).update();
         admin.sql("insert into membership (company_id, user_id, role_id) values (?, ?, ?)")
-                .params(companyB, userB, ownerRole).update();
+                .params(companyB, userB, adminRole).update();
 
         admin.sql("insert into role (company_id, code, name) values (?, 'storekeeper', 'Комірник')")
                 .param(companyA).update();
@@ -101,7 +101,7 @@ class TenantIsolationTest extends AbstractIntegrationTest {
     void systemRolesAreSharedCompanyRolesArePrivate() {
         List<String> rolesOfB = TenantContext.callAs(companyB, userB,
                 () -> app.sql("select code from role").query(String.class).list());
-        assertThat(rolesOfB).contains("owner", "admin", "manager", "worker", "client_rep")
+        assertThat(rolesOfB).contains("admin", "director", "manager", "worker", "client_rep", "client_manager")
                 .doesNotContain("storekeeper");
 
         List<String> rolesOfA = TenantContext.callAs(companyA, userA,
