@@ -1,4 +1,4 @@
-import { PlusOutlined } from '@ant-design/icons'
+import { PlusOutlined, SettingOutlined } from '@ant-design/icons'
 import { Button, Flex, Input, Segmented, Table, Tag, Typography } from 'antd'
 import dayjs from 'dayjs'
 import { useState } from 'react'
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { hasPermission, useSession } from '../../api/auth'
 import { type Project, shiftsSummary, useProjects } from '../../api/projects'
+import { ServiceTypesDrawer } from '../services/ServiceTypesDrawer'
 import { ProjectCreateDrawer } from './ProjectCreateDrawer'
 
 export function ProjectsPage() {
@@ -14,6 +15,7 @@ export function ProjectsPage() {
   const [status, setStatus] = useState<string>('active')
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
+  const [typesOpen, setTypesOpen] = useState(false)
   const projects = useProjects({ status: status === 'all' ? undefined : status, q: query })
   const canManage = hasPermission(session, 'project.manage')
 
@@ -23,11 +25,18 @@ export function ProjectsPage() {
         <Typography.Title level={2} style={{ margin: 0 }}>
           {t('nav.projects')}
         </Typography.Title>
-        {canManage && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
-            {t('projects.add')}
-          </Button>
-        )}
+        <Flex gap={8}>
+          {hasPermission(session, 'catalog.manage') && (
+            <Button icon={<SettingOutlined />} onClick={() => setTypesOpen(true)}>
+              {t('serviceTypes.title')}
+            </Button>
+          )}
+          {canManage && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
+              {t('projects.add')}
+            </Button>
+          )}
+        </Flex>
       </Flex>
 
       <Flex gap={12} wrap style={{ marginBottom: 16 }}>
@@ -86,6 +95,7 @@ export function ProjectsPage() {
       />
 
       <ProjectCreateDrawer open={creating} onClose={() => setCreating(false)} />
+      <ServiceTypesDrawer open={typesOpen} onClose={() => setTypesOpen(false)} />
     </>
   )
 }

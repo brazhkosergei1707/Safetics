@@ -1,41 +1,14 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
-import {
-  App,
-  Button,
-  Divider,
-  Drawer,
-  Flex,
-  Form,
-  Input,
-  InputNumber,
-  List,
-  Select,
-  Space,
-  Switch,
-  Tag,
-  Typography,
-} from 'antd'
+import { App, Button, Divider, Drawer, Flex, Form, Input, List, Select, Space, Tag, Typography } from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type AssetType, useAllAssetTypes, useArchiveAssetType, useSaveAssetType } from '../../api/assets'
 import { applyFieldErrors, errorMessage } from '../../api/formErrors'
+import { FieldsEditor } from '../../components/FieldsEditor'
+import { type FieldFormValues, fieldsFromForm, fieldsToForm } from '../../components/fieldsForm'
 import { localized } from '../../i18n/localized'
 
-const FIELD_TYPES = ['string', 'text', 'number', 'integer', 'boolean', 'date', 'enum'] as const
 const COLORS = ['green', 'blue', 'orange', 'red', 'default']
-
-/** Поле у формі редактора: назва — лише поточною мовою, інші мови зберігаються як були. */
-interface FieldValues {
-  key: string
-  label: string
-  type: (typeof FIELD_TYPES)[number]
-  unit?: string
-  required?: boolean
-  min?: number
-  max?: number
-  options?: string[]
-  otherLabels?: Record<string, string>
-}
 
 interface StatusValues {
   code: string
@@ -48,7 +21,7 @@ interface FormValues {
   code: string
   name: string
   category: 'primary' | 'auxiliary'
-  fields: FieldValues[]
+  fields: FieldFormValues[]
   statuses: StatusValues[]
   allowedChildTypes: string[]
 }
@@ -66,7 +39,6 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
   const [form] = Form.useForm<FormValues>()
   const [editing, setEditing] = useState<{ type?: AssetType } | null>(null)
   const lang = i18n.language
-  const fieldType = Form.useWatch('fields', form)
 
   const startEdit = (type?: AssetType) => {
     form.resetFields()
@@ -77,17 +49,7 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
             name: localized(type.name, lang),
             category: type.category,
             allowedChildTypes: type.allowedChildTypes,
-            fields: type.fields.map((f) => ({
-              key: f.key,
-              label: localized(f.label, lang),
-              type: f.type,
-              unit: f.unit ?? undefined,
-              required: f.required ?? false,
-              min: f.min ?? undefined,
-              max: f.max ?? undefined,
-              options: f.options ?? undefined,
-              otherLabels: f.label,
-            })),
+            fields: fieldsToForm(type.fields, lang),
             statuses: type.statuses.map((s) => ({
               code: s.code,
               label: localized(s.label, lang),
@@ -111,16 +73,7 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
       name: { ...(editing?.type?.name ?? {}), [lang]: values.name },
       category: values.category,
       allowedChildTypes: values.allowedChildTypes ?? [],
-      fields: (values.fields ?? []).map((f) => ({
-        key: f.key,
-        label: { ...(f.otherLabels ?? {}), [lang]: f.label },
-        type: f.type,
-        unit: f.unit || undefined,
-        required: f.required ?? false,
-        min: f.min ?? undefined,
-        max: f.max ?? undefined,
-        options: f.type === 'enum' ? f.options : undefined,
-      })),
+      fields: fieldsFromForm(values.fields, lang),
       statuses: (values.statuses ?? []).map((s) => ({
         code: s.code,
         label: { ...(s.otherLabels ?? {}), [lang]: s.label },
@@ -233,59 +186,7 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
           </Form.Item>
 
           <Divider titlePlacement="start">{t('assetTypes.fields')}</Divider>
-          <Form.List name="fields">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map((field) => {
-                  const type = fieldType?.[field.name]?.type
-                  return (
-                    <Space key={field.key} align="start" wrap style={{ display: 'flex', marginBottom: 4 }}>
-                      <Form.Item name={[field.name, 'label']} rules={required}>
-                        <Input placeholder={t('assetTypes.fieldLabel')} style={{ width: 160 }} />
-                      </Form.Item>
-                      <Form.Item name={[field.name, 'key']} rules={required}>
-                        <Input placeholder={t('assetTypes.fieldKey')} style={{ width: 120 }} />
-                      </Form.Item>
-                      <Form.Item name={[field.name, 'type']} rules={required}>
-                        <Select
-                          style={{ width: 120 }}
-                          options={FIELD_TYPES.map((ft) => ({ value: ft, label: t(`assetTypes.types.${ft}`) }))}
-                        />
-                      </Form.Item>
-                      {(type === 'number' || type === 'integer') && (
-                        <>
-                          <Form.Item name={[field.name, 'unit']}>
-                            <Input placeholder={t('assetTypes.unit')} style={{ width: 70 }} />
-                          </Form.Item>
-                          <Form.Item name={[field.name, 'min']}>
-                            <InputNumber placeholder="min" style={{ width: 80 }} />
-                          </Form.Item>
-                          <Form.Item name={[field.name, 'max']}>
-                            <InputNumber placeholder="max" style={{ width: 80 }} />
-                          </Form.Item>
-                        </>
-                      )}
-                      {type === 'enum' && (
-                        <Form.Item name={[field.name, 'options']} rules={required}>
-                          <Select mode="tags" placeholder={t('assetTypes.options')} style={{ minWidth: 200 }} />
-                        </Form.Item>
-                      )}
-                      <Form.Item name={[field.name, 'required']} valuePropName="checked">
-                        <Switch checkedChildren={t('assetTypes.required')} unCheckedChildren={t('assetTypes.optional')} />
-                      </Form.Item>
-                      <Button icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
-                    </Space>
-                  )
-                })}
-                <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ type: 'string', required: false })}>
-                  {t('assetTypes.addField')}
-                </Button>
-                <Typography.Paragraph type="secondary" style={{ marginTop: 8 }}>
-                  {t('assetTypes.fieldsHint')}
-                </Typography.Paragraph>
-              </>
-            )}
-          </Form.List>
+          <FieldsEditor form={form} />
 
           <Divider titlePlacement="start">{t('assetTypes.statuses')}</Divider>
           <Form.List name="statuses">

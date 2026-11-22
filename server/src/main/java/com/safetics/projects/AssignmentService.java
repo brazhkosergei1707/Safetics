@@ -75,9 +75,11 @@ public class AssignmentService {
     private final PositionService positions;
     private final AssetService assets;
     private final AuditService audit;
+    private final ProjectRoles roles;
 
     public AssignmentService(JdbcClient db, JsonMapper json, ProjectService projects, PersonnelService personnel,
-                             PositionService positions, AssetService assets, AuditService audit) {
+                             PositionService positions, AssetService assets, AuditService audit, ProjectRoles roles) {
+        this.roles = roles;
         this.db = db;
         this.json = json;
         this.projects = projects;
@@ -132,7 +134,7 @@ public class AssignmentService {
         ProjectView project = openProject(projectId);
         PositionView position = activePosition(request.positionId());
         if (!canManage) {
-            if (!isSupervisor(project)) {
+            if (!roles.isSupervisor(project)) {
                 throw new ApiException(org.springframework.http.HttpStatus.FORBIDDEN, "not_project_supervisor", Map.of());
             }
             if (!position.supervisorCanAdd()) {
@@ -298,23 +300,6 @@ public class AssignmentService {
                 "personnelId", person.id(), "fullName", person.fullName(), "positionId", positionId,
                 "dates", dates(start, end)));
         return id;
-    }
-
-    private boolean isSupervisor(ProjectView project) {
-        LocalDate today = projects.today(project);
-        return Boolean.TRUE.equals(db.sql("""
-                        select exists (
-                            select 1
-                            from personnel p
-                                     join personnel_assignment a on a.personnel_id = p.id
-                                     join position pos on pos.id = a.position_id
-                            where p.user_id = app_user_id()
-                              and a.project_id = ?
-                              and pos.project_role = 'supervisor'
-                              and a.start_date <= ?
-                              and (a.end_date is null or a.end_date >= ?))
-                        """)
-                .params(project.id(), today, today).query(Boolean.class).single());
     }
 
     private ProjectView openProject(UUID projectId) {

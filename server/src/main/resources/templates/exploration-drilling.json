@@ -389,5 +389,109 @@
       "projectRole": "none",
       "supervisorCanAdd": true
     }
+  ],
+  "serviceTypes": [
+    {
+      "code": "drill_hole",
+      "name": {
+        "en": "Drill hole",
+        "uk": "Свердловина",
+        "pt": "Furo de sondagem"
+      },
+      "fields": [
+        {
+          "key": "plannedDepth",
+          "label": {
+            "en": "Planned depth",
+            "uk": "Проєктна глибина",
+            "pt": "Profundidade planejada"
+          },
+          "type": "number",
+          "unit": "m",
+          "required": true,
+          "min": 0
+        },
+        {
+          "key": "actualDepth",
+          "label": {
+            "en": "Actual depth",
+            "uk": "Фактична глибина",
+            "pt": "Profundidade final"
+          },
+          "type": "number",
+          "unit": "m",
+          "min": 0
+        },
+        {
+          "key": "azimuth",
+          "label": {
+            "en": "Azimuth",
+            "uk": "Азимут",
+            "pt": "Azimute"
+          },
+          "type": "number",
+          "unit": "°",
+          "min": 0,
+          "max": 360
+        },
+        {
+          "key": "dip",
+          "label": {
+            "en": "Dip",
+            "uk": "Кут нахилу",
+            "pt": "Inclinação"
+          },
+          "type": "number",
+          "unit": "°",
+          "min": -90,
+          "max": 90
+        },
+        {
+          "key": "coreSize",
+          "label": {
+            "en": "Core size",
+            "uk": "Типорозмір",
+            "pt": "Diâmetro"
+          },
+          "type": "enum",
+          "options": [
+            "BQ",
+            "NQ",
+            "HQ",
+            "PQ"
+          ]
+        },
+        {
+          "key": "easting",
+          "label": {
+            "en": "Easting",
+            "uk": "Координата X",
+            "pt": "Coordenada E"
+          },
+          "type": "number",
+          "unit": "m"
+        },
+        {
+          "key": "northing",
+          "label": {
+            "en": "Northing",
+            "uk": "Координата Y",
+            "pt": "Coordenada N"
+          },
+          "type": "number",
+          "unit": "m"
+        },
+        {
+          "key": "elevation",
+          "label": {
+            "en": "Elevation",
+            "uk": "Висота",
+            "pt": "Cota"
+          },
+          "type": "number",
+          "unit": "m"
+        }
+      ]
+    }
   ]
 }

@@ -18,6 +18,8 @@ import com.safetics.core.audit.AuditService;
 import com.safetics.core.web.ApiException;
 import com.safetics.personnel.PersonnelDtos.PositionRequest;
 import com.safetics.personnel.PositionService;
+import com.safetics.services.ServiceDtos.ServiceTypeRequest;
+import com.safetics.services.ServiceTypeService;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -32,18 +34,21 @@ public class TemplateService {
 
     /** Вміст файлу шаблону. Пізніше сюди додадуться послуги, коди операцій, чек-листи. */
     public record TemplateDefinition(String key, Map<String, String> name, List<AssetTypeRequest> assetTypes,
-                                     List<PositionRequest> positions) {
+                                     List<PositionRequest> positions, List<ServiceTypeRequest> serviceTypes) {
     }
 
     private final JsonMapper json;
     private final AssetTypeService types;
     private final PositionService positions;
+    private final ServiceTypeService serviceTypes;
     private final AuditService audit;
 
-    public TemplateService(JsonMapper json, AssetTypeService types, PositionService positions, AuditService audit) {
+    public TemplateService(JsonMapper json, AssetTypeService types, PositionService positions,
+                           ServiceTypeService serviceTypes, AuditService audit) {
         this.json = json;
         this.types = types;
         this.positions = positions;
+        this.serviceTypes = serviceTypes;
         this.audit = audit;
     }
 
@@ -104,8 +109,15 @@ public class TemplateService {
                 installedPositions.add(position.code());
             }
         }
-        audit.record("template", key, "install",
-                Map.of("installed", installed, "skipped", skipped, "positions", installedPositions));
-        return new InstallTemplateResponse(installed, skipped, installedPositions);
+        List<String> installedServiceTypes = new ArrayList<>();
+        for (ServiceTypeRequest serviceType : template.serviceTypes() == null ? List.<ServiceTypeRequest>of() : template.serviceTypes()) {
+            if (serviceTypes.findByCode(serviceType.code()).isEmpty()) {
+                serviceTypes.create(serviceType, key);
+                installedServiceTypes.add(serviceType.code());
+            }
+        }
+        audit.record("template", key, "install", Map.of("installed", installed, "skipped", skipped,
+                "positions", installedPositions, "serviceTypes", installedServiceTypes));
+        return new InstallTemplateResponse(installed, skipped, installedPositions, installedServiceTypes);
     }
 }

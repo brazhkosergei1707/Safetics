@@ -10,6 +10,7 @@ import { ProjectAccessTab } from './ProjectAccessTab'
 import { ProjectEquipmentTab } from './ProjectEquipmentTab'
 import { ProjectGeneralTab } from './ProjectGeneralTab'
 import { ProjectPeopleTab } from './ProjectPeopleTab'
+import { ProjectServicesTab } from '../services/ProjectServicesTab'
 import { ShiftSchedulesTab } from './ShiftSchedulesTab'
 
 export function ProjectDetailPage() {
@@ -65,6 +66,7 @@ export function ProjectDetailPage() {
 
       <Tabs
         items={[
+          { key: 'services', label: t('projects.tabs.services'), children: <ProjectServicesTab project={p} /> },
           { key: 'general', label: t('projects.tabs.general'), children: <ProjectGeneralTab project={p} /> },
           { key: 'shifts', label: t('projects.tabs.shifts'), children: <ShiftSchedulesTab project={p} /> },
           { key: 'people', label: t('projects.tabs.people'), children: <ProjectPeopleTab project={p} /> },

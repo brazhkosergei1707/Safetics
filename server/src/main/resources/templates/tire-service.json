@@ -320,5 +320,79 @@
       "projectRole": "storekeeper",
       "supervisorCanAdd": false
     }
+  ],
+  "serviceTypes": [
+    {
+      "code": "tire_service",
+      "name": {
+        "en": "Tire service",
+        "uk": "Шиномонтаж",
+        "pt": "Serviço de pneus"
+      },
+      "fields": [
+        {
+          "key": "plate",
+          "label": {
+            "en": "Plate number",
+            "uk": "Держномер",
+            "pt": "Placa"
+          },
+          "type": "string",
+          "required": true
+        },
+        {
+          "key": "vehicle",
+          "label": {
+            "en": "Vehicle",
+            "uk": "Авто",
+            "pt": "Veículo"
+          },
+          "type": "string"
+        },
+        {
+          "key": "tireSize",
+          "label": {
+            "en": "Tire size",
+            "uk": "Розмір шин",
+            "pt": "Medida do pneu"
+          },
+          "type": "string"
+        },
+        {
+          "key": "season",
+          "label": {
+            "en": "Season",
+            "uk": "Сезон",
+            "pt": "Estação"
+          },
+          "type": "enum",
+          "options": [
+            "summer",
+            "winter",
+            "all_season"
+          ]
+        },
+        {
+          "key": "wheels",
+          "label": {
+            "en": "Wheels",
+            "uk": "Кількість коліс",
+            "pt": "Rodas"
+          },
+          "type": "integer",
+          "min": 1,
+          "max": 20
+        },
+        {
+          "key": "clientPhone",
+          "label": {
+            "en": "Client phone",
+            "uk": "Телефон клієнта",
+            "pt": "Telefone do cliente"
+          },
+          "type": "string"
+        }
+      ]
+    }
   ]
 }

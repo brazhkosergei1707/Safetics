@@ -578,5 +578,46 @@
       "projectRole": "storekeeper",
       "supervisorCanAdd": false
     }
+  ],
+  "serviceTypes": [
+    {
+      "code": "work_site",
+      "name": {
+        "en": "Work site",
+        "uk": "Об'єкт робіт",
+        "pt": "Frente de obra"
+      },
+      "fields": [
+        {
+          "key": "address",
+          "label": {
+            "en": "Address",
+            "uk": "Адреса",
+            "pt": "Endereço"
+          },
+          "type": "string"
+        },
+        {
+          "key": "description",
+          "label": {
+            "en": "Description",
+            "uk": "Опис",
+            "pt": "Descrição"
+          },
+          "type": "text"
+        },
+        {
+          "key": "area",
+          "label": {
+            "en": "Area",
+            "uk": "Площа",
+            "pt": "Área"
+          },
+          "type": "number",
+          "unit": "m²",
+          "min": 0
+        }
+      ]
+    }
   ]
 }

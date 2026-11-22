@@ -404,5 +404,97 @@
       "projectRole": "none",
       "supervisorCanAdd": true
     }
+  ],
+  "serviceTypes": [
+    {
+      "code": "water_well",
+      "name": {
+        "en": "Water well",
+        "uk": "Свердловина на воду",
+        "pt": "Poço de água"
+      },
+      "fields": [
+        {
+          "key": "address",
+          "label": {
+            "en": "Address",
+            "uk": "Адреса",
+            "pt": "Endereço"
+          },
+          "type": "string"
+        },
+        {
+          "key": "plannedDepth",
+          "label": {
+            "en": "Planned depth",
+            "uk": "Проєктна глибина",
+            "pt": "Profundidade planejada"
+          },
+          "type": "number",
+          "unit": "m",
+          "required": true,
+          "min": 0
+        },
+        {
+          "key": "actualDepth",
+          "label": {
+            "en": "Actual depth",
+            "uk": "Фактична глибина",
+            "pt": "Profundidade final"
+          },
+          "type": "number",
+          "unit": "m",
+          "min": 0
+        },
+        {
+          "key": "diameter",
+          "label": {
+            "en": "Diameter",
+            "uk": "Діаметр",
+            "pt": "Diâmetro"
+          },
+          "type": "number",
+          "unit": "mm",
+          "min": 0
+        },
+        {
+          "key": "waterLevel",
+          "label": {
+            "en": "Static water level",
+            "uk": "Статичний рівень води",
+            "pt": "Nível estático"
+          },
+          "type": "number",
+          "unit": "m",
+          "min": 0
+        },
+        {
+          "key": "yield",
+          "label": {
+            "en": "Yield",
+            "uk": "Дебіт",
+            "pt": "Vazão"
+          },
+          "type": "number",
+          "unit": "m³/h",
+          "min": 0
+        },
+        {
+          "key": "purpose",
+          "label": {
+            "en": "Purpose",
+            "uk": "Призначення",
+            "pt": "Finalidade"
+          },
+          "type": "enum",
+          "options": [
+            "drinking",
+            "irrigation",
+            "heat_pump",
+            "technical"
+          ]
+        }
+      ]
+    }
   ]
 }

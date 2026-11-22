@@ -141,25 +141,7 @@ public class AssetTypeService {
             errors.put("name", "required");
         }
 
-        Set<String> keys = new HashSet<>();
-        for (int i = 0; i < request.fields().size(); i++) {
-            FieldDefinition field = request.fields().get(i);
-            String prefix = "fields[" + i + "].";
-            if (field.key() == null || !FIELD_KEY.matcher(field.key()).matches()) {
-                errors.put(prefix + "key", "invalid_format");
-            } else if (!keys.add(field.key())) {
-                errors.put(prefix + "key", "duplicate");
-            }
-            if (!FieldDefinition.TYPES.contains(field.type())) {
-                errors.put(prefix + "type", "invalid_option");
-            }
-            if ("enum".equals(field.type()) && (field.options() == null || field.options().isEmpty())) {
-                errors.put(prefix + "options", "required");
-            }
-            if (field.min() != null && field.max() != null && field.min().compareTo(field.max()) > 0) {
-                errors.put(prefix + "max", "too_small");
-            }
-        }
+        validateFields(request.fields(), errors);
 
         if (request.statuses().isEmpty()) {
             errors.put("statuses", "required");
@@ -181,6 +163,29 @@ public class AssetTypeService {
         }
         if (!errors.isEmpty()) {
             throw ApiException.validation(errors);
+        }
+    }
+
+    /** Перевірка опису полів (для типів обладнання й типів послуг): ключі, типи, варіанти, межі. */
+    public static void validateFields(List<FieldDefinition> fields, Map<String, String> errors) {
+        Set<String> keys = new HashSet<>();
+        for (int i = 0; i < fields.size(); i++) {
+            FieldDefinition field = fields.get(i);
+            String prefix = "fields[" + i + "].";
+            if (field.key() == null || !FIELD_KEY.matcher(field.key()).matches()) {
+                errors.put(prefix + "key", "invalid_format");
+            } else if (!keys.add(field.key())) {
+                errors.put(prefix + "key", "duplicate");
+            }
+            if (!FieldDefinition.TYPES.contains(field.type())) {
+                errors.put(prefix + "type", "invalid_option");
+            }
+            if ("enum".equals(field.type()) && (field.options() == null || field.options().isEmpty())) {
+                errors.put(prefix + "options", "required");
+            }
+            if (field.min() != null && field.max() != null && field.min().compareTo(field.max()) > 0) {
+                errors.put(prefix + "max", "too_small");
+            }
         }
     }
 

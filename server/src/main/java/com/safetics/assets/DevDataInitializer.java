@@ -24,6 +24,9 @@ import com.safetics.personnel.PositionService;
 import com.safetics.projects.AssignmentDtos.EquipmentAssignmentRequest;
 import com.safetics.projects.AssignmentDtos.PersonnelAssignmentRequest;
 import com.safetics.projects.AssignmentService;
+import com.safetics.services.ServiceTypeService;
+
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Лише профіль dev: встановлює шаблон «Розвідувальне буріння» демо-компаніям, додає бурову та авто,
@@ -53,9 +56,12 @@ class DevDataInitializer implements ApplicationRunner {
     private final PositionService positions;
     private final PersonnelService personnel;
     private final AssignmentService assignments;
+    private final ServiceTypeService serviceTypes;
 
     DevDataInitializer(JdbcClient db, TemplateService templates, AssetTypeService types, AssetService assets,
-                       PositionService positions, PersonnelService personnel, AssignmentService assignments) {
+                       PositionService positions, PersonnelService personnel, AssignmentService assignments,
+                       ServiceTypeService serviceTypes) {
+        this.serviceTypes = serviceTypes;
         this.db = db;
         this.templates = templates;
         this.types = types;
@@ -72,6 +78,7 @@ class DevDataInitializer implements ApplicationRunner {
         }
         // Від імені адміна: він бачить усі проєкти (RLS)
         TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedCrew);
+        TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedServices);
     }
 
     private void seed(UUID companyId) {
@@ -80,7 +87,7 @@ class DevDataInitializer implements ApplicationRunner {
             return;
         }
         // Повторне встановлення лише додає відсутнє (посади з'явилися в шаблоні в кроці 2б)
-        if (types.list(true).isEmpty() || positions.list(true).isEmpty()) {
+        if (types.list(true).isEmpty() || positions.list(true).isEmpty() || serviceTypes.list(true).isEmpty()) {
             templates.install("exploration-drilling");
             log.info("Installed exploration-drilling template for demo company {}", companyId);
         }
@@ -117,6 +124,46 @@ class DevDataInitializer implements ApplicationRunner {
             assignments.assignEquipment(VALE_PROJECT, new EquipmentAssignmentRequest(asset.id(), start, null));
         }
         log.info("Created demo crew and assignments for project VALE-CRJ");
+    }
+
+    /** Свердловини на VALE-CRJ у різних статусах. Статуси — напряму, бо в dev немає користувача з токеном. */
+    private void seedServices() {
+        Long existing = db.sql("select count(*) from service where project_id = ?").param(VALE_PROJECT).query(Long.class).single();
+        Long project = db.sql("select count(*) from project where id = ?").param(VALE_PROJECT).query(Long.class).single();
+        if (existing > 0 || project == 0) {
+            return;
+        }
+        UUID holeType = serviceTypes.findByCode("drill_hole").orElseThrow().id();
+        Object[][] holes = {
+                {"BH-101", 350, 300.5, "HQ", "completed"},
+                {"BH-102", 400, 182.0, "HQ", "in_progress"},
+                {"BH-103", 420, null, "NQ", "planned"},
+                {"BH-104", 380, null, "NQ", "planned"},
+        };
+        for (Object[] hole : holes) {
+            Map<String, Object> attributes = new java.util.HashMap<>();
+            attributes.put("plannedDepth", hole[1]);
+            attributes.put("azimuth", 90);
+            attributes.put("dip", -60);
+            attributes.put("coreSize", hole[3]);
+            if (hole[2] != null) {
+                attributes.put("actualDepth", hole[2]);
+            }
+            UUID id = db.sql("""
+                            insert into service (company_id, project_id, service_type_id, code, status, attributes,
+                                                 planned_start, actual_start, actual_end)
+                            values (?, ?, ?, ?, ?, cast(? as jsonb), ?, ?, ?)
+                            returning id
+                            """)
+                    .params(DEMO_DRILLING, VALE_PROJECT, holeType, hole[0], hole[4],
+                            JsonMapper.builder().build().writeValueAsString(attributes),
+                            LocalDate.of(2026, 10, 1),
+                            "planned".equals(hole[4]) ? null : java.time.OffsetDateTime.parse("2026-10-05T07:00:00-03:00"),
+                            "completed".equals(hole[4]) ? java.time.OffsetDateTime.parse("2026-10-20T19:00:00-03:00") : null)
+                    .query(UUID.class).single();
+            log.debug("Demo service {}", id);
+        }
+        log.info("Created demo drill holes for project VALE-CRJ");
     }
 
     private PersonnelView person(String fullName, String phone, String employmentType, String organization,

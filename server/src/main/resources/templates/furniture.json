@@ -309,5 +309,63 @@
       "projectRole": "none",
       "supervisorCanAdd": true
     }
+  ],
+  "serviceTypes": [
+    {
+      "code": "furniture_order",
+      "name": {
+        "en": "Order",
+        "uk": "Замовлення",
+        "pt": "Pedido"
+      },
+      "fields": [
+        {
+          "key": "address",
+          "label": {
+            "en": "Address",
+            "uk": "Адреса",
+            "pt": "Endereço"
+          },
+          "type": "string"
+        },
+        {
+          "key": "description",
+          "label": {
+            "en": "Description",
+            "uk": "Опис",
+            "pt": "Descrição"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "measurementDate",
+          "label": {
+            "en": "Measurement date",
+            "uk": "Дата заміру",
+            "pt": "Data da medição"
+          },
+          "type": "date"
+        },
+        {
+          "key": "installationDate",
+          "label": {
+            "en": "Installation date",
+            "uk": "Дата монтажу",
+            "pt": "Data da montagem"
+          },
+          "type": "date"
+        },
+        {
+          "key": "clientPhone",
+          "label": {
+            "en": "Client phone",
+            "uk": "Телефон клієнта",
+            "pt": "Telefone do cliente"
+          },
+          "type": "string"
+        }
+      ]
+    }
   ]
 }

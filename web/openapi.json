@@ -61,12 +61,123 @@
         }
       }
     },
+    "/api/v1/services/{id}": {
+      "get": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/service-types/{id}": {
+      "put": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "updateType",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceTypeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{id}": {
       "get": {
         "tags": [
           "projects"
         ],
-        "operationId": "get",
+        "operationId": "get_1",
         "parameters": [
           {
             "name": "id",
@@ -95,7 +206,7 @@
         "tags": [
           "projects"
         ],
-        "operationId": "update",
+        "operationId": "update_1",
         "parameters": [
           {
             "name": "id",
@@ -339,7 +450,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "get_1",
+        "operationId": "get_2",
         "parameters": [
           {
             "name": "id",
@@ -368,7 +479,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "update_1",
+        "operationId": "update_2",
         "parameters": [
           {
             "name": "id",
@@ -409,7 +520,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "get_2",
+        "operationId": "get_3",
         "parameters": [
           {
             "name": "id",
@@ -438,7 +549,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "update_2",
+        "operationId": "update_3",
         "parameters": [
           {
             "name": "id",
@@ -520,7 +631,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "get_3",
+        "operationId": "get_4",
         "parameters": [
           {
             "name": "id",
@@ -549,7 +660,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "update_3",
+        "operationId": "update_4",
         "parameters": [
           {
             "name": "id",
@@ -590,7 +701,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "get_4",
+        "operationId": "get_5",
         "parameters": [
           {
             "name": "id",
@@ -619,7 +730,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "update_4",
+        "operationId": "update_5",
         "parameters": [
           {
             "name": "id",
@@ -768,6 +879,264 @@
         }
       }
     },
+    "/api/v1/services/{id}/start": {
+      "post": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "start",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/{id}/reopen": {
+      "post": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "reopen",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/{id}/complete": {
+      "post": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "complete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/{id}/cancel": {
+      "post": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelServiceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/service-types": {
+      "get": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "types",
+        "parameters": [
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServiceTypeView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "createType",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceTypeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/service-types/{id}/restore": {
+      "post": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "restoreType",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/service-types/{id}/archive": {
+      "post": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "archiveType",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects": {
       "get": {
         "tags": [
@@ -839,6 +1208,96 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/ProjectView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/services": {
+      "get": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "list_2",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "typeId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ServiceView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "services"
+        ],
+        "operationId": "create_1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceView"
                 }
               }
             }
@@ -927,7 +1386,7 @@
         "tags": [
           "projects"
         ],
-        "operationId": "reopen",
+        "operationId": "reopen_1",
         "parameters": [
           {
             "name": "id",
@@ -1397,7 +1856,7 @@
         "tags": [
           "platform"
         ],
-        "operationId": "create_1",
+        "operationId": "create_2",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1489,7 +1948,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "list_2",
+        "operationId": "list_3",
         "parameters": [
           {
             "name": "q",
@@ -1538,7 +1997,7 @@
         "tags": [
           "personnel"
         ],
-        "operationId": "create_2",
+        "operationId": "create_3",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1700,7 +2159,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "list_3",
+        "operationId": "list_4",
         "parameters": [
           {
             "name": "q",
@@ -1740,7 +2199,7 @@
         "tags": [
           "customers"
         ],
-        "operationId": "create_3",
+        "operationId": "create_4",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2204,7 +2663,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list_4",
+        "operationId": "list_5",
         "parameters": [
           {
             "name": "typeId",
@@ -2287,7 +2746,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_4",
+        "operationId": "create_5",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2379,7 +2838,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list_5",
+        "operationId": "list_6",
         "parameters": [
           {
             "name": "includeArchived",
@@ -2411,7 +2870,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_5",
+        "operationId": "create_6",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2642,7 +3101,7 @@
         "tags": [
           "members"
         ],
-        "operationId": "list_6",
+        "operationId": "list_7",
         "responses": {
           "200": {
             "description": "OK",
@@ -2851,6 +3310,241 @@
           "role",
           "status",
           "userId"
+        ]
+      },
+      "ServiceUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "plannedStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "plannedEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "attributes",
+          "code",
+          "version"
+        ]
+      },
+      "ServiceView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "typeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "typeCode": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "in_progress",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "plannedStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "plannedEnd": {
+            "type": "string",
+            "format": "date"
+          },
+          "actualStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actualEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cancelReason": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "attributes",
+          "code",
+          "createdAt",
+          "id",
+          "projectId",
+          "status",
+          "typeCode",
+          "typeId",
+          "version"
+        ]
+      },
+      "FieldDefinition": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "text",
+              "number",
+              "integer",
+              "boolean",
+              "date",
+              "enum"
+            ],
+            "minLength": 1
+          },
+          "unit": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "min": {
+            "type": "number"
+          },
+          "max": {
+            "type": "number"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "type"
+        ]
+      },
+      "ServiceTypeRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldDefinition"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "fields",
+          "name"
+        ]
+      },
+      "ServiceTypeView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldDefinition"
+            }
+          },
+          "templateKey": {
+            "type": "string"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "archived",
+          "code",
+          "fields",
+          "id",
+          "name"
         ]
       },
       "ProjectUpdateRequest": {
@@ -3612,57 +4306,6 @@
           "statuses"
         ]
       },
-      "FieldDefinition": {
-        "type": "object",
-        "properties": {
-          "key": {
-            "type": "string",
-            "minLength": 1
-          },
-          "label": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "string",
-              "text",
-              "number",
-              "integer",
-              "boolean",
-              "date",
-              "enum"
-            ],
-            "minLength": 1
-          },
-          "unit": {
-            "type": "string"
-          },
-          "required": {
-            "type": "boolean"
-          },
-          "min": {
-            "type": "number"
-          },
-          "max": {
-            "type": "number"
-          },
-          "options": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "key",
-          "label",
-          "type"
-        ]
-      },
       "StatusDefinition": {
         "type": "object",
         "properties": {
@@ -3769,6 +4412,18 @@
           "role"
         ]
       },
+      "CancelServiceRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
       "ProjectCreateRequest": {
         "type": "object",
         "properties": {
@@ -3816,6 +4471,43 @@
           "shifts",
           "startDate",
           "timeZone"
+        ]
+      },
+      "ServiceCreateRequest": {
+        "type": "object",
+        "properties": {
+          "typeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "plannedStart": {
+            "type": "string",
+            "format": "date"
+          },
+          "plannedEnd": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "attributes",
+          "code",
+          "typeId"
         ]
       },
       "ShiftScheduleRequest": {
@@ -4387,11 +5079,18 @@
             "items": {
               "type": "string"
             }
+          },
+          "serviceTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "installed",
           "positions",
+          "serviceTypes",
           "skipped"
         ]
       },

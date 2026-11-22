@@ -1,0 +1,86 @@
+package com.safetics.services;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import com.safetics.assets.FieldDefinition;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+/** Запити й відповіді API типів послуг і послуг. Поля без @NotNull можуть бути null. */
+public final class ServiceDtos {
+
+    private ServiceDtos() {
+    }
+
+    public record ServiceTypeView(
+            @NotNull UUID id,
+            @NotNull String code,
+            @NotNull Map<String, String> name,
+            @NotNull List<FieldDefinition> fields,
+            String templateKey,
+            @NotNull boolean archived) {
+    }
+
+    /** code після створення не змінюється. */
+    public record ServiceTypeRequest(
+            @NotBlank String code,
+            @NotNull Map<String, String> name,
+            @NotNull @Valid List<FieldDefinition> fields) {
+    }
+
+    /**
+     * status: planned — заплановано, in_progress — в роботі, completed — завершено, cancelled — скасовано.
+     * customerId / customerName — замовник послуги: власний (постійний проєкт) або замовник проєкту.
+     */
+    public record ServiceView(
+            @NotNull UUID id,
+            @NotNull UUID projectId,
+            @NotNull UUID typeId,
+            @NotNull String typeCode,
+            @NotNull String code,
+            String name,
+            UUID customerId,
+            String customerName,
+            @NotNull @Schema(allowableValues = {"planned", "in_progress", "completed", "cancelled"}) String status,
+            @NotNull Map<String, Object> attributes,
+            LocalDate plannedStart,
+            LocalDate plannedEnd,
+            OffsetDateTime actualStart,
+            OffsetDateTime actualEnd,
+            String cancelReason,
+            @NotNull int version,
+            @NotNull OffsetDateTime createdAt) {
+    }
+
+    /** customerId — лише для проєкту без замовника. */
+    public record ServiceCreateRequest(
+            @NotNull UUID typeId,
+            @NotBlank String code,
+            String name,
+            UUID customerId,
+            @NotNull Map<String, Object> attributes,
+            LocalDate plannedStart,
+            LocalDate plannedEnd) {
+    }
+
+    public record ServiceUpdateRequest(
+            @NotBlank String code,
+            String name,
+            UUID customerId,
+            @NotNull Map<String, Object> attributes,
+            LocalDate plannedStart,
+            LocalDate plannedEnd,
+            @NotNull Integer version) {
+    }
+
+    public record CancelServiceRequest(@NotBlank String reason) {
+    }
+}
