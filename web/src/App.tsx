@@ -7,9 +7,12 @@ import { AppLayout } from './layout/AppLayout'
 import { RequireAuth } from './layout/RequireAuth'
 import { AssetsPage } from './pages/assets/AssetsPage'
 import { AuditLogPage } from './pages/AuditLogPage'
+import { CustomersPage } from './pages/customers/CustomersPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
+import { ProjectDetailPage } from './pages/projects/ProjectDetailPage'
+import { ProjectsPage } from './pages/projects/ProjectsPage'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -22,6 +25,9 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardPage /> },
+      { path: 'projects', element: <ProjectsPage /> },
+      { path: 'projects/:id', element: <ProjectDetailPage /> },
+      { path: 'customers', element: <CustomersPage /> },
       { path: 'assets', element: <AssetsPage /> },
       { path: 'reports', element: <PlaceholderPage titleKey="nav.reports" /> },
       { path: 'stock', element: <PlaceholderPage titleKey="nav.stock" /> },

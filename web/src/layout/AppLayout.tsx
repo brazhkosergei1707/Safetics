@@ -6,6 +6,8 @@ import {
   FileTextOutlined,
   InboxOutlined,
   LogoutOutlined,
+  ProjectOutlined,
+  TeamOutlined,
 } from '@ant-design/icons'
 import { Button, Flex, Layout, Menu, Select, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
@@ -25,6 +27,10 @@ export function AppLayout() {
 
   const items = [
     { key: '/', icon: <DashboardOutlined />, label: t('nav.dashboard') },
+    { key: '/projects', icon: <ProjectOutlined />, label: t('nav.projects') },
+    ...(hasPermission(session, 'client.view')
+      ? [{ key: '/customers', icon: <TeamOutlined />, label: t('nav.customers') }]
+      : []),
     ...(hasPermission(session, 'asset.view')
       ? [{ key: '/assets', icon: <AppstoreOutlined />, label: t('nav.assets') }]
       : []),
@@ -44,7 +50,7 @@ export function AppLayout() {
         <Typography.Title level={4} style={{ padding: '16px 24px', margin: 0 }}>
           Safetics
         </Typography.Title>
-        <Menu mode="inline" selectedKeys={[pathname]} items={items} onClick={({ key }) => navigate(key)} />
+        <Menu mode="inline" selectedKeys={[pathname.startsWith('/projects') ? '/projects' : pathname]} items={items} onClick={({ key }) => navigate(key)} />
       </Sider>
       <Layout>
         <Header style={{ background: 'transparent', paddingInline: 24 }}>

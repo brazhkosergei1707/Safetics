@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/v1/assets/{id}": {
+    "/api/v1/projects/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -20,7 +20,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/asset-types/{id}": {
+    "/api/v1/customers/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -30,6 +30,246 @@ export interface paths {
         get: operations["get_1"];
         put: operations["update_1"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer-contacts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateContact"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_2"];
+        put: operations["update_2"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/asset-types/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_3"];
+        put: operations["update_3"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/shift-schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["schedules"];
+        put?: never;
+        post: operations["saveSchedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reopen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["access"];
+        put?: never;
+        post: operations["grantAccess"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_1"];
+        put?: never;
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customers/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customers/{id}/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["contacts"];
+        put?: never;
+        post: operations["createContact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customers/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer-contacts/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["restoreContact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer-contacts/{id}/portal-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["grantPortalAccess"];
+        delete: operations["revokePortalAccess"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customer-contacts/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archiveContact"];
         delete?: never;
         options?: never;
         head?: never;
@@ -139,9 +379,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list"];
+        get: operations["list_2"];
         put?: never;
-        post: operations["create"];
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -157,7 +397,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["restore"];
+        post: operations["restore_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -173,7 +413,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["archive"];
+        post: operations["archive_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -187,9 +427,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list_3"];
         put?: never;
-        post: operations["create_1"];
+        post: operations["create_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -206,6 +446,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["installTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_4"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -244,10 +500,133 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{id}/shift-schedules/{scheduleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteSchedule"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/access/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["revokeAccess"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ProjectUpdateRequest: {
+            code: string;
+            name: string;
+            /** Format: uuid */
+            customerId?: string;
+            location?: string;
+            country?: string;
+            timeZone: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+            /** Format: int32 */
+            version: number;
+        };
+        ProjectView: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: string;
+            /** Format: uuid */
+            customerId?: string;
+            customerName?: string;
+            location?: string;
+            country?: string;
+            timeZone: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+            /** @enum {string} */
+            status: "active" | "closed";
+            shifts: components["schemas"]["Shift"][];
+            /** Format: int32 */
+            version: number;
+        };
+        Shift: {
+            /** @description Код зміни: day, night, a, b… */
+            code: string;
+            name: string;
+            /** @example 07:00 */
+            start: string;
+            /** Format: int32 */
+            durationMinutes: number;
+        };
+        CustomerRequest: {
+            name: string;
+            legalCode?: string;
+            country?: string;
+            phone?: string;
+            email?: string;
+            notes?: string;
+            /** Format: int32 */
+            version?: number;
+        };
+        CustomerView: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            legalCode?: string;
+            country?: string;
+            phone?: string;
+            email?: string;
+            notes?: string;
+            /** Format: int32 */
+            version: number;
+            archived: boolean;
+        };
+        ContactRequest: {
+            fullName: string;
+            jobTitle?: string;
+            phone?: string;
+            email?: string;
+            /** Format: int32 */
+            version?: number;
+        };
+        ContactView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            customerId: string;
+            fullName: string;
+            jobTitle?: string;
+            phone?: string;
+            email?: string;
+            /** @enum {string} */
+            portalRole?: "client_rep" | "client_manager";
+            /** Format: int32 */
+            version: number;
+            archived: boolean;
+        };
         AssetUpdateRequest: {
             /** Format: uuid */
             parentId?: string;
@@ -328,6 +707,58 @@ export interface components {
             templateKey?: string;
             archived: boolean;
         };
+        ProjectCreateRequest: {
+            code: string;
+            name: string;
+            /** Format: uuid */
+            customerId?: string;
+            location?: string;
+            country?: string;
+            /** @example America/Belem */
+            timeZone: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+            shifts: components["schemas"]["Shift"][];
+        };
+        ShiftScheduleRequest: {
+            /** Format: date */
+            validFrom: string;
+            shifts: components["schemas"]["Shift"][];
+        };
+        ShiftScheduleView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            validFrom: string;
+            shifts: components["schemas"]["Shift"][];
+            editable: boolean;
+            current: boolean;
+        };
+        GrantAccessRequest: {
+            /** Format: uuid */
+            userId: string;
+        };
+        ProjectAccessView: {
+            /** Format: uuid */
+            userId: string;
+            fullName: string;
+            phone: string;
+            role: string;
+            grantedByName?: string;
+            /** Format: date-time */
+            grantedAt: string;
+        };
+        PortalAccessRequest: {
+            /** @enum {string} */
+            role: "client_rep" | "client_manager";
+            password?: string;
+        };
+        PortalAccessResponse: {
+            contact: components["schemas"]["ContactView"];
+            newAccount: boolean;
+        };
         LoginRequest: {
             phone: string;
             password: string;
@@ -387,6 +818,16 @@ export interface components {
             installed: string[];
             skipped: string[];
         };
+        MemberView: {
+            /** Format: uuid */
+            userId: string;
+            fullName: string;
+            phone: string;
+            role: string;
+            status: string;
+            portal: boolean;
+            allProjects: boolean;
+        };
         AuditEntry: {
             /** Format: int64 */
             id: number;
@@ -429,12 +870,134 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["AssetView"];
+                    "*/*": components["schemas"]["ProjectView"];
                 };
             };
         };
     };
     update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProjectView"];
+                };
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerView"];
+                };
+            };
+        };
+    };
+    update_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerView"];
+                };
+            };
+        };
+    };
+    updateContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContactView"];
+                };
+            };
+        };
+    };
+    get_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssetView"];
+                };
+            };
+        };
+    };
+    update_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -460,7 +1023,7 @@ export interface operations {
             };
         };
     };
-    get_1: {
+    get_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -482,7 +1045,7 @@ export interface operations {
             };
         };
     };
-    update_1: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -504,6 +1067,427 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AssetTypeView"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: {
+                status?: string;
+                customerId?: string;
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProjectView"][];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProjectView"];
+                };
+            };
+        };
+    };
+    schedules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiftScheduleView"][];
+                };
+            };
+        };
+    };
+    saveSchedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShiftScheduleRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiftScheduleView"][];
+                };
+            };
+        };
+    };
+    reopen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProjectView"];
+                };
+            };
+        };
+    };
+    close: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProjectView"];
+                };
+            };
+        };
+    };
+    access: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProjectAccessView"][];
+                };
+            };
+        };
+    };
+    grantAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrantAccessRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProjectAccessView"][];
+                };
+            };
+        };
+    };
+    list_1: {
+        parameters: {
+            query?: {
+                q?: string;
+                includeArchived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerView"][];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerView"];
+                };
+            };
+        };
+    };
+    restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerView"];
+                };
+            };
+        };
+    };
+    contacts: {
+        parameters: {
+            query?: {
+                includeArchived?: boolean;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContactView"][];
+                };
+            };
+        };
+    };
+    createContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContactView"];
+                };
+            };
+        };
+    };
+    archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CustomerView"];
+                };
+            };
+        };
+    };
+    restoreContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContactView"];
+                };
+            };
+        };
+    };
+    grantPortalAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalAccessRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PortalAccessResponse"];
+                };
+            };
+        };
+    };
+    revokePortalAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContactView"];
+                };
+            };
+        };
+    };
+    archiveContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ContactView"];
                 };
             };
         };
@@ -642,7 +1626,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_2: {
         parameters: {
             query?: {
                 typeId?: string;
@@ -670,7 +1654,7 @@ export interface operations {
             };
         };
     };
-    create: {
+    create_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -694,7 +1678,7 @@ export interface operations {
             };
         };
     };
-    restore: {
+    restore_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -716,7 +1700,7 @@ export interface operations {
             };
         };
     };
-    archive: {
+    archive_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -738,7 +1722,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_3: {
         parameters: {
             query?: {
                 includeArchived?: boolean;
@@ -760,7 +1744,7 @@ export interface operations {
             };
         };
     };
-    create_1: {
+    create_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -808,6 +1792,26 @@ export interface operations {
             };
         };
     };
+    list_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MemberView"][];
+                };
+            };
+        };
+    };
     me: {
         parameters: {
             query?: never;
@@ -846,6 +1850,52 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AuditEntry"][];
+                };
+            };
+        };
+    };
+    deleteSchedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                scheduleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShiftScheduleView"][];
+                };
+            };
+        };
+    };
+    revokeAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProjectAccessView"][];
                 };
             };
         };

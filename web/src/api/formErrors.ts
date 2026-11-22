@@ -1,0 +1,32 @@
+import type { FormInstance } from 'antd'
+import type { TFunction } from 'i18next'
+import { ApiError } from './client'
+
+/**
+ * Показує помилки полів із сервера біля полів форми. Ключі сервера переводяться в шлях форми:
+ * "shifts[1].start" → ['shifts', 1, 'start'], "attributes.dip" → ['attributes', 'dip'].
+ * Повертає false, якщо в помилці немає полів (тоді показати загальне повідомлення).
+ */
+export function applyFieldErrors(form: FormInstance, error: unknown, t: TFunction): boolean {
+  if (!(error instanceof ApiError)) return false
+  const entries = Object.entries(error.fields)
+  if (entries.length === 0) return false
+  form.setFields(
+    entries.map(([key, code]) => ({
+      name: key.split('.').flatMap((part) => {
+        const match = /^(.+)\[(\d+)]$/.exec(part)
+        return match ? [match[1], Number(match[2])] : [part]
+      }),
+      errors: [t(`validation.${code}`, { defaultValue: code })],
+    })),
+  )
+  return true
+}
+
+/** Текст для помилки без полів: відомий код → переклад, інакше — «сервер недоступний». */
+export function errorMessage(error: unknown, t: TFunction): string {
+  if (error instanceof ApiError && error.code) {
+    return t(`apiErrors.${error.code}`, { defaultValue: t('errors.serverUnavailable') })
+  }
+  return t('errors.serverUnavailable')
+}

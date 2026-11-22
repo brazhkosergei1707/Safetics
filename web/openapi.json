@@ -20,12 +20,193 @@
     }
   ],
   "paths": {
+    "/api/v1/projects/{id}": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customers/{id}": {
+      "get": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "get_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "update_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customer-contacts/{id}": {
+      "put": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "updateContact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/assets/{id}": {
       "get": {
         "tags": [
           "assets"
         ],
-        "operationId": "get",
+        "operationId": "get_2",
         "parameters": [
           {
             "name": "id",
@@ -54,7 +235,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "update",
+        "operationId": "update_2",
         "parameters": [
           {
             "name": "id",
@@ -95,7 +276,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "get_1",
+        "operationId": "get_3",
         "parameters": [
           {
             "name": "id",
@@ -124,7 +305,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "update_1",
+        "operationId": "update_3",
         "parameters": [
           {
             "name": "id",
@@ -153,6 +334,644 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/shift-schedules": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "schedules",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShiftScheduleView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "saveSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShiftScheduleView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/reopen": {
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "reopen",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/close": {
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "close",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/access": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "access",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectAccessView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "grantAccess",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantAccessRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectAccessView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customers": {
+      "get": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "list_1",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "create_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customers/{id}/restore": {
+      "post": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "restore",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customers/{id}/contacts": {
+      "get": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "contacts",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "includeArchived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContactView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "createContact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customers/{id}/archive": {
+      "post": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "archive",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customer-contacts/{id}/restore": {
+      "post": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "restoreContact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customer-contacts/{id}/portal-access": {
+      "post": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "grantPortalAccess",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalAccessRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalAccessResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "revokePortalAccess",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customer-contacts/{id}/archive": {
+      "post": {
+        "tags": [
+          "customers"
+        ],
+        "operationId": "archiveContact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactView"
                 }
               }
             }
@@ -323,7 +1142,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list",
+        "operationId": "list_2",
         "parameters": [
           {
             "name": "typeId",
@@ -406,7 +1225,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create",
+        "operationId": "create_2",
         "requestBody": {
           "content": {
             "application/json": {
@@ -436,7 +1255,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "restore",
+        "operationId": "restore_1",
         "parameters": [
           {
             "name": "id",
@@ -467,7 +1286,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "archive",
+        "operationId": "archive_1",
         "parameters": [
           {
             "name": "id",
@@ -498,7 +1317,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "list_1",
+        "operationId": "list_3",
         "parameters": [
           {
             "name": "includeArchived",
@@ -530,7 +1349,7 @@
         "tags": [
           "assets"
         ],
-        "operationId": "create_1",
+        "operationId": "create_3",
         "requestBody": {
           "content": {
             "application/json": {
@@ -578,6 +1397,29 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/InstallTemplateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/members": {
+      "get": {
+        "tags": [
+          "members"
+        ],
+        "operationId": "list_4",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemberView"
+                  }
                 }
               }
             }
@@ -639,10 +1481,382 @@
           }
         }
       }
+    },
+    "/api/v1/projects/{id}/shift-schedules/{scheduleId}": {
+      "delete": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "deleteSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "scheduleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShiftScheduleView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/access/{userId}": {
+      "delete": {
+        "tags": [
+          "projects"
+        ],
+        "operationId": "revokeAccess",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectAccessView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ProjectUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "location": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "timeZone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "startDate",
+          "timeZone",
+          "version"
+        ]
+      },
+      "ProjectView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "closed"
+            ]
+          },
+          "shifts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Shift"
+            }
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "code",
+          "id",
+          "name",
+          "shifts",
+          "startDate",
+          "status",
+          "timeZone",
+          "version"
+        ]
+      },
+      "Shift": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Код зміни: day, night, a, b…",
+            "minLength": 1,
+            "pattern": "^[a-z0-9_]{1,20}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "start": {
+            "type": "string",
+            "example": "07:00",
+            "minLength": 1
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 1440,
+            "minimum": 30
+          }
+        },
+        "required": [
+          "code",
+          "durationMinutes",
+          "name",
+          "start"
+        ]
+      },
+      "CustomerRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "legalCode": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CustomerView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "legalCode": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "archived",
+          "id",
+          "name",
+          "version"
+        ]
+      },
+      "ContactRequest": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "jobTitle": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "fullName"
+        ]
+      },
+      "ContactView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "jobTitle": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "portalRole": {
+            "type": "string",
+            "enum": [
+              "client_rep",
+              "client_manager"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "archived",
+          "customerId",
+          "fullName",
+          "id",
+          "version"
+        ]
+      },
       "AssetUpdateRequest": {
         "type": "object",
         "properties": {
@@ -914,6 +2128,184 @@
           "statuses"
         ]
       },
+      "ProjectCreateRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "location": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "timeZone": {
+            "type": "string",
+            "example": "America/Belem",
+            "minLength": 1
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "shifts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Shift"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "shifts",
+          "startDate",
+          "timeZone"
+        ]
+      },
+      "ShiftScheduleRequest": {
+        "type": "object",
+        "properties": {
+          "validFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "shifts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Shift"
+            }
+          }
+        },
+        "required": [
+          "shifts",
+          "validFrom"
+        ]
+      },
+      "ShiftScheduleView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "shifts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Shift"
+            }
+          },
+          "editable": {
+            "type": "boolean"
+          },
+          "current": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "current",
+          "editable",
+          "id",
+          "shifts",
+          "validFrom"
+        ]
+      },
+      "GrantAccessRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "ProjectAccessView": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "grantedByName": {
+            "type": "string"
+          },
+          "grantedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "fullName",
+          "grantedAt",
+          "phone",
+          "role",
+          "userId"
+        ]
+      },
+      "PortalAccessRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "client_rep",
+              "client_manager"
+            ],
+            "minLength": 1
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "PortalAccessResponse": {
+        "type": "object",
+        "properties": {
+          "contact": {
+            "$ref": "#/components/schemas/ContactView"
+          },
+          "newAccount": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "contact",
+          "newAccount"
+        ]
+      },
       "LoginRequest": {
         "type": "object",
         "properties": {
@@ -1117,6 +2509,42 @@
         "required": [
           "installed",
           "skipped"
+        ]
+      },
+      "MemberView": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "portal": {
+            "type": "boolean"
+          },
+          "allProjects": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "allProjects",
+          "fullName",
+          "phone",
+          "portal",
+          "role",
+          "status",
+          "userId"
         ]
       },
       "AuditEntry": {

@@ -50,6 +50,10 @@ public final class TestApi {
                 .PUT(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(body))).build());
     }
 
+    public Response delete(String path) {
+        return send(request(path).DELETE().build());
+    }
+
     private HttpRequest.Builder request(String path) {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
                 .header("Accept", "application/json");
@@ -104,6 +108,14 @@ public final class TestApi {
                 current = current == null ? null : ((Map<String, Object>) current).get(part);
             }
             return current;
+        }
+
+        /** Код помилки поля з {"fields": {...}}; ключ може містити крапки: "shifts[0].start". */
+        @SuppressWarnings("unchecked")
+        public String field(String key) {
+            Object fields = at("fields");
+            Object value = fields == null ? null : ((Map<String, Object>) fields).get(key);
+            return value == null ? null : value.toString();
         }
 
         public String str(String path) {

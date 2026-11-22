@@ -1,5 +1,7 @@
 package com.safetics;
 
+import java.util.UUID;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -49,5 +51,19 @@ public abstract class AbstractIntegrationTest {
     protected static JdbcClient admin() {
         return JdbcClient.create(
                 new DriverManagerDataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword()));
+    }
+
+    /** Користувач з паролем (хеш BCrypt) і членством із системною роллю. */
+    protected static UUID addMember(UUID company, String phone, String passwordHash, String role) {
+        JdbcClient admin = admin();
+        UUID user = admin.sql("insert into app_user (phone, full_name, password_hash) values (?, ?, ?) returning id")
+                .params(phone, "User " + phone, passwordHash).query(UUID.class).single();
+        admin.sql("insert into membership (company_id, user_id, role_id) select ?, ?, id from role where code = ? and company_id is null")
+                .params(company, user, role).update();
+        return user;
+    }
+
+    protected static UUID addCompany(String name) {
+        return admin().sql("insert into company (name) values (?) returning id").param(name).query(UUID.class).single();
     }
 }
