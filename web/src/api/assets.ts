@@ -91,22 +91,41 @@ export function useSaveAssetType() {
   })
 }
 
-export function useArchiveAssetType() {
+/** Видалити тип: лише без обладнання в роботі (409 type_has_assets, fields.assets — кількість). */
+export function useDeleteAssetType() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, restore }: { id: string; restore?: boolean }) =>
-      restore
-        ? unwrap(api.POST('/api/v1/asset-types/{id}/restore', { params: { path: { id } } }))
-        : unwrap(api.POST('/api/v1/asset-types/{id}/archive', { params: { path: { id } } })),
+    mutationFn: (id: string) => unwrap(api.DELETE('/api/v1/asset-types/{id}', { params: { path: { id } } })),
     onSuccess: () => client.invalidateQueries({ queryKey: ['asset-types'] }),
   })
 }
 
-/** Усі типи разом з архівними — для редактора типів. */
-export function useAllAssetTypes(enabled: boolean) {
+/** Порядок вкладок: усі активні типи в новому порядку. */
+export function useReorderAssetTypes() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: string[]) => unwrap(api.PUT('/api/v1/asset-types/order', { body: { ids } })),
+    onSuccess: (types) => client.setQueryData(['asset-types'], types),
+    onSettled: () => client.invalidateQueries({ queryKey: ['asset-types'] }),
+  })
+}
+
+export type LibraryType = Schemas['LibraryTypeView']
+
+/** Бібліотека типів інших компаній. */
+export function useAssetTypeLibrary(enabled: boolean) {
   return useQuery({
-    queryKey: ['asset-types', 'all'],
-    queryFn: () => unwrap(api.GET('/api/v1/asset-types', { params: { query: { includeArchived: true } } })),
+    queryKey: ['asset-types', 'library'],
+    queryFn: () => unwrap(api.GET('/api/v1/asset-types/library')),
     enabled,
+  })
+}
+
+export function useInstallFromLibrary() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (sourceId: string) =>
+      unwrap(api.POST('/api/v1/asset-types/library/{sourceId}/install', { params: { path: { sourceId } } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['asset-types'] }),
   })
 }

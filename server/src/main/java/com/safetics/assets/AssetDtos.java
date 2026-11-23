@@ -104,4 +104,23 @@ public final class AssetDtos {
 
     public record AssetPage(@NotNull List<AssetView> items, @NotNull long total) {
     }
+
+    /**
+     * Тип з бібліотеки (типи всіх компаній, однакові код і назва — один рядок; компанії не називаються).
+     * exists — у вашій компанії вже є тип з таким кодом.
+     */
+    public record LibraryTypeView(
+            @NotNull UUID sourceId,
+            @NotNull String code,
+            @NotNull Map<String, String> name,
+            @NotNull String category,
+            @NotNull int fieldsCount,
+            @NotNull int checklistCount,
+            @NotNull int companies,
+            @NotNull boolean exists) {
+    }
+
+    /** Новий порядок типів (вкладок): усі активні типи компанії. */
+    public record AssetTypeOrderRequest(@NotNull List<UUID> ids) {
+    }
 }

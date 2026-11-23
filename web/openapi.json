@@ -1027,6 +1027,61 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "assets"
+        ],
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/asset-types/order": {
+      "put": {
+        "tags": [
+          "assets"
+        ],
+        "operationId": "reorder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetTypeOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetTypeView"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/activity-codes/{id}": {
@@ -3971,6 +4026,37 @@
         }
       }
     },
+    "/api/v1/asset-types/library/{sourceId}/install": {
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "operationId": "installFromLibrary",
+        "parameters": [
+          {
+            "name": "sourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/asset-types/install-template": {
       "post": {
         "tags": [
@@ -4575,6 +4661,29 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/AuditEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/asset-types/library": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "operationId": "library",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LibraryTypeView"
                   }
                 }
               }
@@ -7260,6 +7369,21 @@
           "statuses"
         ]
       },
+      "AssetTypeOrderRequest": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      },
       "ActivityCodeRequest": {
         "type": "object",
         "properties": {
@@ -8964,6 +9088,52 @@
         "required": [
           "items",
           "total"
+        ]
+      },
+      "LibraryTypeView": {
+        "type": "object",
+        "properties": {
+          "sourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string"
+          },
+          "fieldsCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "checklistCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "companies": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "exists": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "category",
+          "checklistCount",
+          "code",
+          "companies",
+          "exists",
+          "fieldsCount",
+          "name",
+          "sourceId"
         ]
       },
       "AlertView": {

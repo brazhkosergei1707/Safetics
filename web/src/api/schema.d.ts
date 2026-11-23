@@ -270,6 +270,22 @@ export interface paths {
         get: operations["get_6"];
         put: operations["update_6"];
         post?: never;
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/asset-types/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["reorder"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1284,6 +1300,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/asset-types/library/{sourceId}/install": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["installFromLibrary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/asset-types/install-template": {
         parameters: {
             query?: never;
@@ -1548,6 +1580,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["latest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/asset-types/library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["library"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2424,6 +2472,9 @@ export interface components {
             templateKey?: string;
             archived: boolean;
         };
+        AssetTypeOrderRequest: {
+            ids: string[];
+        };
         ActivityCodeRequest: {
             code: string;
             name: {
@@ -2944,6 +2995,22 @@ export interface components {
             items: components["schemas"]["AssetView"][];
             /** Format: int64 */
             total: number;
+        };
+        LibraryTypeView: {
+            /** Format: uuid */
+            sourceId: string;
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            category: string;
+            /** Format: int32 */
+            fieldsCount: number;
+            /** Format: int32 */
+            checklistCount: number;
+            /** Format: int32 */
+            companies: number;
+            exists: boolean;
         };
         AlertView: {
             /** Format: uuid */
@@ -3632,6 +3699,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AssetTypeView"];
+                };
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    reorder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetTypeOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssetTypeView"][];
                 };
             };
         };
@@ -5627,6 +5738,28 @@ export interface operations {
             };
         };
     };
+    installFromLibrary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sourceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssetTypeView"];
+                };
+            };
+        };
+    };
     installTemplate: {
         parameters: {
             query?: never;
@@ -6023,6 +6156,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AuditEntry"][];
+                };
+            };
+        };
+    };
+    library: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LibraryTypeView"][];
                 };
             };
         };

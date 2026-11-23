@@ -12,11 +12,15 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.safetics.assets.AssetDtos.AssetTypeOrderRequest;
 import com.safetics.assets.AssetDtos.AssetTypeRequest;
 import com.safetics.assets.AssetDtos.AssetTypeView;
 import com.safetics.assets.AssetDtos.ChecklistItem;
+import com.safetics.assets.AssetDtos.LibraryTypeView;
 import com.safetics.core.audit.AuditService;
 import com.safetics.core.tenancy.TenantContext;
 import com.safetics.core.web.ApiException;
@@ -64,7 +68,7 @@ public class AssetTypeService {
     }
 
     public List<AssetTypeView> list(boolean includeArchived) {
-        return db.sql(SELECT + (includeArchived ? "" : " where archived_at is null") + " order by code")
+        return db.sql(SELECT + (includeArchived ? "" : " where archived_at is null") + " order by sort_order, code")
                 .query(this::map)
                 .list();
     }
@@ -132,6 +136,136 @@ public class AssetTypeService {
                 .param(id).update();
         audit.record("asset_type", id, archived ? "archive" : "restore", Map.of("code", existing.code()));
         return get(id);
+    }
+
+    /**
+     * Видалити тип: лише коли немає обладнання в роботі (409 type_has_assets, fields.assets — кількість).
+     * Є архівне обладнання — тип ховається (архів), історія лишається; немає жодного — видаляється повністю.
+     * Код типу прибирається з «можна вкладати» інших типів.
+     */
+    @Transactional
+    public void delete(UUID id) {
+        AssetTypeView existing = get(id);
+        long active = db.sql("select count(*) from asset where asset_type_id = ? and archived_at is null")
+                .param(id).query(Long.class).single();
+        if (active > 0) {
+            throw new ApiException(HttpStatus.CONFLICT, "type_has_assets", Map.of("assets", Long.toString(active)));
+        }
+        long archived = db.sql("select count(*) from asset where asset_type_id = ?").param(id).query(Long.class).single();
+        db.sql("""
+                        update asset_type set allowed_child_types = allowed_child_types - ?, updated_at = now()
+                        where allowed_child_types @> jsonb_build_array(?::text)
+                        """)
+                .params(existing.code(), existing.code()).update();
+        if (archived > 0) {
+            db.sql("update asset_type set archived_at = coalesce(archived_at, now()), updated_at = now() where id = ?")
+                    .param(id).update();
+        } else {
+            db.sql("delete from asset_type where id = ?").param(id).update();
+        }
+        audit.record("asset_type", id, "delete", Map.of("code", existing.code(), "hidden", archived > 0));
+    }
+
+    /** Порядок вкладок: передаються всі активні типи компанії в новому порядку. */
+    @Transactional
+    public List<AssetTypeView> reorder(AssetTypeOrderRequest request) {
+        List<UUID> active = db.sql("select id from asset_type where archived_at is null").query(UUID.class).list();
+        if (request.ids().size() != active.size() || !new HashSet<>(request.ids()).equals(new HashSet<>(active))) {
+            throw ApiException.validation("ids", "not_all_types");
+        }
+        for (int i = 0; i < request.ids().size(); i++) {
+            db.sql("update asset_type set sort_order = ?, updated_at = now() where id = ?").params(i + 1, request.ids().get(i))
+                    .update();
+        }
+        audit.record("asset_type", TenantContext.requireCompanyId(), "reorder", Map.of("count", request.ids().size()));
+        return list(false);
+    }
+
+    // ---------------------------------------------------------------- бібліотека
+
+    /**
+     * Бібліотека: активні типи інших компаній, однакові код і назва — один рядок (найсвіжіший варіант).
+     * Читається в режимі app.library (політика library_read), лише в межах цієї транзакції.
+     */
+    @Transactional(readOnly = true)
+    public List<LibraryTypeView> library() {
+        Set<String> own = new HashSet<>(db.sql("select code from asset_type where archived_at is null").query(String.class).list());
+        UUID company = TenantContext.requireCompanyId();
+        enterLibrary();
+        try {
+            return db.sql("""
+                            with t as (
+                                select id, company_id, code, name, category, fields, checklist, updated_at,
+                                       lower(coalesce(name ->> 'en', name ->> 'uk', code)) as name_key
+                                from asset_type
+                                where archived_at is null and company_id <> ?
+                            ), g as (
+                                select (array_agg(id order by updated_at desc))[1] as id, count(distinct company_id) as companies
+                                from t group by code, name_key
+                            )
+                            select t.id, t.code, t.name, t.category, jsonb_array_length(t.fields) as fields_count,
+                                   jsonb_array_length(t.checklist) as checklist_count, g.companies
+                            from g join t on t.id = g.id
+                            order by g.companies desc, t.code
+                            """)
+                    .param(company)
+                    .query((rs, n) -> new LibraryTypeView(rs.getObject("id", UUID.class), rs.getString("code"),
+                            json.readValue(rs.getString("name"), LABELS), rs.getString("category"), rs.getInt("fields_count"),
+                            rs.getInt("checklist_count"), rs.getInt("companies"), own.contains(rs.getString("code"))))
+                    .list();
+        } finally {
+            leaveLibrary();
+        }
+    }
+
+    /**
+     * Додати тип з бібліотеки: копія полів, статусів, чек-листа й категорії; «можна вкладати» — лише коди,
+     * що вже є в компанії. Код уже є — 409 code_exists; є серед видалених (архів) — тип відновлюється з новим описом.
+     */
+    @Transactional
+    public AssetTypeView install(UUID sourceId) {
+        enterLibrary();
+        AssetTypeView source;
+        try {
+            source = db.sql(SELECT + " where id = ? and archived_at is null and company_id <> ?")
+                    .params(sourceId, TenantContext.requireCompanyId()).query(this::map).optional()
+                    .orElseThrow(ApiException::notFound);
+        } finally {
+            leaveLibrary();
+        }
+        Set<String> own = new HashSet<>(db.sql("select code from asset_type where archived_at is null").query(String.class).list());
+        List<String> children = source.allowedChildTypes().stream().filter(own::contains).toList();
+        AssetTypeRequest request = new AssetTypeRequest(source.code(), source.name(), source.category(), source.fields(),
+                source.statuses(), children, source.checklist());
+        Optional<AssetTypeView> existing = findByCode(source.code());
+        UUID id;
+        if (existing.isPresent() && !existing.get().archived()) {
+            throw ApiException.conflict("code_exists");
+        }
+        if (existing.isPresent()) {
+            update(existing.get().id(), request);
+            id = existing.get().id();
+            db.sql("""
+                            update asset_type
+                            set archived_at = null, source_type_id = ?,
+                                sort_order = (select coalesce(max(sort_order), 0) + 1 from asset_type where archived_at is null)
+                            where id = ?
+                            """)
+                    .params(sourceId, id).update();
+        } else {
+            id = create(request, null).id();
+            db.sql("update asset_type set source_type_id = ? where id = ?").params(sourceId, id).update();
+        }
+        audit.record("asset_type", id, "install_library", Map.of("code", source.code(), "sourceId", sourceId));
+        return get(id);
+    }
+
+    private void enterLibrary() {
+        db.sql("select set_config('app.library', 'on', true)").query(String.class).single();
+    }
+
+    private void leaveLibrary() {
+        db.sql("select set_config('app.library', '', true)").query(String.class).single();
     }
 
     /** Перевірка самої схеми типу: ключі полів, типи значень, варіанти enum, статуси. */

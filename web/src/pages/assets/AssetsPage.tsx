@@ -40,7 +40,7 @@ export function AssetsPage() {
   const canManageTypes = hasPermission(session, 'catalog.manage')
 
   const typeList = types.data ?? []
-  const activeType = typeList.find((type) => type.id === activeTypeId) ?? sortByCategory(typeList)[0]
+  const activeType = typeList.find((type) => type.id === activeTypeId) ?? typeList[0]
   const assets = useAssets({ typeId: activeType?.id, q: query }, !!activeType)
 
   const columns = useMemo(
@@ -107,7 +107,7 @@ export function AssetsPage() {
           setActiveTypeId(key)
           setQuery('')
         }}
-        items={sortByCategory(typeList).map((type) => ({
+        items={typeList.map((type) => ({
           key: type.id,
           label: (
             <Flex gap={6} align="center">
@@ -151,10 +151,6 @@ export function AssetsPage() {
 }
 
 /** Основне обладнання (бурові) — першим, далі допоміжне. */
-function sortByCategory(types: AssetType[]): AssetType[] {
-  return [...types].sort((a, b) => (a.category === b.category ? 0 : a.category === 'primary' ? -1 : 1))
-}
-
 function buildColumns(
   type: AssetType,
   language: string,

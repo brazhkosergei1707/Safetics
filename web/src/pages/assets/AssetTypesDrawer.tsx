@@ -1,12 +1,14 @@
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
-import { App, Button, Checkbox, Divider, Drawer, Flex, Form, Input, List, Select, Space, Tag, Typography } from 'antd'
+import { BookOutlined, DeleteOutlined, HolderOutlined, PlusOutlined } from '@ant-design/icons'
+import { App, Button, Checkbox, Divider, Drawer, Flex, Form, Input, List, Popconfirm, Select, Space, Tag, Typography } from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { type AssetType, useAllAssetTypes, useArchiveAssetType, useSaveAssetType } from '../../api/assets'
+import { type AssetType, useAssetTypes, useDeleteAssetType, useReorderAssetTypes, useSaveAssetType } from '../../api/assets'
+import { ApiError } from '../../api/client'
 import { applyFieldErrors, errorMessage } from '../../api/formErrors'
 import { FieldsEditor } from '../../components/FieldsEditor'
 import { type FieldFormValues, fieldsFromForm, fieldsToForm } from '../../components/fieldsForm'
 import { localized } from '../../i18n/localized'
+import { AssetTypeLibraryModal } from './AssetTypeLibraryModal'
 
 const COLORS = ['green', 'blue', 'orange', 'red', 'default']
 
@@ -34,9 +36,31 @@ interface FormValues {
 export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t, i18n } = useTranslation()
   const { message } = App.useApp()
-  const types = useAllAssetTypes(open)
+  const types = useAssetTypes()
   const save = useSaveAssetType()
-  const archive = useArchiveAssetType()
+  const remove = useDeleteAssetType()
+  const reorder = useReorderAssetTypes()
+  const [libraryOpen, setLibraryOpen] = useState(false)
+  const [dragId, setDragId] = useState<string>()
+
+  const typeList = types.data ?? []
+  // Перетягування рядка змінює порядок вкладок на сторінці «Обладнання»
+  const dropOn = (targetId: string) => {
+    if (!dragId || dragId === targetId) return
+    const ids = typeList.map((x) => x.id).filter((id) => id !== dragId)
+    ids.splice(ids.indexOf(targetId) + (typeList.findIndex((x) => x.id === dragId) < typeList.findIndex((x) => x.id === targetId) ? 1 : 0), 0, dragId)
+    reorder.mutate(ids, { onError: (e) => message.error(errorMessage(e, t)) })
+  }
+  const onDelete = (type: AssetType) =>
+    remove.mutate(type.id, {
+      onSuccess: () => message.success(t('assetTypes.deleted')),
+      onError: (e) =>
+        message.error(
+          e instanceof ApiError && e.code === 'type_has_assets'
+            ? t('assetTypes.hasAssets', { count: Number(e.fields.assets ?? 0) })
+            : errorMessage(e, t),
+        ),
+    })
   const [form] = Form.useForm<FormValues>()
   const [editing, setEditing] = useState<{ type?: AssetType } | null>(null)
   const lang = i18n.language
@@ -104,7 +128,7 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
   }
 
   const required = [{ required: true, message: t('validation.required') }]
-  const otherTypes = (types.data ?? []).filter((type) => type.code !== editing?.type?.code && !type.archived)
+  const otherTypes = typeList.filter((type) => type.code !== editing?.type?.code)
 
   return (
     <Drawer
@@ -129,38 +153,55 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
     >
       {!editing ? (
         <>
-          <Flex justify="flex-end" style={{ marginBottom: 12 }}>
-            <Button icon={<PlusOutlined />} onClick={() => startEdit()}>
-              {t('assetTypes.new')}
-            </Button>
+          <Flex justify="space-between" align="center" gap={8} wrap style={{ marginBottom: 12 }}>
+            <Typography.Text type="secondary">{t('assetTypes.orderHint')}</Typography.Text>
+            <Flex gap={8}>
+              <Button icon={<BookOutlined />} onClick={() => setLibraryOpen(true)}>
+                {t('assetTypes.fromLibrary')}
+              </Button>
+              <Button icon={<PlusOutlined />} onClick={() => startEdit()}>
+                {t('assetTypes.new')}
+              </Button>
+            </Flex>
           </Flex>
           <List<AssetType>
-            loading={types.isPending}
-            dataSource={types.data ?? []}
+            loading={types.isPending || reorder.isPending}
+            dataSource={typeList}
             renderItem={(type) => (
               <List.Item
+                draggable
+                onDragStart={() => setDragId(type.id)}
+                onDragEnd={() => setDragId(undefined)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  dropOn(type.id)
+                }}
+                style={{ cursor: 'grab', opacity: dragId === type.id ? 0.4 : 1 }}
                 actions={[
                   <Button key="edit" type="link" size="small" onClick={() => startEdit(type)}>
                     {t('common.edit')}
                   </Button>,
-                  <Button
-                    key="archive"
-                    type="link"
-                    size="small"
-                    onClick={() => archive.mutate({ id: type.id, restore: type.archived })}
+                  <Popconfirm
+                    key="delete"
+                    title={t('assetTypes.deleteConfirm')}
+                    description={t('assetTypes.deleteHint')}
+                    onConfirm={() => onDelete(type)}
                   >
-                    {type.archived ? t('customers.restore') : t('assets.archive')}
-                  </Button>,
+                    <Button type="link" size="small" danger loading={remove.isPending && remove.variables === type.id}>
+                      {t('common.delete')}
+                    </Button>
+                  </Popconfirm>,
                 ]}
               >
                 <List.Item.Meta
+                  avatar={<HolderOutlined style={{ color: 'var(--ant-color-text-tertiary)', marginTop: 6 }} />}
                   title={
                     <Flex gap={8} align="center">
                       {localized(type.name, lang)}
                       <Tag color={type.category === 'primary' ? 'orange' : undefined}>
                         {t(`assets.${type.category}`)}
                       </Tag>
-                      {type.archived && <Tag>{t('validation.archived')}</Tag>}
                     </Flex>
                   }
                   description={`${type.code} · ${t('assetTypes.fieldsCount', { count: type.fields.length })}`}
@@ -255,6 +296,7 @@ export function AssetTypesDrawer({ open, onClose }: { open: boolean; onClose: ()
           </Form.List>
         </Form>
       )}
+      <AssetTypeLibraryModal open={libraryOpen} onClose={() => setLibraryOpen(false)} />
     </Drawer>
   )
 }
