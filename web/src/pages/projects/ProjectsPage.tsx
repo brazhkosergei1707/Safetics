@@ -21,7 +21,6 @@ export function ProjectsPage() {
   const [taskTypesOpen, setTaskTypesOpen] = useState(false)
   const [catalogsOpen, setCatalogsOpen] = useState(false)
   const projects = useProjects({ status: status === 'all' ? undefined : status, q: query })
-  const canManage = hasPermission(session, 'project.manage')
 
   return (
     <>
@@ -43,7 +42,7 @@ export function ProjectsPage() {
               </Button>
             </>
           )}
-          {canManage && (
+          {hasPermission(session, 'project.create') && (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
               {t('projects.add')}
             </Button>

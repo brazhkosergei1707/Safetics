@@ -81,10 +81,12 @@ public final class ShiftDtos {
     }
 
     /** Зміна вручну (позапланова або пропущена): час — з графіка, що діє на дату. */
+    /** crew порожня — бригада з попередньої зміни; інакше — ця бригада з одним відповідальним (на нього задачі зміни). */
     public record WorkShiftCreateRequest(
             @NotNull UUID assetId,
             @NotNull LocalDate date,
-            @NotNull String shiftCode) {
+            @NotNull String shiftCode,
+            @Valid List<CrewEntry> crew) {
     }
 
     /** positionId порожній — посада з призначення на проєкт; minutes порожні — тривалість зміни. */

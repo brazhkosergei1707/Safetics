@@ -1,4 +1,4 @@
-import { App, Button, Drawer, Flex, Form, Input, List, Popconfirm, Segmented, Spin, Tag, Typography } from 'antd'
+import { App, Button, Checkbox, Drawer, Flex, Form, Input, List, Popconfirm, Spin, Tag, Typography } from 'antd'
 import dayjs from 'dayjs'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -21,7 +21,7 @@ interface Props {
 }
 
 /**
- * Чек-лист зміни: кожен пункт — пройдено / не пройдено / н/з, для «не пройдено» — коментар.
+ * Чек-лист зміни: кожен пункт — галочка «Так» або «Ні», для «не пройдено» — коментар.
  * Не пройдено → задача «Сервіс» (критичний пункт — ще й алерт менеджеру). Нічого не блокує.
  */
 export function ShiftChecklistDrawer({ shiftId, title, onClose, onOpenTask }: Props) {
@@ -66,7 +66,8 @@ export function ShiftChecklistDrawer({ shiftId, title, onClose, onOpenTask }: Pr
     )
   }
 
-  const allAnswered = !!data && data.items.every((i) => values?.items?.[i.key]?.result)
+  const answered = data ? data.items.filter((i) => values?.items?.[i.key]?.result).length : 0
+  const allAnswered = !!data && answered === data.items.length
   const statusColor = data?.status === 'passed' ? 'green' : data?.status === 'failed' ? 'red' : undefined
 
   return (
@@ -85,6 +86,9 @@ export function ShiftChecklistDrawer({ shiftId, title, onClose, onOpenTask }: Pr
       footer={
         editable && (
           <Flex justify="flex-end" gap={8}>
+            <Typography.Text type="secondary" style={{ alignSelf: 'center' }}>
+              {t('checklists.progress', { answered, total: data?.items.length ?? 0 })}
+            </Typography.Text>
             <Button onClick={onClose}>{t('common.cancel')}</Button>
             <Popconfirm title={t('checklists.submitConfirm')} onConfirm={() => form.submit()} disabled={!allAnswered}>
               <Button type="primary" disabled={!allAnswered} loading={submit.isPending}>
@@ -123,13 +127,7 @@ export function ShiftChecklistDrawer({ shiftId, title, onClose, onOpenTask }: Pr
                       {item.critical && <Tag color="red">{t('checklists.critical')}</Tag>}
                     </Flex>
                     <Form.Item name={['items', item.key, 'result']} style={{ marginBottom: 0 }}>
-                      <Segmented<Result>
-                        options={[
-                          { value: 'pass', label: t('checklists.results.pass') },
-                          { value: 'fail', label: t('checklists.results.fail') },
-                          { value: 'na', label: t('checklists.results.na') },
-                        ]}
-                      />
+                      <YesNo yes={t('checklists.results.pass')} no={t('checklists.results.fail')} />
                     </Form.Item>
                   </Flex>
                   {(failed || values?.items?.[item.key]?.comment) && (
@@ -151,5 +149,26 @@ export function ShiftChecklistDrawer({ shiftId, title, onClose, onOpenTask }: Pr
         </Form>
       )}
     </Drawer>
+  )
+}
+
+/** Відповідь на пункт: дві галочки «Так» / «Ні», наперед нічого не вибрано; повторне натискання знімає. */
+function YesNo({ value, onChange, disabled, yes, no }: {
+  value?: Result
+  onChange?: (v: Result | undefined) => void
+  disabled?: boolean
+  yes: string
+  no: string
+}) {
+  const toggle = (v: Result) => onChange?.(value === v ? undefined : v)
+  return (
+    <Flex gap={16}>
+      <Checkbox checked={value === 'pass'} disabled={disabled} onChange={() => toggle('pass')}>
+        {yes}
+      </Checkbox>
+      <Checkbox checked={value === 'fail'} disabled={disabled} onChange={() => toggle('fail')}>
+        {no}
+      </Checkbox>
+    </Flex>
   )
 }

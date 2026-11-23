@@ -33,7 +33,10 @@ public class AccountService {
     public static final Set<String> PORTAL_ROLES = Set.of("client_rep", "client_manager");
 
     /** Системні ролі працівників компанії (не портал). */
-    public static final Set<String> STAFF_ROLES = Set.of("admin", "director", "manager", "worker");
+    public static final Set<String> STAFF_ROLES = Set.of("admin", "director", "head_manager", "manager", "worker");
+
+    /** Офісні ролі — екран «Користувачі» (адмін). Виконавців додають менеджери на екрані «Виконавці». */
+    public static final Set<String> OFFICE_ROLES = Set.of("admin", "director", "head_manager", "manager");
 
     static final int MIN_PASSWORD_LENGTH = 8;
 
@@ -137,7 +140,7 @@ public class AccountService {
 
     /**
      * Правило «не більше прав, ніж маєш сам»: усі дозволи ролі мають бути в поточного користувача
-     * (з його токена). Інакше 403 role_exceeds_own.
+     * (з його токена). Інакше 403 role_exceeds_own. Виняток: адміну не потрібен personnel.manage.
      */
     public void requireNotMoreThanOwn(String roleCode) {
         Set<String> own = currentPermissions();
@@ -147,6 +150,10 @@ public class AccountService {
                         where r.code = ? and r.company_id is null
                         """)
                 .param(roleCode).query(String.class).list();
+        // Адмін (staff.manage) видає будь-яку офісну роль: керування виконавцями — обов'язок менеджерів, а не більші права
+        if (own.contains("staff.manage")) {
+            rolePermissions = rolePermissions.stream().filter(code -> !"personnel.manage".equals(code)).toList();
+        }
         if (!own.containsAll(rolePermissions)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "role_exceeds_own", Map.of());
         }

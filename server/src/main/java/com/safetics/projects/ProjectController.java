@@ -74,7 +74,7 @@ public class ProjectController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('project.manage')")
+    @PreAuthorize("hasAuthority('project.create')")
     public ProjectView create(@Valid @RequestBody ProjectCreateRequest request) {
         return projects.create(request);
     }
@@ -86,13 +86,13 @@ public class ProjectController {
     }
 
     @PostMapping("/{id}/close")
-    @PreAuthorize("hasAuthority('project.manage')")
+    @PreAuthorize("hasAuthority('project.create')")
     public ProjectView close(@PathVariable("id") UUID id) {
         return assignments.closeProject(id);
     }
 
     @PostMapping("/{id}/reopen")
-    @PreAuthorize("hasAuthority('project.manage')")
+    @PreAuthorize("hasAuthority('project.create')")
     public ProjectView reopen(@PathVariable("id") UUID id) {
         return projects.reopen(id);
     }

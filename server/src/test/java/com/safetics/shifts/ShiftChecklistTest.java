@@ -87,7 +87,7 @@ class ShiftChecklistTest extends AbstractIntegrationTest {
         assertThat(admin.post(checklist(first), Map.of("answers", answers(items, "hp_hoses", null))).field("items.hp_hoses"))
                 .isEqualTo("comment_required");
         assertThat(other.post(checklist(first), Map.of("answers", answers(items, null, null))).status())
-                .as("не бурильник зміни").isEqualTo(403);
+                .as("не в бригаді — зміни не видно").isEqualTo(404);
 
         Response passed = admin.post(checklist(first), Map.of("answers", answers(items, null, null)));
         assertThat(passed.str("status")).isEqualTo("passed");

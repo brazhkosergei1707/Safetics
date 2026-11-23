@@ -36,6 +36,8 @@ class ServiceMainTaskTest extends AbstractIntegrationTest {
     PasswordEncoder passwordEncoder;
 
     TestApi admin;
+    /** Виконавців заводить головний менеджер (адмін не має personnel.manage) */
+    TestApi hr;
     TestApi client;
     TestApi furnitureAdmin;
     UUID supervisorId;
@@ -48,9 +50,11 @@ class ServiceMainTaskTest extends AbstractIntegrationTest {
         UUID company = addCompany("Main Task Co");
         String hash = passwordEncoder.encode(PASSWORD);
         addMember(company, "+380679600001", hash, "admin");
+        addMember(company, "+380679600099", hash, "head_manager");
         supervisorId = addMember(company, "+380679600002", hash, "worker");
         workerId = addMember(company, "+380679600003", hash, "worker");
         admin = TestApi.loggedIn(port, "+380679600001", PASSWORD);
+        hr = TestApi.loggedIn(port, "+380679600099", PASSWORD);
         admin.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
         holeType = admin.get("/api/v1/service-types").list().stream().map(t -> (Map<?, ?>) t)
                 .filter(t -> "drill_hole".equals(t.get("code"))).findFirst().orElseThrow().get("id").toString();
@@ -64,8 +68,8 @@ class ServiceMainTaskTest extends AbstractIntegrationTest {
         person.put("fullName", "Main Task Supervisor");
         person.put("phone", "+380679600002");
         person.put("positionId", supervisorPosition);
-        String personId = admin.post("/api/v1/personnel", person).str("id");
-        admin.post("/api/v1/personnel/" + personId + "/login", Map.of("role", "worker"));
+        String personId = hr.post("/api/v1/personnel", person).str("id");
+        hr.post("/api/v1/personnel/" + personId + "/login", Map.of());
         admin.post("/api/v1/projects/" + projectA + "/personnel-assignments",
                 Map.of("personnelId", personId, "startDate", LocalDate.now().minusDays(30).toString()));
         admin.post("/api/v1/projects/" + projectA + "/access", Map.of("userId", workerId.toString()));

@@ -13,6 +13,7 @@ interface FormValues {
   code: string
   name: string
   customerId?: string
+  managerId?: string
   location?: string
   country?: string
   timeZone: string

@@ -43,7 +43,7 @@ class CustomerApiTest extends AbstractIntegrationTest {
         companyX = addCompany("Customers X");
         UUID companyY = addCompany("Customers Y");
         String hash = passwordEncoder.encode(PASSWORD);
-        addMember(companyX, "+380674000001", hash, "manager");
+        addMember(companyX, "+380674000001", hash, "head_manager");
         addMember(companyY, "+380674000002", hash, "admin");
         // Людина, що вже працює в Safetics (у компанії Y) і стане контактною особою замовника в X
         addMember(companyY, "+380674000009", hash, "worker");

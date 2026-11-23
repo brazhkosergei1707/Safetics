@@ -9,7 +9,6 @@ import {
   EMPLOYMENT_TYPES,
   type Personnel,
   type PersonnelRequest,
-  STAFF_ROLES,
   useArchivePersonnel,
   useGrantLogin,
   usePersonnelHistory,
@@ -174,7 +173,6 @@ export function PersonnelDrawer({ open, person, onClose }: Props) {
 }
 
 interface LoginValues {
-  role: string
   password?: string
 }
 
@@ -212,9 +210,9 @@ function LoginModal({ person, onClose }: { person?: Personnel; onClose: () => vo
       destroyOnHidden
     >
       <Typography.Paragraph type="secondary">{t('personnel.loginHint', { phone: person?.phone ?? '—' })}</Typography.Paragraph>
-      <Form<LoginValues> form={form} layout="vertical" onFinish={onFinish} initialValues={{ role: 'worker' }}>
-        <Form.Item name="role" label={t('session.role')} rules={[{ required: true }]}>
-          <Select options={STAFF_ROLES.map((r) => ({ value: r, label: t(`roles.${r}`) }))} />
+      <Form<LoginValues> form={form} layout="vertical" onFinish={onFinish}>
+        <Form.Item label={t('session.role')}>
+          <Typography.Text>{t('roles.worker')}</Typography.Text>
         </Form.Item>
         <Form.Item name="password" label={t('customers.initialPassword')} extra={t('customers.initialPasswordHint')}>
           <Input.Password autoComplete="new-password" />

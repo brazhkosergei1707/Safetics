@@ -43,11 +43,14 @@ class ShiftApiTest extends AbstractIntegrationTest {
 
     UUID company;
     TestApi admin;
+    /** Виконавців заводить головний менеджер (адмін не має personnel.manage) */
+    TestApi hr;
     TestApi worker;
     TestApi client;
     UUID driverUserId;
     String project;
     String rig;
+    String rigType;
     String rigAssignment;
     String driller;
     String helper;
@@ -59,13 +62,15 @@ class ShiftApiTest extends AbstractIntegrationTest {
         company = addCompany("Shifts Co");
         String hash = passwordEncoder.encode(PASSWORD);
         addMember(company, "+380679700001", hash, "admin");
+        addMember(company, "+380679700099", hash, "head_manager");
         driverUserId = addMember(company, "+380679700002", hash, "worker");
         admin = TestApi.loggedIn(port, "+380679700001", PASSWORD);
+        hr = TestApi.loggedIn(port, "+380679700099", PASSWORD);
         admin.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
         for (Object p : admin.get("/api/v1/positions").list()) {
             positions.put((String) ((Map<?, ?>) p).get("code"), (String) ((Map<?, ?>) p).get("id"));
         }
-        String rigType = admin.get("/api/v1/asset-types").list().stream().<Map<?, ?>>map(t -> (Map<?, ?>) t)
+        rigType = admin.get("/api/v1/asset-types").list().stream().<Map<?, ?>>map(t -> (Map<?, ?>) t)
                 .filter(t -> "drill_rig".equals(t.get("code"))).findFirst().orElseThrow().get("id").toString();
 
         String customer = admin.post("/api/v1/customers", Map.of("name", "Shifts Customer")).str("id");
@@ -85,9 +90,9 @@ class ShiftApiTest extends AbstractIntegrationTest {
                 Map.of("assetId", rig, "startDate", LocalDate.now(ZoneOffset.UTC).minusDays(5).toString())).str("id");
 
         driller = person("Shift Driller", "+380679700002", "driller");
-        admin.post("/api/v1/personnel/" + driller + "/login", Map.of("role", "worker"));
+        hr.post("/api/v1/personnel/" + driller + "/login", Map.of());
         helper = person("Shift Helper", null, "driller_helper");
-        outsider = admin.post("/api/v1/personnel", Map.of("fullName", "Not On Project", "positionId", positions.get("driller")))
+        outsider = hr.post("/api/v1/personnel", Map.of("fullName", "Not On Project", "positionId", positions.get("driller")))
                 .str("id");
         for (String id : List.of(driller, helper)) {
             admin.post("/api/v1/projects/" + project + "/personnel-assignments",
@@ -113,11 +118,12 @@ class ShiftApiTest extends AbstractIntegrationTest {
         assertThat(rigTasks.getFirst().get("assetId")).isEqualTo(rig);
 
         // Планувальник: зміна, що йде зараз, і змінний рапорт
-        assertThat(runScheduler()).isEqualTo(1);
+        assertThat(runScheduler()).as("бурова RIG-SH (+ RIG-SH3, RIG-SH2 з інших тестів)").isBetween(1, 3);
         assertThat(runScheduler()).as("повторний прохід нічого не дублює").isZero();
         Response board = admin.get("/api/v1/projects/" + project + "/shift-board");
         List<Map<?, ?>> boardShifts = ((List<?>) board.at("shifts")).stream().<Map<?, ?>>map(s -> (Map<?, ?>) s)
-                .filter(s -> LocalDate.now(ZoneOffset.UTC).toString().equals(s.get("date"))).toList();
+                .filter(s -> LocalDate.now(ZoneOffset.UTC).toString().equals(s.get("date")) && rig.equals(s.get("assetId")))
+                .toList();
         assertThat(boardShifts).hasSize(1);
         Map<?, ?> today = boardShifts.getFirst();
         assertThat(today.get("state")).isEqualTo("running");
@@ -168,13 +174,40 @@ class ShiftApiTest extends AbstractIntegrationTest {
                 .field("crew")).isEqualTo("one_lead");
         assertThat(admin.put(path, Map.of("version", version, "crew", List.of(Map.of("personnelId", helper, "minutes", 2000))))
                 .field("crew[0].minutes")).isEqualTo("too_large");
+        assertThat(admin.put(path, Map.of("version", version, "crew", List.of(
+                Map.of("personnelId", driller), Map.of("personnelId", helper))))
+                .field("crew")).as("відповідальний обов'язковий").isEqualTo("lead_required");
+        assertThat(admin.put(path, Map.of("version", version, "crew", List.of(Map.of("personnelId", helper, "lead", true))))
+                .field("crew[0].lead")).as("відповідальний — лише з входом").isEqualTo("no_login");
         assertThat(worker.put(path, Map.of("version", version, "crew", List.of())).status())
-                .as("бурильник не супервайзер").isEqualTo(403);
+                .as("не в бригаді — зміни не видно").isEqualTo(404);
         assertThat(client.get("/api/v1/projects/" + project + "/shift-board").status()).as("портал змін не бачить")
                 .isEqualTo(403);
         assertThat(admin.post("/api/v1/projects/" + project + "/shifts",
                 Map.of("assetId", rig, "date", LocalDate.now(ZoneOffset.UTC).toString(), "shiftCode", "night"))
                 .field("shiftCode")).isEqualTo("not_found");
+    }
+
+    @Test
+    void manualShiftWithCrewAssignsTasksToLead() {
+        // Окрема бурова: бригада цієї зміни не має потрапити в зміни інших тестів (заповнення з попередньої)
+        String rig2 = admin.post("/api/v1/assets", Map.of("typeId", rigType, "code", "RIG-SH3", "attributes", Map.of("model", "LF90")))
+                .str("id");
+        admin.post("/api/v1/projects/" + project + "/equipment-assignments",
+                Map.of("assetId", rig2, "startDate", LocalDate.now(ZoneOffset.UTC).minusDays(5).toString()));
+        Map<String, Object> body = Map.of("assetId", rig2, "date", LocalDate.now(ZoneOffset.UTC).minusDays(3).toString(),
+                "shiftCode", "day", "crew", List.of(Map.of("personnelId", helper), Map.of("personnelId", driller, "lead", true)));
+        Response shift = admin.post("/api/v1/projects/" + project + "/shifts", body);
+        assertThat(shift.status()).isEqualTo(201);
+        assertThat((List<?>) shift.at("crew")).hasSize(2);
+        List<Map<?, ?>> shiftTasks = ((List<?>) shift.at("tasks")).stream().<Map<?, ?>>map(x -> (Map<?, ?>) x).toList();
+        assertThat(shiftTasks).hasSize(2);
+        for (Map<?, ?> task : shiftTasks) {
+            assertThat(admin.get("/api/v1/tasks/" + task.get("id")).str("assigneeId")).isEqualTo(driverUserId.toString());
+        }
+        assertThat(admin.post("/api/v1/projects/" + project + "/shifts", Map.of("assetId", rig2,
+                "date", LocalDate.now(ZoneOffset.UTC).minusDays(4).toString(), "shiftCode", "day",
+                "crew", List.of(Map.of("personnelId", helper)))).field("crew")).isEqualTo("lead_required");
     }
 
     @Test
@@ -223,6 +256,6 @@ class ShiftApiTest extends AbstractIntegrationTest {
         body.put("fullName", name);
         body.put("phone", phone);
         body.put("positionId", positions.get(position));
-        return admin.post("/api/v1/personnel", body).str("id");
+        return hr.post("/api/v1/personnel", body).str("id");
     }
 }

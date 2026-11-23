@@ -1,9 +1,9 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
-import { App, Button, Checkbox, Descriptions, Divider, Drawer, Empty, Flex, Form, InputNumber, List, Select, Spin, Tag, Typography } from 'antd'
+import { App, Button, Descriptions, Divider, Drawer, Empty, Flex, Form, InputNumber, List, Select, Spin, Tag, Typography } from 'antd'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { applyFieldErrors, errorMessage } from '../../api/formErrors'
+import { applyFieldErrors, errorMessage, leadRename } from '../../api/formErrors'
 import { type Project, useProjectPersonnel } from '../../api/projects'
 import { useUpdateCrew, useWorkShift } from '../../api/shifts'
 import { CATEGORY_COLORS, type TaskType } from '../../api/tasks'
@@ -13,12 +13,13 @@ import { ShiftReportDrawer } from './ShiftReportDrawer'
 
 interface CrewRow {
   personnelId?: string
-  lead?: boolean
   hours?: number
 }
 
 interface FormValues {
   crew: CrewRow[]
+  /** Відповідальний виконавець: на нього задачі зміни (чек-лист, рапорт) */
+  leadId?: string
 }
 
 interface Props {
@@ -31,7 +32,7 @@ interface Props {
   onOpenTask: (id: string) => void
 }
 
-/** Картка зміни: час, бригада (бурильник зміни отримує задачі зміни), задачі зміни. */
+/** Картка зміни: час, бригада з одним відповідальним (він отримує задачі зміни), задачі зміни. */
 export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenTask }: Props) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
@@ -42,27 +43,41 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
   const update = useUpdateCrew()
   const current = shift.data
   const crew = Form.useWatch('crew', form)
+  const leadId = Form.useWatch('leadId', form)
   const [reportOpen, setReportOpen] = useState(false)
   const [checklistOpen, setChecklistOpen] = useState(false)
 
   useEffect(() => {
     if (!current) return
     form.setFieldsValue({
-      crew: current.crew.map((c) => ({ personnelId: c.personnelId, lead: c.lead, hours: c.minutes / 60 })),
+      crew: current.crew.map((c) => ({ personnelId: c.personnelId, hours: c.minutes / 60 })),
+      leadId: current.crew.find((c) => c.lead)?.personnelId,
     })
   }, [current, form])
 
   // У бригаду — лише ті, хто в день зміни призначений на проєкт
-  const options = useMemo(() => {
-    if (!current) return []
+  const { options, withLogin } = useMemo(() => {
     const seen = new Map<string, string>()
-    for (const a of personnel.data ?? []) {
-      if (a.startDate <= current.date && (!a.endDate || a.endDate >= current.date)) {
-        seen.set(a.personnelId, `${a.fullName} · ${localized(a.positionName, lang)}`)
+    const login = new Set<string>()
+    if (current) {
+      for (const a of personnel.data ?? []) {
+        if (a.startDate <= current.date && (!a.endDate || a.endDate >= current.date)) {
+          seen.set(a.personnelId, `${a.fullName} · ${localized(a.positionName, lang)}`)
+          if (a.hasLogin) login.add(a.personnelId)
+        }
       }
     }
-    return [...seen.entries()].map(([value, label]) => ({ value, label }))
+    return { options: [...seen.entries()].map(([value, label]) => ({ value, label })), withLogin: login }
   }, [personnel.data, current, lang])
+  const crewIds = (crew ?? []).map((c) => c?.personnelId).filter((id): id is string => !!id)
+  // Відповідальний — із бригади і лише з входом у систему
+  const leadOptions = options
+    .filter((o) => crewIds.includes(o.value))
+    .map((o) => ({ ...o, disabled: !withLogin.has(o.value), title: withLogin.has(o.value) ? undefined : t('shifts.leadNoLogin') }))
+  const leadInCrew = !leadId || crewIds.includes(leadId)
+  useEffect(() => {
+    if (!leadInCrew) form.setFieldValue('leadId', undefined)
+  }, [leadInCrew, form])
 
   const onFinish = (values: FormValues) => {
     if (!current) return
@@ -75,7 +90,7 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
             .filter((c) => c.personnelId)
             .map((c) => ({
               personnelId: c.personnelId!,
-              lead: !!c.lead,
+              lead: c.personnelId === values.leadId,
               minutes: c.hours == null ? undefined : Math.round(c.hours * 60),
             })),
         },
@@ -83,7 +98,7 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
       {
         onSuccess: () => message.success(t('common.saved')),
         onError: (error) => {
-          if (!applyFieldErrors(form, error, t)) message.error(errorMessage(error, t))
+          if (!applyFieldErrors(form, error, t, leadRename(error))) message.error(errorMessage(error, t))
         },
       },
     )
@@ -183,21 +198,6 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
                       <Form.Item name={[field.name, 'hours']} style={{ marginBottom: 8 }}>
                         <InputNumber min={0} max={maxHours} step={0.5} suffix={t('projects.hoursShort')} style={{ width: 110 }} />
                       </Form.Item>
-                      <Form.Item name={[field.name, 'lead']} valuePropName="checked" style={{ marginBottom: 8 }}>
-                        <Checkbox
-                          onChange={(e) => {
-                            if (!e.target.checked) return
-                            // Бурильник зміни — один
-                            const rows = (form.getFieldValue('crew') as CrewRow[]) ?? []
-                            form.setFieldValue(
-                              'crew',
-                              rows.map((r, i) => ({ ...r, lead: i === field.name })),
-                            )
-                          }}
-                        >
-                          {t('shifts.lead')}
-                        </Checkbox>
-                      </Form.Item>
                       <Button icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
                     </Flex>
                   ))}
@@ -210,6 +210,16 @@ export function ShiftDrawer({ project, shiftId, types, canEdit, onClose, onOpenT
                 </>
               )}
             </Form.List>
+            <Form.Item
+              name="leadId"
+              label={t('shifts.lead')}
+              extra={t('shifts.leadHint')}
+              layout="vertical"
+              style={{ marginTop: 16 }}
+              rules={[{ required: crewIds.length > 0, message: t('validation.required') }]}
+            >
+              <Select allowClear placeholder={t('shifts.leadPlaceholder')} options={leadOptions} />
+            </Form.Item>
           </Form>
         </>
       )}

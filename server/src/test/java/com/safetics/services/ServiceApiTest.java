@@ -34,6 +34,8 @@ class ServiceApiTest extends AbstractIntegrationTest {
     PasswordEncoder passwordEncoder;
 
     TestApi admin;
+    /** Виконавців заводить головний менеджер (адмін не має personnel.manage) */
+    TestApi hr;
     TestApi supervisor;
     TestApi otherWorker;
     TestApi client;
@@ -49,9 +51,11 @@ class ServiceApiTest extends AbstractIntegrationTest {
         UUID company = addCompany("Services Co");
         String hash = passwordEncoder.encode(PASSWORD);
         addMember(company, "+380679300001", hash, "admin");
+        addMember(company, "+380679300099", hash, "head_manager");
         addMember(company, "+380679300002", hash, "worker");
         UUID other = addMember(company, "+380679300003", hash, "worker");
         admin = TestApi.loggedIn(port, "+380679300001", PASSWORD);
+        hr = TestApi.loggedIn(port, "+380679300099", PASSWORD);
         admin.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
         holeType = admin.get("/api/v1/service-types").list().stream().map(t -> (Map<?, ?>) t)
                 .filter(t -> "drill_hole".equals(t.get("code"))).findFirst().orElseThrow().get("id").toString();
@@ -69,8 +73,8 @@ class ServiceApiTest extends AbstractIntegrationTest {
         person.put("fullName", "Services Supervisor");
         person.put("phone", "+380679300002");
         person.put("positionId", supervisorPosition);
-        String personId = admin.post("/api/v1/personnel", person).str("id");
-        admin.post("/api/v1/personnel/" + personId + "/login", Map.of("role", "worker"));
+        String personId = hr.post("/api/v1/personnel", person).str("id");
+        hr.post("/api/v1/personnel/" + personId + "/login", Map.of());
         admin.post("/api/v1/projects/" + projectA + "/personnel-assignments",
                 Map.of("personnelId", personId, "startDate", java.time.LocalDate.now().minusDays(30).toString()));
         supervisor = TestApi.loggedIn(port, "+380679300002", PASSWORD);

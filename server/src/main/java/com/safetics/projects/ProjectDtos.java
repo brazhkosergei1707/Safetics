@@ -45,10 +45,15 @@ public final class ProjectDtos {
             LocalDate endDate,
             @NotNull @Schema(allowableValues = {"active", "closed"}) String status,
             @NotNull List<Shift> shifts,
+            UUID managerId,
+            String managerName,
             @NotNull int version) {
     }
 
-    /** shifts — перший графік змін; діє з дати початку проєкту. */
+    /**
+     * shifts — перший графік змін; діє з дати початку проєкту. managerId — відповідальний менеджер
+     * (отримує доступ до проєкту).
+     */
     public record ProjectCreateRequest(
             @NotBlank String code,
             @NotBlank String name,
@@ -58,9 +63,11 @@ public final class ProjectDtos {
             @NotBlank @Schema(example = "America/Belem") String timeZone,
             @NotNull LocalDate startDate,
             LocalDate endDate,
-            @NotNull @Valid List<Shift> shifts) {
+            @NotNull @Valid List<Shift> shifts,
+            UUID managerId) {
     }
 
+    /** managerId змінює лише той, хто має project.create; для решти лишається поточний. */
     public record ProjectUpdateRequest(
             @NotBlank String code,
             @NotBlank String name,
@@ -70,6 +77,7 @@ public final class ProjectDtos {
             @NotBlank String timeZone,
             @NotNull LocalDate startDate,
             LocalDate endDate,
+            UUID managerId,
             @NotNull Integer version) {
     }
 

@@ -62,7 +62,7 @@ public class CustomerController {
 
     @PostMapping("/customers")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('client.edit')")
+    @PreAuthorize("hasAuthority('client.edit') and hasAuthority('client.view_all')")
     public CustomerView create(@Valid @RequestBody CustomerRequest request) {
         return customers.create(request);
     }
@@ -74,13 +74,13 @@ public class CustomerController {
     }
 
     @PostMapping("/customers/{id}/archive")
-    @PreAuthorize("hasAuthority('client.edit')")
+    @PreAuthorize("hasAuthority('client.edit') and hasAuthority('client.view_all')")
     public CustomerView archive(@PathVariable("id") UUID id) {
         return customers.archive(id);
     }
 
     @PostMapping("/customers/{id}/restore")
-    @PreAuthorize("hasAuthority('client.edit')")
+    @PreAuthorize("hasAuthority('client.edit') and hasAuthority('client.view_all')")
     public CustomerView restore(@PathVariable("id") UUID id) {
         return customers.restore(id);
     }

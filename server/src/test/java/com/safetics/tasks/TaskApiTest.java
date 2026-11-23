@@ -36,6 +36,8 @@ class TaskApiTest extends AbstractIntegrationTest {
     PasswordEncoder passwordEncoder;
 
     TestApi admin;
+    /** Виконавців заводить головний менеджер (адмін не має personnel.manage) */
+    TestApi hr;
     TestApi supervisor;
     TestApi assignee;
     TestApi outsider;
@@ -52,10 +54,12 @@ class TaskApiTest extends AbstractIntegrationTest {
         UUID company = addCompany("Tasks Co");
         String hash = passwordEncoder.encode(PASSWORD);
         addMember(company, "+380679400001", hash, "admin");
+        addMember(company, "+380679400099", hash, "head_manager");
         addMember(company, "+380679400002", hash, "worker");
         assigneeId = addMember(company, "+380679400003", hash, "worker");
         outsiderId = addMember(company, "+380679400005", hash, "worker");
         admin = TestApi.loggedIn(port, "+380679400001", PASSWORD);
+        hr = TestApi.loggedIn(port, "+380679400099", PASSWORD);
         admin.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
         for (Object t : admin.get("/api/v1/task-types").list()) {
             typeIds.put((String) ((Map<?, ?>) t).get("code"), (String) ((Map<?, ?>) t).get("id"));
@@ -73,8 +77,8 @@ class TaskApiTest extends AbstractIntegrationTest {
         person.put("fullName", "Tasks Supervisor");
         person.put("phone", "+380679400002");
         person.put("positionId", supervisorPosition);
-        String personId = admin.post("/api/v1/personnel", person).str("id");
-        admin.post("/api/v1/personnel/" + personId + "/login", Map.of("role", "worker"));
+        String personId = hr.post("/api/v1/personnel", person).str("id");
+        hr.post("/api/v1/personnel/" + personId + "/login", Map.of());
         admin.post("/api/v1/projects/" + projectA + "/personnel-assignments",
                 Map.of("personnelId", personId, "startDate", LocalDate.now().minusDays(30).toString()));
         admin.post("/api/v1/projects/" + projectA + "/access", Map.of("userId", assigneeId.toString()));

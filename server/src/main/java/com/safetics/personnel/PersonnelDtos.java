@@ -68,7 +68,8 @@ public final class PersonnelDtos {
      * Вхід у систему за телефоном виконавця. role — системна роль (не ширша за вашу); password —
      * лише для нового облікового запису. Якщо людина вже працює в компанії, її роль не змінюється.
      */
-    public record PersonnelLoginRequest(@NotBlank String role, String password) {
+    /** Роль завжди worker. */
+    public record PersonnelLoginRequest(String password) {
     }
 
     public record PersonnelLoginResponse(@NotNull PersonnelView personnel, @NotNull boolean newAccount) {

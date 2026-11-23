@@ -33,6 +33,8 @@ class ProjectCloseTest extends AbstractIntegrationTest {
     PasswordEncoder passwordEncoder;
 
     TestApi admin;
+    /** Виконавців заводить головний менеджер (адмін не має personnel.manage) */
+    TestApi hr;
     String driller;
     String helper;
     String rig;
@@ -41,14 +43,16 @@ class ProjectCloseTest extends AbstractIntegrationTest {
     void setUp() {
         UUID company = addCompany("Close Co");
         addMember(company, "+380679800001", passwordEncoder.encode(PASSWORD), "admin");
+        addMember(company, "+380679800099", passwordEncoder.encode(PASSWORD), "head_manager");
         admin = TestApi.loggedIn(port, "+380679800001", PASSWORD);
+        hr = TestApi.loggedIn(port, "+380679800099", PASSWORD);
         admin.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
         String position = admin.get("/api/v1/positions").list().stream().<Map<?, ?>>map(p -> (Map<?, ?>) p)
                 .filter(p -> "driller".equals(p.get("code"))).findFirst().orElseThrow().get("id").toString();
         String rigType = admin.get("/api/v1/asset-types").list().stream().<Map<?, ?>>map(t -> (Map<?, ?>) t)
                 .filter(t -> "drill_rig".equals(t.get("code"))).findFirst().orElseThrow().get("id").toString();
-        driller = admin.post("/api/v1/personnel", Map.of("fullName", "Close Driller", "positionId", position)).str("id");
-        helper = admin.post("/api/v1/personnel", Map.of("fullName", "Close Helper", "positionId", position)).str("id");
+        driller = hr.post("/api/v1/personnel", Map.of("fullName", "Close Driller", "positionId", position)).str("id");
+        helper = hr.post("/api/v1/personnel", Map.of("fullName", "Close Helper", "positionId", position)).str("id");
         rig = admin.post("/api/v1/assets", Map.of("typeId", rigType, "code", "RIG-CL", "attributes", Map.of("model", "LF90")))
                 .str("id");
     }

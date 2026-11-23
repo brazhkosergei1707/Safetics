@@ -13,7 +13,10 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.safetics.core.web.ApiException;
 import com.safetics.reports.SummaryDtos.CategoryMinutes;
@@ -78,6 +81,7 @@ public class SummaryService {
         this.json = json;
     }
 
+    @Transactional
     public SummaryView summary(UUID projectId, UUID assetId, LocalDate from, LocalDate to, String period, int depthStep,
                                boolean includeDrafts) {
         if (!PERIODS.contains(period)) {
@@ -92,10 +96,25 @@ public class SummaryService {
         if (depthStep < 1 || depthStep > 10_000) {
             throw ApiException.validation("depthStep", "invalid_option");
         }
+        // Портал (без task.view): лише проєкти свого замовника (їх бачить через RLS), зміни читаються
+        // від імені системи, у звіті — лише метри, оплачувані години й обсяги
+        boolean portal = !hasAuthority("task.view");
+        String visible = "";
+        if (portal) {
+            List<UUID> projects = db.sql("select id from project").query(UUID.class).list();
+            if (projects.isEmpty() || (projectId != null && !projects.contains(projectId))) {
+                SummaryRow empty = row(new Acc(null, null), period, BigDecimal.valueOf(depthStep));
+                return new SummaryView(period, from, to, depthStep, false, List.of(), empty);
+            }
+            includeDrafts = false;
+            visible = projects.stream().map(id -> "'" + id + "'").collect(java.util.stream.Collectors.joining(", "));
+            db.sql("select set_config('app.system', 'on', true)").query(String.class).single();
+        }
         String statuses = includeDrafts ? "('submitted', 'draft')" : "('submitted')";
         String where = "s.shift_date between :from and :to"
                 + (projectId != null ? " and s.project_id = :project" : "")
-                + (assetId != null ? " and s.asset_id = :asset" : "");
+                + (assetId != null ? " and s.asset_id = :asset" : "")
+                + (portal ? " and s.project_id in (" + visible + ")" : "");
         Map<String, Acc> rows = new LinkedHashMap<>();
         BigDecimal step = BigDecimal.valueOf(depthStep);
 
@@ -234,7 +253,8 @@ public class SummaryService {
                 where x.done_date between :from and :to%s
                 group by 1, 2, 3, 4
                 """.formatted(bucket(period, "x.done_date"), work,
-                projectId != null ? " and sv.project_id = :project" : "",
+                (projectId != null ? " and sv.project_id = :project" : "")
+                        + (portal ? " and sv.project_id in (" + visible + ")" : ""),
                 assetId != null ? " and x.asset_id = :asset" : ""), projectId, assetId, from, to)
                 .query((rs, n) -> {
                     Acc acc = acc(rows, rs.getObject("asset_id", UUID.class), rs.getObject("bucket", LocalDate.class));
@@ -252,8 +272,30 @@ public class SummaryService {
         for (Acc acc : sorted) {
             merge(total, acc);
         }
+        if (portal) {
+            db.sql("select set_config('app.system', '', true)").query(String.class).single();
+            for (Acc acc : rows.values()) {
+                forPortal(acc);
+            }
+            forPortal(total);
+        }
         return new SummaryView(period, from, to, depthStep, includeDrafts,
                 sorted.stream().map(a -> row(a, period, step)).toList(), row(total, period, step));
+    }
+
+    /** Для замовника: без неоплачуваних годин, витрат, стану рапортів і неоплачуваних кодів. */
+    private static void forPortal(Acc acc) {
+        acc.nonBillable = 0;
+        acc.draft = 0;
+        acc.missing = 0;
+        acc.items.clear();
+        acc.codes.values().removeIf(c -> !c.billable());
+        acc.categories.clear();
+    }
+
+    private static boolean hasAuthority(String code) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.getAuthorities().stream().anyMatch(a -> code.equals(a.getAuthority()));
     }
 
     /** Метри інтервалу [from, to) за діапазонами глибини кроку step: ключ — початок діапазону. */

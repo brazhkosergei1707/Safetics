@@ -155,6 +155,7 @@ public class AssetService {
 
     public AssetView update(UUID id, AssetUpdateRequest request) {
         AssetView existing = get(id);
+        requireEditable(id);
         if (existing.version() != request.version()) {
             throw ApiException.conflict("stale_version");
         }
@@ -197,6 +198,7 @@ public class AssetService {
 
     public AssetView archive(UUID id) {
         AssetView existing = get(id);
+        requireEditable(id);
         if (existing.archived()) {
             return existing;
         }
@@ -213,6 +215,7 @@ public class AssetService {
 
     public AssetView restore(UUID id) {
         AssetView existing = get(id);
+        requireEditable(id);
         if (!existing.archived()) {
             return existing;
         }
@@ -320,6 +323,24 @@ public class AssetService {
                 rs.getObject("updated_at", OffsetDateTime.class),
                 serviceLevel(rs.getObject("service_level") == null ? 0 : rs.getInt("service_level")),
                 rs.getInt("open_service"));
+    }
+
+    /**
+     * Без project.access_all обладнання змінюють лише на своїх проєктах: не можна, якщо воно (чи
+     * батьківське) зараз призначене на проєкт, якого користувач не бачить.
+     */
+    private void requireEditable(UUID id) {
+        Boolean foreign = db.sql("""
+                        select not app_all_projects() and exists (
+                            select 1 from equipment_assignment ea join asset a on a.id = ?
+                            where ea.asset_id in (a.id, a.parent_id)
+                              and ea.start_date <= current_date and (ea.end_date is null or ea.end_date >= current_date)
+                              and not app_can_see_project(ea.project_id))
+                        """)
+                .param(id).query(Boolean.class).single();
+        if (Boolean.TRUE.equals(foreign)) {
+            throw new ApiException(org.springframework.http.HttpStatus.FORBIDDEN, "asset_on_other_project", java.util.Map.of());
+        }
     }
 
     static String serviceLevel(int level) {

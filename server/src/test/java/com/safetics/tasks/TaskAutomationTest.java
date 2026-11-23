@@ -36,6 +36,8 @@ class TaskAutomationTest extends AbstractIntegrationTest {
     PasswordEncoder passwordEncoder;
 
     TestApi admin;
+    /** Виконавців заводить головний менеджер (адмін не має personnel.manage) */
+    TestApi hr;
     UUID supervisorId;
     String projectWithCrew;
     String projectEmpty;
@@ -47,8 +49,10 @@ class TaskAutomationTest extends AbstractIntegrationTest {
         UUID company = addCompany("Automation Furniture Co");
         String hash = passwordEncoder.encode(PASSWORD);
         addMember(company, "+380679500001", hash, "admin");
+        addMember(company, "+380679500099", hash, "head_manager");
         supervisorId = addMember(company, "+380679500002", hash, "worker");
         admin = TestApi.loggedIn(port, "+380679500001", PASSWORD);
+        hr = TestApi.loggedIn(port, "+380679500099", PASSWORD);
         admin.post("/api/v1/asset-types/install-template", Map.of("templateKey", "furniture"));
         for (Object t : admin.get("/api/v1/task-types").list()) {
             typeIds.put((String) ((Map<?, ?>) t).get("code"), (String) ((Map<?, ?>) t).get("id"));
@@ -64,8 +68,8 @@ class TaskAutomationTest extends AbstractIntegrationTest {
         person.put("fullName", "Foreman");
         person.put("phone", "+380679500002");
         person.put("positionId", supervisorPosition);
-        String personId = admin.post("/api/v1/personnel", person).str("id");
-        admin.post("/api/v1/personnel/" + personId + "/login", Map.of("role", "worker"));
+        String personId = hr.post("/api/v1/personnel", person).str("id");
+        hr.post("/api/v1/personnel/" + personId + "/login", Map.of());
         admin.post("/api/v1/projects/" + projectWithCrew + "/personnel-assignments",
                 Map.of("personnelId", personId, "startDate", LocalDate.now().minusDays(30).toString()));
     }

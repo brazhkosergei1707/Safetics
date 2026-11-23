@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { hasPermission, useSession } from '../../api/auth'
 import { useCustomers } from '../../api/customers'
+import { useMembers } from '../../api/projects'
 
 /** Часові пояси IANA з браузера + UTC. */
 function timeZones(): string[] {
@@ -15,6 +16,12 @@ export function ProjectFields() {
   const { t } = useTranslation()
   const { data: session } = useSession()
   const customers = useCustomers({}, hasPermission(session, 'client.view'))
+  // Відповідального менеджера призначає той, хто створює проєкти
+  const assignsManager = hasPermission(session, 'project.create')
+  const members = useMembers(assignsManager)
+  const managers = (members.data ?? []).filter(
+    (m) => !m.portal && m.status === 'active' && m.role === 'manager',
+  )
   const zones = useMemo(() => timeZones(), [])
   const required = [{ required: true, message: t('validation.required') }]
 
@@ -34,6 +41,16 @@ export function ProjectFields() {
           options={(customers.data ?? []).map((c) => ({ value: c.id, label: c.name }))}
         />
       </Form.Item>
+      {assignsManager && (
+        <Form.Item name="managerId" label={t('projects.manager')} extra={t('projects.managerHint')}>
+          <Select
+            allowClear
+            showSearch={{ optionFilterProp: 'label' }}
+            loading={members.isPending}
+            options={managers.map((m) => ({ value: m.userId, label: `${m.fullName} · ${t(`roles.${m.role}`)}` }))}
+          />
+        </Form.Item>
+      )}
       <Form.Item name="location" label={t('projects.location')}>
         <Input />
       </Form.Item>

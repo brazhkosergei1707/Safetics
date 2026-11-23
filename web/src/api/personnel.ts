@@ -10,7 +10,8 @@ export type EmploymentType = Personnel['employmentType']
 export const EMPLOYMENT_TYPES: EmploymentType[] = ['staff', 'subcontractor', 'hired']
 
 /** Системні ролі, які можна видати виконавцю (сервер ще перевірить «не більше прав, ніж маєш сам»). */
-export const STAFF_ROLES = ['worker', 'manager', 'director', 'admin'] as const
+/** Офісні ролі: їх видає адмін на екрані «Користувачі». Виконавці отримують вхід на екрані «Виконавці». */
+export const OFFICE_ROLES = ['manager', 'head_manager', 'director', 'admin'] as const
 
 export function usePositions(includeArchived = false) {
   return useQuery({
@@ -89,11 +90,11 @@ export function useArchivePersonnel() {
 export function useGrantLogin() {
   const invalidate = useInvalidate('personnel', 'members', 'project-access')
   return useMutation({
-    mutationFn: ({ id, role, password }: { id: string; role: string; password?: string }) =>
+    mutationFn: ({ id, password }: { id: string; password?: string }) =>
       unwrap(
         api.POST('/api/v1/personnel/{id}/login', {
           params: { path: { id } },
-          body: { role, password: password || undefined },
+          body: { password: password || undefined },
         }),
       ),
     onSuccess: invalidate,

@@ -69,7 +69,9 @@ public class UserController {
 
     @GetMapping
     public List<CompanyUserView> list() {
-        return db.sql(SELECT + " order by m.status, u.full_name").query(UserController::map).list();
+        // Лише офісні ролі: виконавці — на екрані «Виконавці», портал — у контактах замовника
+        return db.sql(SELECT + " and r.code in ('admin', 'director', 'head_manager', 'manager') order by m.status, u.full_name")
+                .query(UserController::map).list();
     }
 
     @PostMapping
@@ -151,7 +153,7 @@ public class UserController {
     }
 
     private static void requireStaffRole(String role) {
-        if (!AccountService.STAFF_ROLES.contains(role)) {
+        if (!AccountService.OFFICE_ROLES.contains(role)) {
             throw ApiException.validation("role", "invalid_option");
         }
     }

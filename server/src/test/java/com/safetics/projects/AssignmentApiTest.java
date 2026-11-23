@@ -36,6 +36,8 @@ class AssignmentApiTest extends AbstractIntegrationTest {
     PasswordEncoder passwordEncoder;
 
     TestApi admin;
+    /** Виконавців заводить головний менеджер (адмін не має personnel.manage) */
+    TestApi hr;
     TestApi supervisor;
     TestApi otherWorker;
     Map<String, String> positionIds = new HashMap<>();
@@ -49,9 +51,11 @@ class AssignmentApiTest extends AbstractIntegrationTest {
         UUID company = addCompany("Assignments Co");
         String hash = passwordEncoder.encode(PASSWORD);
         addMember(company, "+380678000001", hash, "admin");
+        addMember(company, "+380678000099", hash, "head_manager");
         addMember(company, "+380678000002", hash, "worker");
         addMember(company, "+380678000003", hash, "worker");
         admin = TestApi.loggedIn(port, "+380678000001", PASSWORD);
+        hr = TestApi.loggedIn(port, "+380678000099", PASSWORD);
         supervisor = TestApi.loggedIn(port, "+380678000002", PASSWORD);
         otherWorker = TestApi.loggedIn(port, "+380678000003", PASSWORD);
 
@@ -66,9 +70,9 @@ class AssignmentApiTest extends AbstractIntegrationTest {
         projectB = admin.post("/api/v1/projects", project("ASG-B", null)).str("id");
 
         // Супервайзер з входом, призначений на A
-        String supervisorPerson = admin.post("/api/v1/personnel",
+        String supervisorPerson = hr.post("/api/v1/personnel",
                 person("Supervisor", "+380678000002", "supervisor")).str("id");
-        admin.post("/api/v1/personnel/" + supervisorPerson + "/login", Map.of("role", "worker"));
+        hr.post("/api/v1/personnel/" + supervisorPerson + "/login", Map.of());
         Response assigned = admin.post("/api/v1/projects/" + projectA + "/personnel-assignments",
                 Map.of("personnelId", supervisorPerson, "startDate", start.toString()));
         assertThat(assigned.status()).isEqualTo(201);
@@ -154,7 +158,7 @@ class AssignmentApiTest extends AbstractIntegrationTest {
 
     @Test
     void personCannotBeOnTwoProjectsAtOnce() {
-        String driller = admin.post("/api/v1/personnel", person("Driller", null, "driller")).str("id");
+        String driller = hr.post("/api/v1/personnel", person("Driller", null, "driller")).str("id");
         assertThat(admin.post("/api/v1/projects/" + projectA + "/personnel-assignments",
                 Map.of("personnelId", driller, "startDate", start.toString(),
                         "endDate", start.plusDays(27).toString())).status()).isEqualTo(201);
@@ -163,9 +167,9 @@ class AssignmentApiTest extends AbstractIntegrationTest {
                 .as("останній день вахти — ще на A").isEqualTo("overlap");
         assertThat(admin.post("/api/v1/projects/" + projectB + "/personnel-assignments",
                 Map.of("personnelId", driller, "startDate", start.plusDays(28).toString())).status()).isEqualTo(201);
-        assertThat(admin.post("/api/v1/personnel/" + driller + "/archive", Map.of()).str("error"))
+        assertThat(hr.post("/api/v1/personnel/" + driller + "/archive", Map.of()).str("error"))
                 .isEqualTo("has_active_assignment");
-        assertThat(admin.get("/api/v1/personnel/" + driller + "/assignments").list()).hasSize(2);
+        assertThat(hr.get("/api/v1/personnel/" + driller + "/assignments").list()).hasSize(2);
     }
 
     @Test
@@ -192,7 +196,7 @@ class AssignmentApiTest extends AbstractIntegrationTest {
         assertThat(supervisor.post("/api/v1/projects/" + projectA + "/personnel-assignments",
                 Map.of("personnelId", UUID.randomUUID().toString(), "startDate", start.toString())).status())
                 .as("звичайне призначення — лише project.manage").isEqualTo(403);
-        assertThat(admin.post(path, crew("Store by admin", "storekeeper")).status())
+        assertThat(hr.post(path, crew("Store by head", "storekeeper")).status())
                 .as("менеджеру — будь-яка посада").isEqualTo(201);
     }
 

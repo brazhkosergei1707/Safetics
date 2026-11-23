@@ -34,6 +34,7 @@ class PersonnelApiTest extends AbstractIntegrationTest {
 
     TestApi admin;
     TestApi manager;
+    TestApi head;
     Map<String, String> positionIds = new HashMap<>();
 
     @BeforeAll
@@ -42,8 +43,10 @@ class PersonnelApiTest extends AbstractIntegrationTest {
         String hash = passwordEncoder.encode(PASSWORD);
         addMember(company, "+380677000001", hash, "admin");
         addMember(company, "+380677000002", hash, "manager");
+        addMember(company, "+380677000003", hash, "head_manager");
         admin = TestApi.loggedIn(port, "+380677000001", PASSWORD);
         manager = TestApi.loggedIn(port, "+380677000002", PASSWORD);
+        head = TestApi.loggedIn(port, "+380677000003", PASSWORD);
         Response installed = admin.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
         assertThat(installed.str("positions")).contains("supervisor", "driller", "storekeeper");
         for (Object p : admin.get("/api/v1/positions").list()) {
@@ -89,17 +92,16 @@ class PersonnelApiTest extends AbstractIntegrationTest {
                 person("Login Person", "+380677000010", "staff", null, positionIds.get("supervisor"))).str("id");
         String path = "/api/v1/personnel/" + id + "/login";
 
-        Response director = manager.post(path, Map.of("role", "director", "password", "login-password"));
-        assertThat(director.status()).as("менеджер не видасть роль керівника").isEqualTo(403);
-        assertThat(director.str("error")).isEqualTo("role_exceeds_own");
-        assertThat(manager.post(path, Map.of("role", "client_rep", "password", "login-password")).field("role"))
-                .isEqualTo("invalid_option");
+        assertThat(admin.post(path, Map.of("password", "login-password")).status())
+                .as("виконавцями керують менеджери").isEqualTo(403);
+        assertThat(admin.get("/api/v1/personnel").status()).isEqualTo(403);
 
-        Response granted = manager.post(path, Map.of("role", "worker", "password", "login-password"));
+        // Роль із запиту ігнорується: вхід виконавця — завжди «Виконавець»
+        Response granted = manager.post(path, Map.of("role", "director", "password", "login-password"));
         assertThat(granted.status()).isEqualTo(200);
         assertThat(granted.at("newAccount")).isEqualTo(true);
         assertThat(granted.str("personnel.loginRole")).isEqualTo("worker");
-        assertThat(manager.post(path, Map.of("role", "worker")).status()).isEqualTo(409);
+        assertThat(manager.post(path, Map.of()).status()).isEqualTo(409);
         assertThat(TestApi.loggedIn(port, "+380677000010", "login-password")).isNotNull();
 
         assertThat(manager.delete(path).str("loginRole")).isNull();
@@ -110,16 +112,16 @@ class PersonnelApiTest extends AbstractIntegrationTest {
 
     @Test
     void linksExistingMemberWithoutChangingRole() {
-        // Адмін заводить собі запис виконавця: роль лишається «адмін»
-        String own = admin.post("/api/v1/personnel",
-                person("Admin Himself", "+380677000001", "staff", null, positionIds.get("supervisor"))).str("id");
-        Response linked = admin.post("/api/v1/personnel/" + own + "/login", Map.of("role", "worker"));
+        // Головний менеджер заводить собі запис виконавця: роль лишається «головний менеджер»
+        String own = head.post("/api/v1/personnel",
+                person("Head Himself", "+380677000003", "staff", null, positionIds.get("supervisor"))).str("id");
+        Response linked = head.post("/api/v1/personnel/" + own + "/login", Map.of());
         assertThat(linked.at("newAccount")).isEqualTo(false);
-        assertThat(linked.str("personnel.loginRole")).isEqualTo("admin");
+        assertThat(linked.str("personnel.loginRole")).isEqualTo("head_manager");
 
         assertThat(manager.delete("/api/v1/personnel/" + own + "/login").status())
-                .as("менеджер не закриє вхід адміну").isEqualTo(403);
-        assertThat(admin.delete("/api/v1/personnel/" + own + "/login").str("error")).isEqualTo("cannot_revoke_self");
+                .as("менеджер не закриє вхід головному менеджеру").isEqualTo(403);
+        assertThat(head.delete("/api/v1/personnel/" + own + "/login").str("error")).isEqualTo("cannot_revoke_self");
     }
 
     private Map<?, ?> position(String code) {

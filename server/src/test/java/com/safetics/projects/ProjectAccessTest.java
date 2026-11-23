@@ -66,7 +66,11 @@ class ProjectAccessTest extends AbstractIntegrationTest {
         worker = TestApi.loggedIn(port, "+380676000004", PASSWORD);
 
         adminProject = admin.post("/api/v1/projects", project("ACC-ADMIN", null)).str("id");
-        managerProject = manager.post("/api/v1/projects", project("ACC-MANAGER", null)).str("id");
+        assertThat(manager.post("/api/v1/projects", project("ACC-NOPE", null)).status())
+                .as("проєкти створює головний менеджер").isEqualTo(403);
+        Map<String, Object> managed = new java.util.HashMap<>(project("ACC-MANAGER", null));
+        managed.put("managerId", managerId.toString());
+        managerProject = admin.post("/api/v1/projects", managed).str("id");
     }
 
     @Test
@@ -74,7 +78,7 @@ class ProjectAccessTest extends AbstractIntegrationTest {
         assertThat(codes(admin)).containsExactlyInAnyOrder("ACC-ADMIN", "ACC-MANAGER");
         assertThat(codes(director)).containsExactlyInAnyOrder("ACC-ADMIN", "ACC-MANAGER");
         assertThat(admin.get("/api/v1/projects/" + managerProject + "/access").list())
-                .as("автор без project.access_all отримав доступ")
+                .as("відповідальний менеджер отримав доступ")
                 .extracting(a -> (Object) ((Map<?, ?>) a).get("userId")).containsExactly(managerId.toString());
     }
 

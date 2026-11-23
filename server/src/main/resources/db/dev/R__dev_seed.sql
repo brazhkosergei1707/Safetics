@@ -7,6 +7,7 @@
 --                                  адмін «Agua Perfuração» (вибір компанії)
 --   +380500000003  Ana Souza     — представник замовника Vale Exploration у «Demo Drilling» (портал)
 --   +380500000004  Pedro Santos  — виконавець «Demo Drilling», супервайзер на VALE-CRJ (призначення — DevDataInitializer)
+--   +380500000005  Olena Head    — головний менеджер «Demo Drilling» (усі замовники й проєкти)
 
 insert into company (id, name, template_key, enabled_modules)
 values ('d0000000-0000-4000-8000-000000000001', 'Demo Drilling', 'exploration-drilling', '{reports,stock,hse}'),
@@ -21,6 +22,8 @@ values ('d0000000-0000-4000-8000-0000000000a1', '+380500000001', 'Demo Owner', '
        ('d0000000-0000-4000-8000-0000000000a3', '+380500000003', 'Ana Souza', 'ana@vale.local',
         '{bcrypt}$2b$10$r7UeoPbrPap0uX2LsjBhGuFZ1lyOPUxk3ppxnBja4wWK3JwMU/7Ma'),
        ('d0000000-0000-4000-8000-0000000000a4', '+380500000004', 'Pedro Santos', null,
+        '{bcrypt}$2b$10$r7UeoPbrPap0uX2LsjBhGuFZ1lyOPUxk3ppxnBja4wWK3JwMU/7Ma'),
+       ('d0000000-0000-4000-8000-0000000000a5', '+380500000005', 'Olena Head', 'head@demo.local',
         '{bcrypt}$2b$10$r7UeoPbrPap0uX2LsjBhGuFZ1lyOPUxk3ppxnBja4wWK3JwMU/7Ma')
 on conflict (id) do nothing;
 
@@ -35,7 +38,8 @@ from (values ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0
              ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a2', 'manager'),
              ('d0000000-0000-4000-8000-000000000002', 'd0000000-0000-4000-8000-0000000000a2', 'admin'),
              ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a3', 'client_rep'),
-             ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a4', 'worker'))
+             ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a4', 'worker'),
+             ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000a5', 'head_manager'))
          as v(company_id, user_id, role_code)
          join role r on r.code = v.role_code and r.company_id is null
 on conflict (company_id, user_id) do update set role_id = excluded.role_id;
@@ -87,3 +91,7 @@ insert into project_access (company_id, project_id, user_id, granted_by)
 values ('d0000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000000e1',
         'd0000000-0000-4000-8000-0000000000a2', 'd0000000-0000-4000-8000-0000000000a1')
 on conflict do nothing;
+
+-- Відповідальний менеджер VALE-CRJ — Multi Company
+update project set manager_id = 'd0000000-0000-4000-8000-0000000000a2'
+where id = 'd0000000-0000-4000-8000-0000000000e1' and manager_id is null;

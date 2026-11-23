@@ -38,6 +38,8 @@ public class PersonnelService {
 
     static final Set<String> EMPLOYMENT_TYPES = Set.of("staff", "subcontractor", "hired");
 
+    private static final String WORKER_ROLE = "worker";
+
     private static final String SELECT = """
             select p.id, p.full_name, p.phone, p.employment_type, p.organization, p.position_id, p.user_id,
                    case when m.status = 'active' then r.code end as login_role, p.notes, p.version, p.archived_at
@@ -192,15 +194,13 @@ public class PersonnelService {
         if (person.loginRole() != null) {
             throw ApiException.conflict("already_has_access");
         }
-        if (!AccountService.STAFF_ROLES.contains(request.role())) {
-            throw ApiException.validation("role", "invalid_option");
-        }
-        accounts.requireNotMoreThanOwn(request.role());
+        // Вхід виконавця — завжди роль «Виконавець»; інші ролі дає адмін на екрані «Користувачі»
+        accounts.requireNotMoreThanOwn(WORKER_ROLE);
         if (person.phone() == null) {
             throw ApiException.validation("phone", "required");
         }
         AccountService.Granted granted = accounts.grant(person.phone(), person.fullName(), request.password(),
-                request.role(), true);
+                WORKER_ROLE, true);
         Optional<String> actualRole = accounts.activeRoleOf(granted.userId());
         if (actualRole.isPresent() && AccountService.PORTAL_ROLES.contains(actualRole.get())) {
             throw ApiException.conflict("already_member");
@@ -217,7 +217,7 @@ public class PersonnelService {
                         """)
                 .params(granted.userId(), currentUserId(), id).update();
         audit.record("personnel", id, "grant_login",
-                Map.of("role", actualRole.orElse(request.role()), "userId", granted.userId(), "newAccount", granted.newAccount()));
+                Map.of("role", actualRole.orElse(WORKER_ROLE), "userId", granted.userId(), "newAccount", granted.newAccount()));
         return new PersonnelLoginResponse(get(id), granted.newAccount());
     }
 

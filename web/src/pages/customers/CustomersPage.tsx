@@ -14,6 +14,8 @@ export function CustomersPage() {
   const [editing, setEditing] = useState<{ open: boolean; customer?: Customer }>({ open: false })
   const customers = useCustomers({ q: query, includeArchived })
   const canEdit = hasPermission(session, 'client.edit')
+  // Створювати й архівувати замовників — головний менеджер і вище (client.view_all)
+  const canCreate = canEdit && hasPermission(session, 'client.view_all')
 
   return (
     <>
@@ -21,7 +23,7 @@ export function CustomersPage() {
         <Typography.Title level={2} style={{ margin: 0 }}>
           {t('nav.customers')}
         </Typography.Title>
-        {canEdit && (
+        {canCreate && (
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setEditing({ open: true })}>
             {t('customers.add')}
           </Button>
@@ -64,6 +66,7 @@ export function CustomersPage() {
         open={editing.open}
         customer={editing.customer}
         canEdit={canEdit}
+        canArchive={canCreate}
         onClose={() => setEditing({ open: false })}
         onCreated={(customer) => setEditing({ open: true, customer })}
       />

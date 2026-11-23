@@ -2128,6 +2128,8 @@ export interface components {
             startDate: string;
             /** Format: date */
             endDate?: string;
+            /** Format: uuid */
+            managerId?: string;
             /** Format: int32 */
             version: number;
         };
@@ -2149,6 +2151,9 @@ export interface components {
             /** @enum {string} */
             status: "active" | "closed";
             shifts: components["schemas"]["Shift"][];
+            /** Format: uuid */
+            managerId?: string;
+            managerName?: string;
             /** Format: int32 */
             version: number;
         };
@@ -2549,6 +2554,8 @@ export interface components {
             /** Format: date */
             endDate?: string;
             shifts: components["schemas"]["Shift"][];
+            /** Format: uuid */
+            managerId?: string;
         };
         TaskCreateRequest: {
             /** Format: uuid */
@@ -2577,6 +2584,7 @@ export interface components {
             /** Format: date */
             date: string;
             shiftCode: string;
+            crew?: components["schemas"]["CrewEntry"][];
         };
         GenerateShiftsRequest: {
             /** Format: date */
@@ -2699,7 +2707,6 @@ export interface components {
             members: number;
         };
         PersonnelLoginRequest: {
-            role: string;
             password?: string;
         };
         PersonnelLoginResponse: {

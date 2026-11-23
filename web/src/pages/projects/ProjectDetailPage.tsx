@@ -51,7 +51,7 @@ export function ProjectDetailPage() {
           </Typography.Title>
           <Tag color={closed ? undefined : 'green'}>{t(`projects.status.${p.status}`)}</Tag>
         </Flex>
-        {canManage && (
+        {hasPermission(session, 'project.create') && (
           <Popconfirm
             title={closed ? t('projects.reopenConfirm') : t('projects.closeConfirm')}
             onConfirm={() =>

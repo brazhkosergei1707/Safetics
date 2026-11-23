@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSession } from '../../api/auth'
 import { applyFieldErrors, errorMessage } from '../../api/formErrors'
-import { STAFF_ROLES } from '../../api/personnel'
+import { OFFICE_ROLES } from '../../api/personnel'
 import { type CompanyUser, useAddUser, useChangeRole, useSetUserEnabled, useUsers } from '../../api/users'
 
 interface AddValues {
@@ -29,7 +29,7 @@ export function UsersPage() {
   const [form] = Form.useForm<AddValues>()
   const [open, setOpen] = useState(false)
 
-  const roleOptions = STAFF_ROLES.map((r) => ({ value: r, label: t(`roles.${r}`) }))
+  const roleOptions = OFFICE_ROLES.map((r) => ({ value: r, label: t(`roles.${r}`) }))
   const onError = (error: Error) => message.error(errorMessage(error, t))
 
   const onFinish = (values: AddValues) => {

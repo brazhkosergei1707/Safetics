@@ -173,7 +173,11 @@ public class WorkShiftService {
         }
         Shift shift = scheduleOn(projectId, request.date()).stream().filter(s -> s.code().equals(request.shiftCode()))
                 .findFirst().orElseThrow(() -> ApiException.validation("shiftCode", "not_found"));
-        UUID id = create(project, request.assetId(), request.date(), shift, "manual");
+        List<CrewEntry> crew = request.crew();
+        List<UUID> positions = crew == null || crew.isEmpty() ? null
+                : validateCrew(projectId, request.date(), shift.durationMinutes(), crew);
+        UUID id = create(project, request.assetId(), request.date(), shift, "manual",
+                positions == null ? null : new CrewInput(crew, positions));
         if (id == null) {
             throw ApiException.conflict("shift_exists");
         }
@@ -235,13 +239,28 @@ public class WorkShiftService {
         if (Boolean.TRUE.equals(submitted)) {
             throw ApiException.conflict("report_submitted");
         }
+        List<CrewEntry> entries = request.crew();
+        List<UUID> positions = validateCrew(shift.projectId(), shift.date(), shift.durationMinutes(), entries);
+        UUID previousLead = leadUser(id);
+        db.sql("delete from work_shift_crew where shift_id = ?").param(id).update();
+        insertCrewEntries(id, entries, positions, shift.durationMinutes());
+        db.sql("update work_shift set version = version + 1, updated_at = now() where id = ?").param(id).update();
+        tasks.reassignShiftTasks(id, previousLead, leadUser(id));
+        audit.record("work_shift", id, "crew", Map.of("count", entries.size()));
+        return get(id);
+    }
+
+    /** Перевіряє бригаду (люди на проєкті на дату, один відповідальний з входом); повертає посади рядків. */
+    private List<UUID> validateCrew(UUID projectId, LocalDate date, int durationMinutes, List<CrewEntry> entries) {
         Map<String, String> errors = new LinkedHashMap<>();
         Set<UUID> seen = new HashSet<>();
-        List<CrewEntry> entries = request.crew();
         List<UUID> positions = new ArrayList<>();
+        // Відповідальний виконавець — рівно один, якщо бригада не порожня, і з входом (на нього задачі зміни)
         long leads = entries.stream().filter(e -> Boolean.TRUE.equals(e.lead())).count();
         if (leads > 1) {
             errors.put("crew", "one_lead");
+        } else if (leads == 0 && !entries.isEmpty()) {
+            errors.put("crew", "lead_required");
         }
         for (int i = 0; i < entries.size(); i++) {
             CrewEntry entry = entries.get(i);
@@ -249,7 +268,7 @@ public class WorkShiftService {
             if (!seen.add(entry.personnelId())) {
                 errors.put(prefix + "personnelId", "duplicate");
             }
-            Optional<UUID> assignedPosition = assignedPosition(shift.projectId(), entry.personnelId(), shift.date());
+            Optional<UUID> assignedPosition = assignedPosition(projectId, entry.personnelId(), date);
             if (assignedPosition.isEmpty()) {
                 errors.put(prefix + "personnelId", "not_on_project");
             }
@@ -262,24 +281,33 @@ public class WorkShiftService {
                 }
             }
             positions.add(position);
-            if (entry.minutes() != null && (entry.minutes() < 0 || entry.minutes() > shift.durationMinutes())) {
+            if (Boolean.TRUE.equals(entry.lead()) && !hasLogin(entry.personnelId())) {
+                errors.put(prefix + "lead", "no_login");
+            }
+            if (entry.minutes() != null && (entry.minutes() < 0 || entry.minutes() > durationMinutes)) {
                 errors.put(prefix + "minutes", "too_large");
             }
         }
         if (!errors.isEmpty()) {
             throw ApiException.validation(errors);
         }
-        UUID previousLead = leadUser(id);
-        db.sql("delete from work_shift_crew where shift_id = ?").param(id).update();
+        return positions;
+    }
+
+    private boolean hasLogin(UUID personnelId) {
+        return Boolean.TRUE.equals(db.sql("""
+                        select exists (select 1 from personnel p
+                                                join membership m on m.company_id = p.company_id and m.user_id = p.user_id
+                                       where p.id = ? and m.status = 'active')
+                        """).param(personnelId).query(Boolean.class).single());
+    }
+
+    private void insertCrewEntries(UUID shiftId, List<CrewEntry> entries, List<UUID> positions, int durationMinutes) {
         for (int i = 0; i < entries.size(); i++) {
             CrewEntry entry = entries.get(i);
-            insertCrew(id, entry.personnelId(), positions.get(i), Boolean.TRUE.equals(entry.lead()),
-                    entry.minutes() != null ? entry.minutes() : shift.durationMinutes(), i);
+            insertCrew(shiftId, entry.personnelId(), positions.get(i), Boolean.TRUE.equals(entry.lead()),
+                    entry.minutes() != null ? entry.minutes() : durationMinutes, i);
         }
-        db.sql("update work_shift set version = version + 1, updated_at = now() where id = ?").param(id).update();
-        tasks.reassignShiftTasks(id, previousLead, leadUser(id));
-        audit.record("work_shift", id, "crew", Map.of("count", entries.size()));
-        return get(id);
     }
 
     // ---------------------------------------------------------------- система
@@ -290,6 +318,14 @@ public class WorkShiftService {
      */
     @Transactional
     public UUID create(ProjectView project, UUID assetId, LocalDate date, Shift shift, String source) {
+        return create(project, assetId, date, shift, source, null);
+    }
+
+    /** Бригада, вказана при створенні зміни вручну (уже перевірена). */
+    private record CrewInput(List<CrewEntry> entries, List<UUID> positions) {
+    }
+
+    private UUID create(ProjectView project, UUID assetId, LocalDate date, Shift shift, String source, CrewInput crew) {
         ZoneId zone = ZoneId.of(project.timeZone());
         OffsetDateTime startsAt = date.atTime(LocalTime.parse(shift.start())).atZone(zone).toOffsetDateTime();
         OffsetDateTime endsAt = startsAt.plusMinutes(shift.durationMinutes());
@@ -306,7 +342,11 @@ public class WorkShiftService {
         if (id == null) {
             return null;
         }
-        prefillCrew(id, project.id(), assetId, date, shift);
+        if (crew != null) {
+            insertCrewEntries(id, crew.entries(), crew.positions(), shift.durationMinutes());
+        } else {
+            prefillCrew(id, project.id(), assetId, date, shift);
+        }
         audit.record("work_shift", id, "create", Map.of("projectId", project.id(), "date", date.toString(),
                 "shift", shift.code(), "source", source));
         String label = date.format(LABEL_DATE) + " " + shift.name();

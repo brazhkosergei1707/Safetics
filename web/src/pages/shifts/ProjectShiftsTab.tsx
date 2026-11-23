@@ -6,13 +6,14 @@ import { useTranslation } from 'react-i18next'
 import { errorMessage } from '../../api/formErrors'
 import type { Project, Shift } from '../../api/projects'
 import { useGenerateShifts } from '../../api/shiftReports'
-import { type WorkShift, useCreateShift, useShiftBoard } from '../../api/shifts'
+import { type WorkShift, useShiftBoard } from '../../api/shifts'
 import { CATEGORY_COLORS, type TaskType, useTaskTypes } from '../../api/tasks'
 import { localized } from '../../i18n/localized'
 import { ServiceLevelTag } from '../assets/ServiceLevelTag'
 import { TaskDrawer } from '../tasks/TaskDrawer'
 import type { TaskDrawerState } from '../tasks/ProjectTasksTab'
 import { useTaskRights } from '../tasks/taskRights'
+import { type NewShiftTarget, NewShiftModal } from './NewShiftModal'
 import { ShiftDrawer } from './ShiftDrawer'
 
 const DAYS = 7
@@ -39,7 +40,7 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
   const from = end.subtract(DAYS - 1, 'day')
   const board = useShiftBoard(project.id, from.format(DATE), end.format(DATE))
   const types = useTaskTypes(true)
-  const create = useCreateShift(project.id)
+  const [newShift, setNewShift] = useState<NewShiftTarget>()
   const [shiftId, setShiftId] = useState<string>()
   const [taskDrawer, setTaskDrawer] = useState<TaskDrawerState>({ open: false })
   const generate = useGenerateShifts(project.id)
@@ -149,12 +150,8 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
           block
           type="dashed"
           icon={<PlusOutlined />}
-          loading={create.isPending && create.variables?.date === date && create.variables?.shiftCode === shift.code}
           onClick={() =>
-            create.mutate(
-              { assetId: row.assetId, date, shiftCode: shift.code },
-              { onSuccess: (s) => setShiftId(s.id), onError: (e) => message.error(errorMessage(e, t)) },
-            )
+            setNewShift({ assetId: row.assetId, assetCode: row.code, date, shiftCode: shift.code, shiftName: shift.name })
           }
         >
           {shift.name}
@@ -247,6 +244,12 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
         onClose={() => setTaskDrawer({ open: false })}
         onOpenTask={(id) => setTaskDrawer({ open: true, taskId: id })}
         onAddChild={(parent, childType) => setTaskDrawer({ open: true, parentId: parent.id, newType: childType })}
+      />
+      <NewShiftModal
+        project={project}
+        target={newShift}
+        onClose={() => setNewShift(undefined)}
+        onCreated={(s) => setShiftId(s.id)}
       />
       <Modal
         open={generating}

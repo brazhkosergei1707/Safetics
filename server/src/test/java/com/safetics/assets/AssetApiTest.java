@@ -132,8 +132,10 @@ class AssetApiTest extends AbstractIntegrationTest {
     // ---------------------------------------------------------------- обладнання
 
     @Test
-    void workerCreatesRigWithDefaultStatus() {
-        Response r = workerX.post("/api/v1/assets", rig("RIG-100", Map.of("year", "2018", "engineHours", 1200), null));
+    void adminCreatesRigWithDefaultStatus() {
+        assertThat(workerX.post("/api/v1/assets", rig("RIG-099", Map.of("year", "2018"), null)).status())
+                .as("виконавець обладнання не змінює").isEqualTo(403);
+        Response r = adminX.post("/api/v1/assets", rig("RIG-100", Map.of("year", "2018", "engineHours", 1200), null));
 
         assertThat(r.status()).isEqualTo(201);
         assertThat(r.str("status")).isEqualTo("active");
@@ -141,9 +143,11 @@ class AssetApiTest extends AbstractIntegrationTest {
         assertThat(((Number) r.at("attributes.year")).intValue()).isEqualTo(2018);
         assertThat(r.at("version")).isEqualTo(1);
 
-        Response read = workerX.get("/api/v1/assets/" + r.str("id"));
+        Response read = adminX.get("/api/v1/assets/" + r.str("id"));
         assertThat(read.status()).isEqualTo(200);
         assertThat(read.str("code")).isEqualTo("RIG-100");
+        assertThat(workerX.get("/api/v1/assets/" + r.str("id")).status())
+                .as("виконавець бачить лише обладнання своїх проєктів").isEqualTo(404);
     }
 
     @Test

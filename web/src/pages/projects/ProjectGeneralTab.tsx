@@ -12,6 +12,7 @@ interface FormValues {
   code: string
   name: string
   customerId?: string
+  managerId?: string
   location?: string
   country?: string
   timeZone: string
@@ -33,6 +34,7 @@ export function ProjectGeneralTab({ project }: { project: Project }) {
       code: project.code,
       name: project.name,
       customerId: project.customerId,
+      managerId: project.managerId ?? undefined,
       location: project.location,
       country: project.country,
       timeZone: project.timeZone,
@@ -50,6 +52,7 @@ export function ProjectGeneralTab({ project }: { project: Project }) {
         style={{ maxWidth: 640 }}
         items={[
           { label: t('projects.customer'), children: project.customerName ?? '—' },
+          { label: t('projects.manager'), children: project.managerName ?? '—' },
           { label: t('projects.location'), children: [project.location, project.country].filter(Boolean).join(', ') },
           { label: t('projects.timeZone'), children: project.timeZone },
           { label: t('projects.startDate'), children: dayjs(project.startDate).format('DD.MM.YYYY') },

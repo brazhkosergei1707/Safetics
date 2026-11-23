@@ -2,6 +2,7 @@ package com.safetics.core.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -58,8 +59,13 @@ class UsersApiTest extends AbstractIntegrationTest {
         assertThat(added.str("role")).isEqualTo("director");
         assertThat(TestApi.loggedIn(port, "+380679200010", "director-pass").get("/api/v1/auth/me").str("company.role"))
                 .isEqualTo("director");
-        assertThat(admin.post("/api/v1/users", Map.of("phone", "+380679200010", "fullName", "Again", "role", "worker"))
+        assertThat(admin.post("/api/v1/users", Map.of("phone", "+380679200010", "fullName", "Again", "role", "manager"))
                 .status()).isEqualTo(409);
+        assertThat(admin.post("/api/v1/users", Map.of("phone", "+380679200011", "fullName", "Worker",
+                "role", "worker", "password", "worker-pass")).field("role")).as("виконавців додають менеджери").isEqualTo("invalid_option");
+        Response head = admin.post("/api/v1/users", Map.of("phone", "+380679200012", "fullName", "Head",
+                "role", "head_manager", "password", "head-pass"));
+        assertThat(head.str("role")).isEqualTo("head_manager");
     }
 
     @Test
@@ -78,9 +84,12 @@ class UsersApiTest extends AbstractIntegrationTest {
     @Test
     void guards() {
         assertThat(manager.get("/api/v1/users").status()).as("staff.manage — лише адмін").isEqualTo(403);
-        assertThat(admin.put("/api/v1/users/" + adminId + "/role", Map.of("role", "worker")).str("error"))
+        assertThat(admin.put("/api/v1/users/" + adminId + "/role", Map.of("role", "manager")).str("error"))
                 .isEqualTo("cannot_change_self");
         assertThat(admin.post("/api/v1/users/" + portalId + "/disable", Map.of()).str("error")).isEqualTo("portal_member");
-        assertThat(admin.get("/api/v1/users").list()).hasSizeGreaterThanOrEqualTo(4);
+        List<?> users = admin.get("/api/v1/users").list();
+        assertThat(users).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(users).as("лише офісні ролі: без виконавців і порталу").extracting(u -> (Object) ((Map<?, ?>) u).get("role"))
+                .doesNotContain("worker", "client_rep");
     }
 }

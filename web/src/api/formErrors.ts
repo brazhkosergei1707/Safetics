@@ -36,3 +36,13 @@ export function errorMessage(error: unknown, t: TFunction): string {
   }
   return t('errors.serverUnavailable')
 }
+
+/** Помилки про відповідального (crew: one_lead / lead_required, crew[i].lead: no_login) — біля поля «Відповідальний». */
+export function leadRename(error: unknown): Record<string, string> {
+  if (!(error instanceof ApiError)) return {}
+  const rename: Record<string, string> = { crew: 'leadId' }
+  for (const key of Object.keys(error.fields)) {
+    if (key.endsWith('.lead')) rename[key] = 'leadId'
+  }
+  return rename
+}

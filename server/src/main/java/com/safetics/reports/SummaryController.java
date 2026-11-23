@@ -14,11 +14,14 @@ import com.safetics.reports.SummaryDtos.SummaryView;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/** Зведені звіти по обладнанню: ті, хто бачить зміни (task.view), у межах своїх проєктів. */
+/**
+ * Зведені звіти по обладнанню: ті, хто бачить зміни (task.view), у межах своїх проєктів; портал
+ * замовника (report.view) — проєкти свого замовника, лише метри, оплачувані години й обсяги.
+ */
 @RestController
 @RequestMapping("/api/v1/reports")
 @Tag(name = "reports")
-@PreAuthorize("hasAuthority('task.view')")
+@PreAuthorize("hasAuthority('task.view') or hasAuthority('report.view')")
 public class SummaryController {
 
     private final SummaryService summaries;

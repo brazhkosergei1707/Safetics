@@ -51,6 +51,8 @@ class DevDataInitializer implements ApplicationRunner {
 
     private static final UUID DEMO_DRILLING = DEMO_COMPANIES.getFirst();
     private static final UUID DEMO_ADMIN = UUID.fromString("d0000000-0000-4000-8000-0000000000a1");
+    /** Адмін «Agua Perfuração» */
+    private static final UUID DEMO_MULTI = UUID.fromString("d0000000-0000-4000-8000-0000000000a2");
     private static final UUID DEMO_SUPERVISOR_USER = UUID.fromString("d0000000-0000-4000-8000-0000000000a4");
     private static final UUID VALE_PROJECT = UUID.fromString("d0000000-0000-4000-8000-0000000000e1");
 
@@ -89,9 +91,9 @@ class DevDataInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        for (UUID companyId : DEMO_COMPANIES) {
-            TenantContext.runAs(companyId, null, () -> seed(companyId));
-        }
+        // Від імені адміна компанії: без asset.view_all RLS не дає створити обладнання
+        TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, () -> seed(DEMO_DRILLING));
+        TenantContext.runAs(DEMO_COMPANIES.get(1), DEMO_MULTI, () -> seed(DEMO_COMPANIES.get(1)));
         // Від імені адміна: він бачить усі проєкти (RLS)
         TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedCrew);
         TenantContext.runAs(DEMO_DRILLING, DEMO_ADMIN, this::seedServices);

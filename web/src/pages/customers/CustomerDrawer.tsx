@@ -11,12 +11,13 @@ interface Props {
   /** undefined — новий замовник */
   customer?: Customer
   canEdit: boolean
+  canArchive?: boolean
   onClose: () => void
   /** Після створення панель лишається відкритою, щоб одразу додати контактних осіб. */
   onCreated: (customer: Customer) => void
 }
 
-export function CustomerDrawer({ open, customer, canEdit, onClose, onCreated }: Props) {
+export function CustomerDrawer({ open, customer, canEdit, canArchive, onClose, onCreated }: Props) {
   const { t } = useTranslation()
   const { message } = App.useApp()
   const [form] = Form.useForm<CustomerRequest>()
@@ -73,7 +74,7 @@ export function CustomerDrawer({ open, customer, canEdit, onClose, onCreated }: 
       footer={
         canEdit && (
           <Flex justify="space-between" gap={8}>
-            {customer ? (
+            {customer && canArchive ? (
               <Popconfirm
                 title={customer.archived ? t('customers.restoreConfirm') : t('customers.archiveConfirm')}
                 onConfirm={onArchive}

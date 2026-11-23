@@ -38,6 +38,8 @@ class ShiftReportTest extends AbstractIntegrationTest {
     PasswordEncoder passwordEncoder;
 
     TestApi admin;
+    /** Виконавців заводить головний менеджер (адмін не має personnel.manage) */
+    TestApi hr;
     TestApi driller;
     TestApi other;
     String project;
@@ -53,9 +55,11 @@ class ShiftReportTest extends AbstractIntegrationTest {
         UUID company = addCompany("Reports Co");
         String hash = passwordEncoder.encode(PASSWORD);
         addMember(company, "+380679900001", hash, "admin");
+        addMember(company, "+380679900099", hash, "head_manager");
         addMember(company, "+380679900002", hash, "worker");
         UUID otherId = addMember(company, "+380679900003", hash, "worker");
         admin = TestApi.loggedIn(port, "+380679900001", PASSWORD);
+        hr = TestApi.loggedIn(port, "+380679900099", PASSWORD);
         admin.post("/api/v1/asset-types/install-template", Map.of("templateKey", "exploration-drilling"));
         for (Object c : admin.get("/api/v1/activity-codes").list()) {
             codes.put((String) ((Map<?, ?>) c).get("code"), (String) ((Map<?, ?>) c).get("id"));
@@ -95,8 +99,8 @@ class ShiftReportTest extends AbstractIntegrationTest {
         person.put("fullName", "Report Driller");
         person.put("phone", "+380679900002");
         person.put("positionId", position);
-        drillerPerson = admin.post("/api/v1/personnel", person).str("id");
-        admin.post("/api/v1/personnel/" + drillerPerson + "/login", Map.of("role", "worker"));
+        drillerPerson = hr.post("/api/v1/personnel", person).str("id");
+        hr.post("/api/v1/personnel/" + drillerPerson + "/login", Map.of());
         admin.post("/api/v1/projects/" + project + "/personnel-assignments",
                 Map.of("personnelId", drillerPerson, "startDate", today().minusDays(30).toString()));
         driller = TestApi.loggedIn(port, "+380679900002", PASSWORD);
@@ -174,7 +178,7 @@ class ShiftReportTest extends AbstractIntegrationTest {
         assertThat(admin.put(report(shiftId), quantity).field("quantities[0].serviceId")).isEqualTo("use_intervals");
 
         Map<String, Object> ok = body(List.of(time(0, DURATION, "DRL", null)), List.of(), 0);
-        assertThat(other.put(report(shiftId), ok).status()).as("не бурильник зміни і не супервайзер").isEqualTo(403);
+        assertThat(other.put(report(shiftId), ok).status()).as("не в бригаді — зміни не видно").isEqualTo(404);
         // Бурильник зміни заповнює свій рапорт
         Response shift = admin.get("/api/v1/shifts/" + shiftId);
         admin.put("/api/v1/shifts/" + shiftId + "/crew", Map.of("version", shift.at("version"),

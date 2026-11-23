@@ -6326,6 +6326,10 @@
             "type": "string",
             "format": "date"
           },
+          "managerId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "version": {
             "type": "integer",
             "format": "int32"
@@ -6388,6 +6392,13 @@
             "items": {
               "$ref": "#/components/schemas/Shift"
             }
+          },
+          "managerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "managerName": {
+            "type": "string"
           },
           "version": {
             "type": "integer",
@@ -7679,6 +7690,10 @@
             "items": {
               "$ref": "#/components/schemas/Shift"
             }
+          },
+          "managerId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -7750,6 +7765,12 @@
           },
           "shiftCode": {
             "type": "string"
+          },
+          "crew": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrewEntry"
+            }
           }
         },
         "required": [
@@ -8132,17 +8153,10 @@
       "PersonnelLoginRequest": {
         "type": "object",
         "properties": {
-          "role": {
-            "type": "string",
-            "minLength": 1
-          },
           "password": {
             "type": "string"
           }
-        },
-        "required": [
-          "role"
-        ]
+        }
       },
       "PersonnelLoginResponse": {
         "type": "object",

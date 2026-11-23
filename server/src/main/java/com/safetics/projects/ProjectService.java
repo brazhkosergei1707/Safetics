@@ -50,9 +50,11 @@ public class ProjectService {
     /** Графік, що діє сьогодні: остання версія з датою ≤ сьогодні, інакше перша. */
     private static final String SELECT = """
             select p.id, p.code, p.name, p.customer_id, c.name as customer_name, p.location, p.country, p.time_zone,
-                   p.start_date, p.end_date, p.status, p.version, coalesce(cs.shifts, '[]'::jsonb) as shifts
+                   p.start_date, p.end_date, p.status, p.version, coalesce(cs.shifts, '[]'::jsonb) as shifts,
+                   p.manager_id, mu.full_name as manager_name
             from project p
                      left join customer c on c.id = p.customer_id
+                     left join app_user mu on mu.id = p.manager_id
                      left join lateral (
                 select s.shifts
                 from shift_schedule s
@@ -127,17 +129,20 @@ public class ProjectService {
         checkCustomer(request.customerId(), null);
         checkDates(request.startDate(), request.endDate());
         List<Shift> shifts = ShiftRules.validate(request.shifts());
+        checkManager(request.managerId());
 
         // Без returning: RLS не покаже новий рядок автору, поки він не має доступу
         UUID id = UUID.randomUUID();
         db.sql("""
                         insert into project (id, company_id, customer_id, code, name, location, country, time_zone,
-                                             start_date, end_date)
-                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                             start_date, end_date, manager_id)
+                        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """)
                 .params(id, companyId, request.customerId(), request.code().trim(), request.name().trim(),
-                        blankToNull(request.location()), country, timeZone, request.startDate(), request.endDate())
+                        blankToNull(request.location()), country, timeZone, request.startDate(), request.endDate(),
+                        request.managerId())
                 .update();
+        grantManager(id, request.managerId());
 
         Boolean allProjects = db.sql("select app_all_projects()").query(Boolean.class).single();
         if (!Boolean.TRUE.equals(allProjects)) {
@@ -166,16 +171,21 @@ public class ProjectService {
         String country = CustomerService.country(request.country());
         checkCustomer(request.customerId(), existing.customerId());
         checkDates(request.startDate(), request.endDate());
+        // Відповідального менеджера змінює лише той, хто створює проєкти
+        UUID managerId = hasAuthority("project.create") ? request.managerId() : existing.managerId();
+        if (managerId != null && !managerId.equals(existing.managerId())) {
+            checkManager(managerId);
+        }
 
         int updated = db.sql("""
                         update project
                         set code = ?, name = ?, customer_id = ?, location = ?, country = ?, time_zone = ?,
-                            start_date = ?, end_date = ?, version = version + 1, updated_at = now()
+                            start_date = ?, end_date = ?, manager_id = ?, version = version + 1, updated_at = now()
                         where id = ? and version = ?
                         """)
                 .params(request.code().trim(), request.name().trim(), request.customerId(),
                         blankToNull(request.location()), country, timeZone, request.startDate(), request.endDate(),
-                        id, request.version())
+                        managerId, id, request.version())
                 .update();
         if (updated == 0) {
             throw ApiException.conflict("stale_version");
@@ -190,6 +200,10 @@ public class ProjectService {
         compare(changes, "timeZone", existing.timeZone(), saved.timeZone());
         compare(changes, "startDate", existing.startDate(), saved.startDate());
         compare(changes, "endDate", existing.endDate(), saved.endDate());
+        compare(changes, "managerId", existing.managerId(), saved.managerId());
+        if (!Objects.equals(existing.managerId(), saved.managerId())) {
+            grantManager(id, saved.managerId());
+        }
         if (!changes.isEmpty()) {
             audit.record("project", id, "update", changes);
         }
@@ -231,6 +245,41 @@ public class ProjectService {
     }
 
     // ---------------------------------------------------------------- правила
+
+    /** Відповідальний менеджер: активний член компанії з project.manage, не портал. */
+    private void checkManager(UUID managerId) {
+        if (managerId == null) {
+            return;
+        }
+        Boolean ok = db.sql("""
+                        select exists (select 1
+                                       from membership m join role r on r.id = m.role_id and r.code = 'manager'
+                                       where m.company_id = ? and m.user_id = ? and m.status = 'active')
+                        """)
+                .params(TenantContext.requireCompanyId(), managerId).query(Boolean.class).single();
+        if (!Boolean.TRUE.equals(ok)) {
+            throw ApiException.validation("managerId", "not_manager");
+        }
+    }
+
+    /** Відповідальний менеджер отримує доступ до проєкту (якщо ще немає). */
+    private void grantManager(UUID projectId, UUID managerId) {
+        if (managerId == null) {
+            return;
+        }
+        UUID userId = TenantContext.current().map(TenantContext.Tenant::userId).orElse(null);
+        db.sql("""
+                        insert into project_access (company_id, project_id, user_id, granted_by)
+                        values (?, ?, ?, ?)
+                        on conflict do nothing
+                        """)
+                .params(TenantContext.requireCompanyId(), projectId, managerId, userId).update();
+    }
+
+    private static boolean hasAuthority(String code) {
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.getAuthorities().stream().anyMatch(a -> code.equals(a.getAuthority()));
+    }
 
     private void checkCustomer(UUID customerId, UUID currentCustomerId) {
         if (customerId == null || customerId.equals(currentCustomerId)) {
@@ -283,6 +332,8 @@ public class ProjectService {
                 rs.getObject("end_date", LocalDate.class),
                 rs.getString("status"),
                 json.readValue(rs.getString("shifts"), SHIFTS),
+                rs.getObject("manager_id", UUID.class),
+                rs.getString("manager_name"),
                 rs.getInt("version"));
     }
 }
