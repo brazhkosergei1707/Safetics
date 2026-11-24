@@ -4,6 +4,1226 @@
  */
 
 export interface paths {
+    "/api/v1/shifts/{id}/report/agree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReportActionRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ShiftReportView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    projectId?: string;
+                    from?: string;
+                    to?: string;
+                    status?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ReviewListItem"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review/reports/{shiftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    shiftId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ReviewReportView"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review/reports/{shiftId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    shiftId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReportActionRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ReviewReportView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review/reports/{shiftId}/return": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    shiftId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReportReturnRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ReviewReportView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review/reports/{shiftId}/correct": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    shiftId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReportCorrectionRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ReviewReportView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/asset-types/library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["LibraryTypeView"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/asset-types/library/{sourceId}/install": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sourceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["AssetTypeView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/asset-types/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AssetTypeOrderRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["AssetTypeView"][];
+                    };
+                };
+            };
+        };
+        get?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shifts/{id}/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ShiftChecklistView"];
+                    };
+                };
+            };
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChecklistSubmitRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ShiftChecklistView"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["AlertsView"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    projectId?: string;
+                    assetId?: string;
+                    from?: string;
+                    to?: string;
+                    period?: string;
+                    depthStep?: number;
+                    includeDrafts?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["SummaryView"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/shifts/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GenerateShiftsRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["GenerateShiftsResponse"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shifts/{id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ShiftReportView"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ShiftReportRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ShiftReportView"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shifts/{id}/report/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReportActionRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ShiftReportView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shifts/{id}/report/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReportActionRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ShiftReportView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activity-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    includeArchived?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ActivityCodeView"][];
+                    };
+                };
+            };
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ActivityCodeRequest"];
+                };
+            };
+            responses: {
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ActivityCodeView"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activity-codes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ActivityCodeRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ActivityCodeView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activity-codes/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ActivityCodeView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activity-codes/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ActivityCodeView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consumable-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    includeArchived?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ConsumableItemView"][];
+                    };
+                };
+            };
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ConsumableItemRequest"];
+                };
+            };
+            responses: {
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ConsumableItemView"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consumable-items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ConsumableItemRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ConsumableItemView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consumable-items/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ConsumableItemView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consumable-items/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ConsumableItemView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/shift-board": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                };
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["ShiftBoardView"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/shifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    projectId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["WorkShiftCreateRequest"];
+                };
+            };
+            responses: {
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["WorkShiftView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        put?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shifts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["WorkShiftView"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shifts/{id}/crew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CrewUpdateRequest"];
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": components["schemas"]["WorkShiftView"];
+                    };
+                };
+            };
+        };
+        get?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users/{userId}/role": {
         parameters: {
             query?: never;
@@ -20,7 +1240,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/tasks/{id}": {
+    "/api/v1/services/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -36,7 +1256,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/task-types/{id}": {
+    "/api/v1/service-types/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -52,39 +1272,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/shifts/{id}/report": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["report"];
-        put: operations["saveReport"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/shifts/{id}/crew": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateCrew"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/services/{id}": {
+    "/api/v1/projects/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -93,38 +1281,6 @@ export interface paths {
         };
         get: operations["get_1"];
         put: operations["update_1"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/service-types/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateType_1"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projects/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["get_2"];
-        put: operations["update_2"];
         post?: never;
         delete?: never;
         options?: never;
@@ -187,8 +1343,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_3"];
-        put: operations["update_3"];
+        get: operations["get_2"];
+        put: operations["update_2"];
         post?: never;
         delete?: never;
         options?: never;
@@ -203,8 +1359,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_4"];
-        put: operations["update_4"];
+        get: operations["get_3"];
+        put: operations["update_3"];
         post?: never;
         delete?: never;
         options?: never;
@@ -228,22 +1384,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/consumable-items/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateItem"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/assets/{id}": {
         parameters: {
             query?: never;
@@ -251,8 +1391,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_5"];
-        put: operations["update_5"];
+        get: operations["get_4"];
+        put: operations["update_4"];
         post?: never;
         delete?: never;
         options?: never;
@@ -267,42 +1407,28 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_6"];
-        put: operations["update_6"];
+        get: operations["get_5"];
+        put: operations["update_5"];
         post?: never;
-        delete: operations["delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/asset-types/order": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
         };
-        get?: never;
-        put: operations["reorder"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/activity-codes/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["updateCode"];
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -350,134 +1476,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["disable"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/{id}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["changeStatus"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/{id}/links": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["links"];
-        put?: never;
-        post: operations["addLink"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/task-types": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["types"];
-        put?: never;
-        post: operations["createType"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/task-types/{id}/restore": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["restoreType"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/task-types/{id}/archive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["archiveType"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/shifts/{id}/report/submit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["submitReport"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/shifts/{id}/report/reopen": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["reopenReport"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/shifts/{id}/checklist": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["checklist"];
-        put?: never;
-        post: operations["submitChecklist"];
         delete?: never;
         options?: never;
         head?: never;
@@ -555,9 +1553,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["types_1"];
+        get: operations["types"];
         put?: never;
-        post: operations["createType_1"];
+        post: operations["createType"];
         delete?: never;
         options?: never;
         head?: never;
@@ -573,7 +1571,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["restoreType_1"];
+        post: operations["restoreType"];
         delete?: never;
         options?: never;
         head?: never;
@@ -589,7 +1587,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["archiveType_1"];
+        post: operations["archiveType"];
         delete?: never;
         options?: never;
         head?: never;
@@ -612,7 +1610,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/projects/{projectId}/tasks": {
+    "/api/v1/projects/{projectId}/services": {
         parameters: {
             query?: never;
             header?: never;
@@ -622,54 +1620,6 @@ export interface paths {
         get: operations["list_2"];
         put?: never;
         post: operations["create_1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projects/{projectId}/shifts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["create_2"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projects/{projectId}/shifts/generate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["generate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projects/{projectId}/services": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list_3"];
-        put?: never;
-        post: operations["create_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -845,7 +1795,7 @@ export interface paths {
         };
         get: operations["companies"];
         put?: never;
-        post: operations["create_4"];
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -891,9 +1841,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_4"];
+        get: operations["list_3"];
         put?: never;
-        post: operations["create_5"];
+        post: operations["create_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -955,9 +1905,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_5"];
+        get: operations["list_4"];
         put?: never;
-        post: operations["create_6"];
+        post: operations["create_4"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1054,54 +2004,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["archiveContact"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/consumable-items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["items"];
-        put?: never;
-        post: operations["createItem"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/consumable-items/{id}/restore": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["restoreItem"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/consumable-items/{id}/archive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["archiveItem"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1211,9 +2113,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_6"];
+        get: operations["list_5"];
         put?: never;
-        post: operations["create_7"];
+        post: operations["create_5"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1259,9 +2161,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_7"];
+        get: operations["list_6"];
         put?: never;
-        post: operations["create_8"];
+        post: operations["create_6"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1300,22 +2202,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/asset-types/library/{sourceId}/install": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["installFromLibrary"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/asset-types/install-template": {
         parameters: {
             query?: never;
@@ -1326,166 +2212,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["installTemplate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/alerts/{id}/read": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["read"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/alerts/read-all": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["readAll"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/activity-codes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["codes"];
-        put?: never;
-        post: operations["createCode"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/activity-codes/{id}/restore": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["restoreCode"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/activity-codes/{id}/archive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["archiveCode"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/{id}/history": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["history"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/my": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["mine"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/shifts/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["get_7"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/reports/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["summary"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projects/{projectId}/shift-board": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["board"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1547,7 +2273,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_8"];
+        get: operations["list_7"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1588,54 +2314,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/asset-types/library": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["library"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/alerts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["mine_1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/{id}/links/{linkId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["removeLink"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/projects/{id}/shift-schedules/{scheduleId}": {
         parameters: {
             query?: never;
@@ -1668,6 +2346,182 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/task-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["op701"];
+        put?: never;
+        post: operations["op702"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/task-types/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["op703"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/task-types/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["op704"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/task-types/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["op705"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["op706"];
+        put?: never;
+        post: operations["op707"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/my": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["op708"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["op709"];
+        put: operations["op710"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["op711"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{id}/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["op712"];
+        put?: never;
+        post: operations["op713"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{id}/links/{linkId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["op714"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["op715"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1684,401 +2538,6 @@ export interface components {
             /** @enum {string} */
             status: "active" | "invited" | "disabled";
             portal: boolean;
-        };
-        TaskUpdateRequest: {
-            title: string;
-            description?: string;
-            /** Format: uuid */
-            assigneeId?: string;
-            /** Format: uuid */
-            serviceId?: string;
-            /** Format: uuid */
-            assetId?: string;
-            /** Format: date */
-            plannedStart?: string;
-            /** Format: date */
-            plannedEnd?: string;
-            /** Format: date */
-            forecastEnd?: string;
-            attributes?: {
-                [key: string]: unknown;
-            };
-            /** Format: int32 */
-            version: number;
-        };
-        TaskView: {
-            /** Format: uuid */
-            id: string;
-            /** Format: int64 */
-            number: number;
-            /** Format: uuid */
-            projectId: string;
-            projectCode: string;
-            /** Format: uuid */
-            typeId: string;
-            typeCode: string;
-            title: string;
-            description?: string;
-            status: string;
-            /** @enum {string} */
-            statusCategory: "new" | "active" | "done" | "cancelled";
-            /** Format: uuid */
-            assigneeId?: string;
-            assigneeName?: string;
-            /** Format: uuid */
-            authorId?: string;
-            authorName?: string;
-            /** Format: uuid */
-            serviceId?: string;
-            serviceCode?: string;
-            /** Format: uuid */
-            assetId?: string;
-            assetCode?: string;
-            /** Format: uuid */
-            parentId?: string;
-            /** Format: int64 */
-            parentNumber?: number;
-            /** Format: uuid */
-            workShiftId?: string;
-            /** Format: date */
-            plannedStart?: string;
-            /** Format: date */
-            plannedEnd?: string;
-            /** Format: date */
-            forecastEnd?: string;
-            /** Format: date-time */
-            actualStart?: string;
-            /** Format: date-time */
-            actualEnd?: string;
-            attributes: {
-                [key: string]: unknown;
-            };
-            closingValues?: {
-                [key: string]: unknown;
-            };
-            /** Format: int32 */
-            openBlockers: number;
-            /** Format: int32 */
-            childrenTotal: number;
-            /** Format: int32 */
-            childrenOpen: number;
-            /** Format: int32 */
-            version: number;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        FieldDefinition: {
-            key: string;
-            label: {
-                [key: string]: string;
-            };
-            /** @enum {string} */
-            type: "string" | "text" | "number" | "integer" | "boolean" | "date" | "enum";
-            unit?: string;
-            required?: boolean;
-            min?: number;
-            max?: number;
-            options?: string[];
-        };
-        TaskRule: {
-            /** @enum {string} */
-            trigger: "created" | "status_category" | "shift_created";
-            /** @enum {string} */
-            category?: "active" | "done" | "cancelled";
-            /** @enum {string} */
-            action?: "create_subtask";
-            taskType: string;
-            title?: string;
-            /** @enum {string} */
-            assignTo?: "supervisor" | "storekeeper" | "parent_assignee" | "author" | "shift_lead" | "none";
-            /** Format: int32 */
-            dueInDays?: number;
-            /** Format: int32 */
-            blockedBy?: number;
-        };
-        TaskStatusDefinition: {
-            code: string;
-            label: {
-                [key: string]: string;
-            };
-            /** @enum {string} */
-            category: "new" | "active" | "done" | "cancelled";
-            color?: string;
-        };
-        TaskTypeRequest: {
-            code: string;
-            name: {
-                [key: string]: string;
-            };
-            statuses: components["schemas"]["TaskStatusDefinition"][];
-            fields?: components["schemas"]["FieldDefinition"][];
-            closingFields?: components["schemas"]["FieldDefinition"][];
-            /** @enum {string} */
-            subjectKind?: "none" | "service" | "asset";
-            syncService?: boolean;
-            childrenBlockClose?: boolean;
-            rules?: components["schemas"]["TaskRule"][];
-            /** @enum {string} */
-            autoCreate?: "none" | "primary_assignment";
-        };
-        TaskTypeView: {
-            /** Format: uuid */
-            id: string;
-            code: string;
-            name: {
-                [key: string]: string;
-            };
-            statuses: components["schemas"]["TaskStatusDefinition"][];
-            fields: components["schemas"]["FieldDefinition"][];
-            closingFields: components["schemas"]["FieldDefinition"][];
-            /** @enum {string} */
-            subjectKind: "none" | "service" | "asset";
-            syncService: boolean;
-            childrenBlockClose: boolean;
-            rules: components["schemas"]["TaskRule"][];
-            /** @enum {string} */
-            autoCreate: "none" | "primary_assignment";
-            templateKey?: string;
-            archived: boolean;
-        };
-        ConsumableRequest: {
-            /** Format: uuid */
-            itemId: string;
-            quantity: number;
-            comment?: string;
-        };
-        IntervalRequest: {
-            /** Format: uuid */
-            serviceId: string;
-            depthFrom: number;
-            depthTo: number;
-            coreSize?: string;
-            coreLength?: number;
-            comment?: string;
-        };
-        MeterRequest: {
-            /** Format: uuid */
-            assetId: string;
-            startValue: number;
-            endValue: number;
-        };
-        QuantityRequest: {
-            /** Format: uuid */
-            serviceId: string;
-            quantity: number;
-            comment?: string;
-        };
-        ShiftReportRequest: {
-            notes?: string;
-            times: components["schemas"]["TimeEntryRequest"][];
-            intervals: components["schemas"]["IntervalRequest"][];
-            quantities: components["schemas"]["QuantityRequest"][];
-            consumables: components["schemas"]["ConsumableRequest"][];
-            meters: components["schemas"]["MeterRequest"][];
-            /** Format: int32 */
-            version: number;
-        };
-        TimeEntryRequest: {
-            /** Format: int32 */
-            startMinute: number;
-            /** Format: int32 */
-            endMinute: number;
-            /** Format: uuid */
-            activityCodeId: string;
-            /** Format: uuid */
-            taskId?: string;
-            comment?: string;
-        };
-        CodeTotal: {
-            activityCode: string;
-            name: {
-                [key: string]: string;
-            };
-            category: string;
-            billable: boolean;
-            /** Format: int32 */
-            minutes: number;
-        };
-        ConsumableView: {
-            /** Format: uuid */
-            itemId: string;
-            itemCode: string;
-            itemName: {
-                [key: string]: string;
-            };
-            unit: string;
-            quantity: number;
-            comment?: string;
-        };
-        IntervalStart: {
-            /** Format: uuid */
-            serviceId: string;
-            serviceCode: string;
-            depthFrom: number;
-        };
-        IntervalView: {
-            /** Format: uuid */
-            serviceId: string;
-            serviceCode: string;
-            depthFrom: number;
-            depthTo: number;
-            meters: number;
-            coreSize?: string;
-            coreLength?: number;
-            recovery?: number;
-            comment?: string;
-        };
-        MeterView: {
-            /** Format: uuid */
-            assetId: string;
-            assetCode: string;
-            startValue?: number;
-            endValue?: number;
-            previousEnd?: number;
-        };
-        QuantityView: {
-            /** Format: uuid */
-            serviceId: string;
-            serviceCode: string;
-            unit?: string;
-            quantity: number;
-            comment?: string;
-        };
-        ReportIssue: {
-            code: string;
-            params: {
-                [key: string]: string;
-            };
-        };
-        ReportTotals: {
-            /** Format: int32 */
-            billableMinutes: number;
-            /** Format: int32 */
-            nonBillableMinutes: number;
-            byCode: components["schemas"]["CodeTotal"][];
-            meters: number;
-            coreLength: number;
-            recovery?: number;
-        };
-        ShiftReportView: {
-            /** Format: uuid */
-            shiftId: string;
-            /** Format: uuid */
-            reportId?: string;
-            /** @enum {string} */
-            status: "new" | "draft" | "submitted";
-            /** Format: date */
-            date: string;
-            /** Format: date-time */
-            startsAt: string;
-            /** Format: int32 */
-            durationMinutes: number;
-            notes?: string;
-            times: components["schemas"]["TimeEntryView"][];
-            intervals: components["schemas"]["IntervalView"][];
-            quantities: components["schemas"]["QuantityView"][];
-            consumables: components["schemas"]["ConsumableView"][];
-            meters: components["schemas"]["MeterView"][];
-            totals: components["schemas"]["ReportTotals"];
-            errors: components["schemas"]["ReportIssue"][];
-            warnings: components["schemas"]["ReportIssue"][];
-            prefill: components["schemas"]["IntervalStart"][];
-            canEdit: boolean;
-            canReopen: boolean;
-            /** Format: uuid */
-            reportTaskId?: string;
-            /** Format: date-time */
-            submittedAt?: string;
-            submittedByName?: string;
-            /** Format: int32 */
-            version: number;
-        };
-        TimeEntryView: {
-            /** Format: int32 */
-            startMinute: number;
-            /** Format: int32 */
-            endMinute: number;
-            /** Format: uuid */
-            activityCodeId: string;
-            activityCode: string;
-            activityName: {
-                [key: string]: string;
-            };
-            category: string;
-            billable: boolean;
-            /** Format: uuid */
-            taskId?: string;
-            /** Format: int64 */
-            taskNumber?: number;
-            taskTitle?: string;
-            comment?: string;
-        };
-        CrewEntry: {
-            /** Format: uuid */
-            personnelId: string;
-            /** Format: uuid */
-            positionId?: string;
-            lead?: boolean;
-            /** Format: int32 */
-            minutes?: number;
-        };
-        CrewUpdateRequest: {
-            crew: components["schemas"]["CrewEntry"][];
-            /** Format: int32 */
-            version: number;
-        };
-        CrewMemberView: {
-            /** Format: uuid */
-            personnelId: string;
-            fullName: string;
-            /** Format: uuid */
-            positionId: string;
-            positionName: {
-                [key: string]: string;
-            };
-            lead: boolean;
-            /** Format: int32 */
-            minutes: number;
-            /** Format: uuid */
-            userId?: string;
-        };
-        ShiftTaskRef: {
-            /** Format: uuid */
-            id: string;
-            /** Format: int64 */
-            number: number;
-            title: string;
-            typeCode: string;
-            status: string;
-            statusCategory: string;
-        };
-        WorkShiftView: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            projectId: string;
-            /** Format: uuid */
-            assetId: string;
-            assetCode: string;
-            assetName?: string;
-            /** Format: date */
-            date: string;
-            shiftCode: string;
-            shiftName: string;
-            /** Format: date-time */
-            startsAt: string;
-            /** Format: date-time */
-            endsAt: string;
-            /** Format: int32 */
-            durationMinutes: number;
-            /** @enum {string} */
-            state: "upcoming" | "running" | "finished";
-            /** @enum {string} */
-            source: "schedule" | "manual";
-            crew: components["schemas"]["CrewMemberView"][];
-            tasks: components["schemas"]["ShiftTaskRef"][];
-            /** Format: int32 */
-            version: number;
         };
         ServiceUpdateRequest: {
             code: string;
@@ -2138,6 +2597,19 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        FieldDefinition: {
+            key: string;
+            label: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            type: "string" | "text" | "number" | "integer" | "boolean" | "date" | "enum";
+            unit?: string;
+            required?: boolean;
+            min?: number;
+            max?: number;
+            options?: string[];
+        };
         ServiceTypeRequest: {
             code: string;
             name: {
@@ -2176,10 +2648,10 @@ export interface components {
             startDate: string;
             /** Format: date */
             endDate?: string;
-            /** Format: uuid */
-            managerId?: string;
             /** Format: int32 */
             version: number;
+            /** Format: uuid */
+            managerId?: string;
         };
         ProjectView: {
             /** Format: uuid */
@@ -2199,11 +2671,11 @@ export interface components {
             /** @enum {string} */
             status: "active" | "closed";
             shifts: components["schemas"]["Shift"][];
+            /** Format: int32 */
+            version: number;
             /** Format: uuid */
             managerId?: string;
             managerName?: string;
-            /** Format: int32 */
-            version: number;
         };
         Shift: {
             /** @description Код зміни: day, night, a, b… */
@@ -2372,26 +2844,6 @@ export interface components {
             version: number;
             archived: boolean;
         };
-        ConsumableItemRequest: {
-            code: string;
-            name: {
-                [key: string]: string;
-            };
-            unit: string;
-            serialTracked?: boolean;
-        };
-        ConsumableItemView: {
-            /** Format: uuid */
-            id: string;
-            code: string;
-            name: {
-                [key: string]: string;
-            };
-            unit: string;
-            serialTracked: boolean;
-            templateKey?: string;
-            archived: boolean;
-        };
         AssetUpdateRequest: {
             /** Format: uuid */
             parentId?: string;
@@ -2427,7 +2879,6 @@ export interface components {
             updatedAt: string;
             /** @enum {string} */
             serviceLevel: "ok" | "low" | "medium" | "high";
-            /** Format: int32 */
             openServiceTasks: number;
         };
         AssetTypeRequest: {
@@ -2441,13 +2892,6 @@ export interface components {
             statuses: components["schemas"]["StatusDefinition"][];
             allowedChildTypes?: string[];
             checklist?: components["schemas"]["ChecklistItem"][];
-        };
-        ChecklistItem: {
-            key: string;
-            label: {
-                [key: string]: string;
-            };
-            critical: boolean;
         };
         StatusDefinition: {
             code: string;
@@ -2468,125 +2912,15 @@ export interface components {
             fields: components["schemas"]["FieldDefinition"][];
             statuses: components["schemas"]["StatusDefinition"][];
             allowedChildTypes: string[];
+            templateKey?: string;
+            archived: boolean;
             checklist: components["schemas"]["ChecklistItem"][];
-            templateKey?: string;
-            archived: boolean;
-        };
-        AssetTypeOrderRequest: {
-            ids: string[];
-        };
-        ActivityCodeRequest: {
-            code: string;
-            name: {
-                [key: string]: string;
-            };
-            /** @enum {string} */
-            category: "productive" | "contractor_npt" | "client_standby" | "other";
-            billable?: boolean;
-            /** Format: int32 */
-            sortOrder?: number;
-        };
-        ActivityCodeView: {
-            /** Format: uuid */
-            id: string;
-            code: string;
-            name: {
-                [key: string]: string;
-            };
-            /** @enum {string} */
-            category: "productive" | "contractor_npt" | "client_standby" | "other";
-            billable: boolean;
-            /** Format: int32 */
-            sortOrder: number;
-            templateKey?: string;
-            archived: boolean;
         };
         AddUserRequest: {
             phone: string;
             fullName: string;
             role: string;
             password?: string;
-        };
-        TaskStatusRequest: {
-            status: string;
-            closingValues?: {
-                [key: string]: unknown;
-            };
-            /** Format: int32 */
-            version: number;
-        };
-        TaskLinkRequest: {
-            /** Format: uuid */
-            taskId: string;
-            /** @enum {string} */
-            kind: "blocks" | "blocked_by" | "relates";
-        };
-        TaskLinksView: {
-            blocks: components["schemas"]["TaskRef"][];
-            blockedBy: components["schemas"]["TaskRef"][];
-            related: components["schemas"]["TaskRef"][];
-            children: components["schemas"]["TaskRef"][];
-        };
-        TaskRef: {
-            /** Format: uuid */
-            linkId?: string;
-            /** Format: uuid */
-            id: string;
-            /** Format: int64 */
-            number: number;
-            title: string;
-            status: string;
-            statusCategory: string;
-        };
-        ReportActionRequest: {
-            /** Format: int32 */
-            version: number;
-        };
-        ChecklistAnswer: {
-            key: string;
-            /** @enum {string} */
-            result: "pass" | "fail" | "na";
-            comment?: string;
-        };
-        ChecklistSubmitRequest: {
-            answers: components["schemas"]["ChecklistAnswer"][];
-            comment?: string;
-        };
-        ChecklistItemView: {
-            key: string;
-            label: {
-                [key: string]: string;
-            };
-            critical: boolean;
-            /** @enum {string} */
-            result?: "pass" | "fail" | "na";
-            comment?: string;
-        };
-        ShiftChecklistView: {
-            /** Format: uuid */
-            shiftId: string;
-            /** Format: uuid */
-            assetId: string;
-            assetCode: string;
-            /** @enum {string} */
-            status: "new" | "passed" | "failed";
-            items: components["schemas"]["ChecklistItemView"][];
-            comment?: string;
-            canEdit: boolean;
-            /** Format: uuid */
-            checklistTaskId?: string;
-            /** Format: uuid */
-            serviceTaskId?: string;
-            /** Format: int64 */
-            serviceTaskNumber?: number;
-            /** Format: date-time */
-            submittedAt?: string;
-            submittedByName?: string;
-        };
-        CompleteServiceRequest: {
-            closingValues?: {
-                [key: string]: unknown;
-            };
         };
         CancelServiceRequest: {
             reason: string;
@@ -2608,47 +2942,6 @@ export interface components {
             /** Format: uuid */
             managerId?: string;
         };
-        TaskCreateRequest: {
-            /** Format: uuid */
-            typeId: string;
-            title: string;
-            description?: string;
-            /** Format: uuid */
-            assigneeId?: string;
-            /** Format: uuid */
-            serviceId?: string;
-            /** Format: uuid */
-            assetId?: string;
-            /** Format: uuid */
-            parentId?: string;
-            /** Format: date */
-            plannedStart?: string;
-            /** Format: date */
-            plannedEnd?: string;
-            attributes?: {
-                [key: string]: unknown;
-            };
-        };
-        WorkShiftCreateRequest: {
-            /** Format: uuid */
-            assetId: string;
-            /** Format: date */
-            date: string;
-            shiftCode: string;
-            crew?: components["schemas"]["CrewEntry"][];
-        };
-        GenerateShiftsRequest: {
-            /** Format: date */
-            from: string;
-            /** Format: date */
-            to: string;
-            /** Format: uuid */
-            assetId?: string;
-        };
-        GenerateShiftsResponse: {
-            /** Format: int32 */
-            created: number;
-        };
         ServiceCreateRequest: {
             /** Format: uuid */
             typeId: string;
@@ -2663,8 +2956,6 @@ export interface components {
             plannedStart?: string;
             /** Format: date */
             plannedEnd?: string;
-            /** Format: uuid */
-            assigneeId?: string;
         };
         ShiftScheduleRequest: {
             /** Format: date */
@@ -2839,114 +3130,6 @@ export interface components {
             serviceTypes: string[];
             taskTypes: string[];
         };
-        TaskHistoryEntry: {
-            /** Format: int64 */
-            id: number;
-            userName?: string;
-            action: string;
-            changes?: {
-                [key: string]: unknown;
-            };
-            /** Format: date-time */
-            createdAt: string;
-        };
-        CategoryMinutes: {
-            /** @enum {string} */
-            category: "productive" | "contractor_npt" | "client_standby" | "other";
-            /** Format: int64 */
-            minutes: number;
-        };
-        CodeMinutes: {
-            code: string;
-            name: {
-                [key: string]: string;
-            };
-            category: string;
-            billable: boolean;
-            /** Format: int64 */
-            minutes: number;
-        };
-        DepthBand: {
-            from: number;
-            to: number;
-            meters: number;
-        };
-        ItemQuantity: {
-            /** Format: uuid */
-            itemId: string;
-            code: string;
-            name: {
-                [key: string]: string;
-            };
-            unit: string;
-            quantity: number;
-        };
-        SummaryRow: {
-            /** Format: uuid */
-            assetId?: string;
-            assetCode?: string;
-            assetName?: string;
-            /** Format: date */
-            periodStart?: string;
-            /** Format: date */
-            periodEnd?: string;
-            /** Format: int64 */
-            shifts: number;
-            /** Format: int64 */
-            reportsSubmitted: number;
-            /** Format: int64 */
-            reportsDraft: number;
-            /** Format: int64 */
-            reportsMissing: number;
-            /** Format: int64 */
-            billableMinutes: number;
-            /** Format: int64 */
-            nonBillableMinutes: number;
-            categories: components["schemas"]["CategoryMinutes"][];
-            byCode: components["schemas"]["CodeMinutes"][];
-            meters: number;
-            coreLength: number;
-            recovery?: number;
-            depthBands: components["schemas"]["DepthBand"][];
-            quantities: components["schemas"]["UnitQuantity"][];
-            /** Format: int64 */
-            completedServices: number;
-            consumables: components["schemas"]["ItemQuantity"][];
-        };
-        SummaryView: {
-            /** @enum {string} */
-            period: "month" | "half_year" | "year";
-            /** Format: date */
-            from: string;
-            /** Format: date */
-            to: string;
-            /** Format: int32 */
-            depthStep: number;
-            includeDrafts: boolean;
-            rows: components["schemas"]["SummaryRow"][];
-            total: components["schemas"]["SummaryRow"];
-        };
-        UnitQuantity: {
-            unit: string;
-            quantity: number;
-        };
-        BoardAsset: {
-            /** Format: uuid */
-            assetId: string;
-            code: string;
-            name?: string;
-            /** Format: date */
-            startDate: string;
-            /** Format: date */
-            endDate?: string;
-            /** @enum {string} */
-            serviceLevel: "ok" | "low" | "medium" | "high";
-        };
-        ShiftBoardView: {
-            assets: components["schemas"]["BoardAsset"][];
-            scheduleShifts: components["schemas"]["Shift"][];
-            shifts: components["schemas"]["WorkShiftView"][];
-        };
         AvailableEquipmentView: {
             /** Format: uuid */
             assetId: string;
@@ -2996,6 +3179,613 @@ export interface components {
             /** Format: int64 */
             total: number;
         };
+        TaskStatusDefinition: {
+            code: string;
+            label: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            category: "new" | "active" | "done" | "cancelled";
+            color?: string;
+        };
+        TaskTypeView: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            statuses: components["schemas"]["TaskStatusDefinition"][];
+            fields: components["schemas"]["FieldDefinition"][];
+            closingFields: components["schemas"]["FieldDefinition"][];
+            /** @enum {string} */
+            subjectKind: "none" | "service" | "asset";
+            syncService: boolean;
+            childrenBlockClose: boolean;
+            templateKey?: string;
+            archived: boolean;
+            rules: components["schemas"]["TaskRule"][];
+            /** @enum {string} */
+            autoCreate: "none" | "primary_assignment";
+        };
+        TaskTypeRequest: {
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            statuses: components["schemas"]["TaskStatusDefinition"][];
+            fields?: components["schemas"]["FieldDefinition"][];
+            closingFields?: components["schemas"]["FieldDefinition"][];
+            /** @enum {string} */
+            subjectKind?: "none" | "service" | "asset";
+            syncService?: boolean;
+            childrenBlockClose?: boolean;
+            rules?: components["schemas"]["TaskRule"][];
+            /** @enum {string} */
+            autoCreate?: "none" | "primary_assignment";
+        };
+        TaskView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            number: number;
+            /** Format: uuid */
+            projectId: string;
+            projectCode: string;
+            /** Format: uuid */
+            typeId: string;
+            typeCode: string;
+            title: string;
+            description?: string;
+            status: string;
+            /** @enum {string} */
+            statusCategory: "new" | "active" | "done" | "cancelled";
+            /** Format: uuid */
+            assigneeId?: string;
+            assigneeName?: string;
+            authorName?: string;
+            /** Format: uuid */
+            serviceId?: string;
+            serviceCode?: string;
+            /** Format: uuid */
+            assetId?: string;
+            assetCode?: string;
+            /** Format: uuid */
+            parentId?: string;
+            /** Format: int64 */
+            parentNumber?: number;
+            /** Format: uuid */
+            workShiftId?: string;
+            /** Format: date */
+            plannedStart?: string;
+            /** Format: date */
+            plannedEnd?: string;
+            /** Format: date */
+            forecastEnd?: string;
+            /** Format: date-time */
+            actualStart?: string;
+            /** Format: date-time */
+            actualEnd?: string;
+            attributes: {
+                [key: string]: unknown;
+            };
+            closingValues?: {
+                [key: string]: unknown;
+            };
+            /** Format: int32 */
+            openBlockers: number;
+            /** Format: int32 */
+            childrenTotal: number;
+            /** Format: int32 */
+            childrenOpen: number;
+            /** Format: int32 */
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            authorId?: string;
+        };
+        TaskRef: {
+            /** Format: uuid */
+            linkId?: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            number: number;
+            title: string;
+            status: string;
+            statusCategory: string;
+        };
+        TaskLinksView: {
+            blocks: components["schemas"]["TaskRef"][];
+            blockedBy: components["schemas"]["TaskRef"][];
+            related: components["schemas"]["TaskRef"][];
+            children: components["schemas"]["TaskRef"][];
+        };
+        TaskHistoryEntry: {
+            /** Format: int64 */
+            id: number;
+            userName?: string;
+            action: string;
+            changes?: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            createdAt: string;
+        };
+        TaskCreateRequest: {
+            /** Format: uuid */
+            typeId: string;
+            title: string;
+            description?: string;
+            /** Format: uuid */
+            assigneeId?: string;
+            /** Format: uuid */
+            serviceId?: string;
+            /** Format: uuid */
+            assetId?: string;
+            /** Format: uuid */
+            parentId?: string;
+            /** Format: date */
+            plannedStart?: string;
+            /** Format: date */
+            plannedEnd?: string;
+            attributes?: {
+                [key: string]: unknown;
+            };
+        };
+        TaskUpdateRequest: {
+            title: string;
+            description?: string;
+            /** Format: uuid */
+            assigneeId?: string;
+            /** Format: uuid */
+            serviceId?: string;
+            /** Format: uuid */
+            assetId?: string;
+            /** Format: date */
+            plannedStart?: string;
+            /** Format: date */
+            plannedEnd?: string;
+            /** Format: date */
+            forecastEnd?: string;
+            attributes?: {
+                [key: string]: unknown;
+            };
+            /** Format: int32 */
+            version: number;
+        };
+        TaskStatusRequest: {
+            status: string;
+            closingValues?: {
+                [key: string]: unknown;
+            };
+            /** Format: int32 */
+            version: number;
+        };
+        TaskLinkRequest: {
+            /** Format: uuid */
+            taskId: string;
+            /** @enum {string} */
+            kind: "blocks" | "blocked_by" | "relates";
+        };
+        ActivityCodeView: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            category: "productive" | "contractor_npt" | "client_standby" | "other";
+            billable: boolean;
+            /** Format: int32 */
+            sortOrder: number;
+            templateKey?: string;
+            archived: boolean;
+        };
+        ActivityCodeRequest: {
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            /** @enum {string} */
+            category: "productive" | "contractor_npt" | "client_standby" | "other";
+            billable?: boolean;
+            /** Format: int32 */
+            sortOrder?: number;
+        };
+        ConsumableItemView: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            unit: string;
+            serialTracked: boolean;
+            templateKey?: string;
+            archived: boolean;
+        };
+        ConsumableItemRequest: {
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            unit: string;
+            serialTracked?: boolean;
+        };
+        CrewMemberView: {
+            /** Format: uuid */
+            personnelId: string;
+            fullName: string;
+            /** Format: uuid */
+            positionId: string;
+            positionName: {
+                [key: string]: string;
+            };
+            lead: boolean;
+            /** Format: int32 */
+            minutes: number;
+            /** Format: uuid */
+            userId?: string;
+        };
+        ShiftTaskRef: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            number: number;
+            title: string;
+            typeCode: string;
+            status: string;
+            statusCategory: string;
+        };
+        WorkShiftView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            assetId: string;
+            assetCode: string;
+            assetName?: string;
+            /** Format: date */
+            date: string;
+            shiftCode: string;
+            shiftName: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            /** Format: int32 */
+            durationMinutes: number;
+            /** @enum {string} */
+            state: "upcoming" | "running" | "finished";
+            /** @enum {string} */
+            source: "schedule" | "manual";
+            crew: components["schemas"]["CrewMemberView"][];
+            tasks: components["schemas"]["ShiftTaskRef"][];
+            /** Format: int32 */
+            version: number;
+        };
+        BoardAsset: {
+            /** Format: uuid */
+            assetId: string;
+            code: string;
+            name?: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: date */
+            endDate?: string;
+            /** @enum {string} */
+            serviceLevel: "ok" | "low" | "medium" | "high";
+        };
+        ShiftBoardView: {
+            assets: components["schemas"]["BoardAsset"][];
+            scheduleShifts: components["schemas"]["Shift"][];
+            shifts: components["schemas"]["WorkShiftView"][];
+        };
+        WorkShiftCreateRequest: {
+            /** Format: uuid */
+            assetId: string;
+            /** Format: date */
+            date: string;
+            shiftCode: string;
+            crew?: components["schemas"]["CrewEntry"][];
+        };
+        CrewEntry: {
+            /** Format: uuid */
+            personnelId: string;
+            /** Format: uuid */
+            positionId?: string;
+            lead?: boolean;
+            /** Format: int32 */
+            minutes?: number;
+        };
+        CrewUpdateRequest: {
+            crew: components["schemas"]["CrewEntry"][];
+            /** Format: int32 */
+            version: number;
+        };
+        TimeEntryView: {
+            startMinute: number;
+            endMinute: number;
+            activityCodeId: string;
+            activityCode: string;
+            activityName: {
+                [key: string]: string;
+            };
+            category: string;
+            billable: boolean;
+            taskId?: string;
+            taskNumber?: number;
+            taskTitle?: string;
+            comment?: string;
+        };
+        IntervalView: {
+            serviceId: string;
+            serviceCode: string;
+            depthFrom: number;
+            depthTo: number;
+            meters: number;
+            coreSize?: string;
+            coreLength?: number;
+            recovery?: number;
+            comment?: string;
+        };
+        QuantityView: {
+            serviceId: string;
+            serviceCode: string;
+            unit?: string;
+            quantity: number;
+            comment?: string;
+        };
+        ConsumableView: {
+            itemId: string;
+            itemCode: string;
+            itemName: {
+                [key: string]: string;
+            };
+            unit: string;
+            quantity: number;
+            comment?: string;
+        };
+        MeterView: {
+            assetId: string;
+            assetCode: string;
+            startValue?: number;
+            endValue?: number;
+            previousEnd?: number;
+        };
+        ReportIssue: {
+            code: string;
+            params: {
+                [key: string]: string;
+            };
+        };
+        CodeTotal: {
+            activityCode: string;
+            name: {
+                [key: string]: string;
+            };
+            category: string;
+            billable: boolean;
+            minutes: number;
+        };
+        ReportTotals: {
+            billableMinutes: number;
+            nonBillableMinutes: number;
+            byCode: components["schemas"]["CodeTotal"][];
+            meters: number;
+            coreLength: number;
+            recovery?: number;
+        };
+        IntervalStart: {
+            serviceId: string;
+            serviceCode: string;
+            depthFrom: number;
+        };
+        ShiftReportView: {
+            shiftId: string;
+            reportId?: string;
+            /** @enum {string} */
+            status: "new" | "draft" | "submitted" | "returned" | "corrected" | "accepted";
+            date: string;
+            startsAt: string;
+            durationMinutes: number;
+            notes?: string;
+            times: components["schemas"]["TimeEntryView"][];
+            intervals: components["schemas"]["IntervalView"][];
+            quantities: components["schemas"]["QuantityView"][];
+            consumables: components["schemas"]["ConsumableView"][];
+            meters: components["schemas"]["MeterView"][];
+            totals: components["schemas"]["ReportTotals"];
+            errors: components["schemas"]["ReportIssue"][];
+            warnings: components["schemas"]["ReportIssue"][];
+            prefill: components["schemas"]["IntervalStart"][];
+            canEdit: boolean;
+            canReopen: boolean;
+            reportTaskId?: string;
+            submittedAt?: string;
+            submittedByName?: string;
+            version: number;
+            /** Format: date-time */
+            acceptedAt?: string;
+            events: components["schemas"]["ReportEventView"][];
+            correction?: components["schemas"]["CorrectionView"];
+            canAgree: boolean;
+            taskOptions: components["schemas"]["ReportTaskOption"][];
+        };
+        TimeEntryRequest: {
+            startMinute: number;
+            endMinute: number;
+            activityCodeId: string;
+            taskId?: string;
+            comment?: string;
+        };
+        IntervalRequest: {
+            serviceId: string;
+            depthFrom: number;
+            depthTo: number;
+            coreSize?: string;
+            coreLength?: number;
+            comment?: string;
+        };
+        QuantityRequest: {
+            serviceId: string;
+            quantity: number;
+            comment?: string;
+        };
+        ConsumableRequest: {
+            itemId: string;
+            quantity: number;
+            comment?: string;
+        };
+        MeterRequest: {
+            assetId: string;
+            startValue: number;
+            endValue: number;
+        };
+        ShiftReportRequest: {
+            notes?: string;
+            times: components["schemas"]["TimeEntryRequest"][];
+            intervals: components["schemas"]["IntervalRequest"][];
+            quantities: components["schemas"]["QuantityRequest"][];
+            consumables: components["schemas"]["ConsumableRequest"][];
+            meters: components["schemas"]["MeterRequest"][];
+            version: number;
+        };
+        ReportActionRequest: {
+            version: number;
+        };
+        GenerateShiftsRequest: {
+            from: string;
+            to: string;
+            assetId?: string;
+        };
+        GenerateShiftsResponse: {
+            created: number;
+        };
+        CategoryMinutes: {
+            /** @enum {string} */
+            category: "productive" | "contractor_npt" | "client_standby" | "other";
+            minutes: number;
+        };
+        CodeMinutes: {
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            category: string;
+            billable: boolean;
+            minutes: number;
+        };
+        DepthBand: {
+            from: number;
+            to: number;
+            meters: number;
+        };
+        UnitQuantity: {
+            unit: string;
+            quantity: number;
+        };
+        ItemQuantity: {
+            itemId: string;
+            code: string;
+            name: {
+                [key: string]: string;
+            };
+            unit: string;
+            quantity: number;
+        };
+        SummaryRow: {
+            assetId?: string;
+            assetCode?: string;
+            assetName?: string;
+            periodStart?: string;
+            periodEnd?: string;
+            shifts: number;
+            reportsSubmitted: number;
+            reportsDraft: number;
+            reportsMissing: number;
+            billableMinutes: number;
+            nonBillableMinutes: number;
+            categories: components["schemas"]["CategoryMinutes"][];
+            byCode: components["schemas"]["CodeMinutes"][];
+            meters: number;
+            coreLength: number;
+            recovery?: number;
+            depthBands: components["schemas"]["DepthBand"][];
+            quantities: components["schemas"]["UnitQuantity"][];
+            completedServices: number;
+            consumables: components["schemas"]["ItemQuantity"][];
+        };
+        SummaryView: {
+            /** @enum {string} */
+            period: "month" | "half_year" | "year";
+            from: string;
+            to: string;
+            depthStep: number;
+            includeDrafts: boolean;
+            rows: components["schemas"]["SummaryRow"][];
+            total: components["schemas"]["SummaryRow"];
+        };
+        ChecklistItem: {
+            key: string;
+            label: {
+                [key: string]: string;
+            };
+            critical: boolean;
+        };
+        ChecklistItemView: {
+            key: string;
+            label: {
+                [key: string]: string;
+            };
+            critical: boolean;
+            /** @enum {string} */
+            result?: "pass" | "fail" | "na";
+            comment?: string;
+        };
+        ShiftChecklistView: {
+            shiftId: string;
+            assetId: string;
+            assetCode: string;
+            /** @enum {string} */
+            status: "new" | "passed" | "failed";
+            items: components["schemas"]["ChecklistItemView"][];
+            comment?: string;
+            canEdit: boolean;
+            checklistTaskId?: string;
+            serviceTaskId?: string;
+            serviceTaskNumber?: number;
+            submittedAt?: string;
+            submittedByName?: string;
+        };
+        ChecklistAnswer: {
+            key: string;
+            /** @enum {string} */
+            result: "pass" | "fail" | "na";
+            comment?: string;
+        };
+        ChecklistSubmitRequest: {
+            answers: components["schemas"]["ChecklistAnswer"][];
+            comment?: string;
+        };
+        AlertView: {
+            id: string;
+            kind: string;
+            title: string;
+            projectId?: string;
+            taskId?: string;
+            taskNumber?: number;
+            createdAt: string;
+            read: boolean;
+        };
+        AlertsView: {
+            unread: number;
+            items: components["schemas"]["AlertView"][];
+        };
         LibraryTypeView: {
             /** Format: uuid */
             sourceId: string;
@@ -3012,25 +3802,91 @@ export interface components {
             companies: number;
             exists: boolean;
         };
-        AlertView: {
+        AssetTypeOrderRequest: {
+            ids: string[];
+        };
+        ReportTaskOption: {
             /** Format: uuid */
             id: string;
-            kind: string;
-            title: string;
-            /** Format: uuid */
-            projectId?: string;
-            /** Format: uuid */
-            taskId?: string;
             /** Format: int64 */
-            taskNumber?: number;
+            number: number;
+            title: string;
+            statusCategory: string;
+        };
+        ReportEventView: {
+            /** @enum {string} */
+            kind: "submitted" | "returned" | "corrected" | "agreed" | "accepted" | "reopened";
+            comment?: string;
+            authorName?: string;
             /** Format: date-time */
             createdAt: string;
-            read: boolean;
         };
-        AlertsView: {
-            /** Format: int64 */
-            unread: number;
-            items: components["schemas"]["AlertView"][];
+        CorrectionView: {
+            comment: string;
+            authorName?: string;
+            /** Format: date-time */
+            createdAt: string;
+            times: components["schemas"]["TimeEntryView"][];
+            intervals: components["schemas"]["IntervalView"][];
+            quantities: components["schemas"]["QuantityView"][];
+            totals: components["schemas"]["ReportTotals"];
+        };
+        ReportReturnRequest: {
+            /** Format: int32 */
+            version: number;
+            comment: string;
+        };
+        ReportCorrectionRequest: {
+            /** Format: int32 */
+            version: number;
+            comment: string;
+            times: components["schemas"]["TimeEntryRequest"][];
+            intervals: components["schemas"]["IntervalRequest"][];
+            quantities: components["schemas"]["QuantityRequest"][];
+        };
+        ReviewListItem: {
+            /** Format: uuid */
+            shiftId: string;
+            /** Format: uuid */
+            projectId: string;
+            projectCode: string;
+            assetCode: string;
+            /** Format: date */
+            date: string;
+            shiftName: string;
+            status: string;
+            /** Format: date-time */
+            submittedAt?: string;
+            meters: number;
+            /** Format: int32 */
+            billableMinutes: number;
+        };
+        ReviewReportView: {
+            report: components["schemas"]["ShiftReportView"];
+            /** Format: uuid */
+            projectId: string;
+            projectCode: string;
+            projectName: string;
+            assetCode: string;
+            shiftName: string;
+            crew: components["schemas"]["CrewMemberView"][];
+            canReview: boolean;
+        };
+        TaskRule: {
+            /** @enum {string} */
+            trigger: "created" | "status_category" | "shift_created";
+            /** @enum {string} */
+            category?: "active" | "done" | "cancelled";
+            /** @enum {string} */
+            action?: "create_subtask";
+            taskType: string;
+            title?: string;
+            /** @enum {string} */
+            assignTo?: "supervisor" | "storekeeper" | "parent_assignee" | "author" | "shift_lead" | "none";
+            /** Format: int32 */
+            dueInDays?: number;
+            /** Format: int32 */
+            blockedBy?: number;
         };
     };
     responses: never;
@@ -3084,160 +3940,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["TaskView"];
-                };
-            };
-        };
-    };
-    update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TaskUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskView"];
-                };
-            };
-        };
-    };
-    updateType: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TaskTypeRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskTypeView"];
-                };
-            };
-        };
-    };
-    report: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ShiftReportView"];
-                };
-            };
-        };
-    };
-    saveReport: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ShiftReportRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ShiftReportView"];
-                };
-            };
-        };
-    };
-    updateCrew: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CrewUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WorkShiftView"];
-                };
-            };
-        };
-    };
-    get_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
                     "*/*": components["schemas"]["ServiceView"];
                 };
             };
         };
     };
-    update_1: {
+    update: {
         parameters: {
             query?: never;
             header?: never;
@@ -3263,7 +3971,7 @@ export interface operations {
             };
         };
     };
-    updateType_1: {
+    updateType: {
         parameters: {
             query?: never;
             header?: never;
@@ -3289,7 +3997,7 @@ export interface operations {
             };
         };
     };
-    get_2: {
+    get_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -3311,7 +4019,7 @@ export interface operations {
             };
         };
     };
-    update_2: {
+    update_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -3459,7 +4167,7 @@ export interface operations {
             };
         };
     };
-    get_3: {
+    get_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -3481,7 +4189,7 @@ export interface operations {
             };
         };
     };
-    update_3: {
+    update_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -3507,7 +4215,7 @@ export interface operations {
             };
         };
     };
-    get_4: {
+    get_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -3529,7 +4237,7 @@ export interface operations {
             };
         };
     };
-    update_4: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -3581,33 +4289,7 @@ export interface operations {
             };
         };
     };
-    updateItem: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConsumableItemRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ConsumableItemView"];
-                };
-            };
-        };
-    };
-    get_5: {
+    get_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -3629,7 +4311,7 @@ export interface operations {
             };
         };
     };
-    update_5: {
+    update_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -3655,7 +4337,7 @@ export interface operations {
             };
         };
     };
-    get_6: {
+    get_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -3677,7 +4359,7 @@ export interface operations {
             };
         };
     };
-    update_6: {
+    update_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -3699,76 +4381,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AssetTypeView"];
-                };
-            };
-        };
-    };
-    delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    reorder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AssetTypeOrderRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AssetTypeView"][];
-                };
-            };
-        };
-    };
-    updateCode: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ActivityCodeRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityCodeView"];
                 };
             };
         };
@@ -3857,270 +4469,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CompanyUserView"];
-                };
-            };
-        };
-    };
-    changeStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TaskStatusRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskView"];
-                };
-            };
-        };
-    };
-    links: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskLinksView"];
-                };
-            };
-        };
-    };
-    addLink: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TaskLinkRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskLinksView"];
-                };
-            };
-        };
-    };
-    types: {
-        parameters: {
-            query?: {
-                includeArchived?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskTypeView"][];
-                };
-            };
-        };
-    };
-    createType: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TaskTypeRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskTypeView"];
-                };
-            };
-        };
-    };
-    restoreType: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskTypeView"];
-                };
-            };
-        };
-    };
-    archiveType: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskTypeView"];
-                };
-            };
-        };
-    };
-    submitReport: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReportActionRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ShiftReportView"];
-                };
-            };
-        };
-    };
-    reopenReport: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReportActionRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ShiftReportView"];
-                };
-            };
-        };
-    };
-    checklist: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ShiftChecklistView"];
-                };
-            };
-        };
-    };
-    submitChecklist: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChecklistSubmitRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ShiftChecklistView"];
                 };
             };
         };
@@ -4221,7 +4569,7 @@ export interface operations {
             };
         };
     };
-    types_1: {
+    types: {
         parameters: {
             query?: {
                 includeArchived?: boolean;
@@ -4243,7 +4591,7 @@ export interface operations {
             };
         };
     };
-    createType_1: {
+    createType: {
         parameters: {
             query?: never;
             header?: never;
@@ -4267,7 +4615,7 @@ export interface operations {
             };
         };
     };
-    restoreType_1: {
+    restoreType: {
         parameters: {
             query?: never;
             header?: never;
@@ -4289,7 +4637,7 @@ export interface operations {
             };
         };
     };
-    archiveType_1: {
+    archiveType: {
         parameters: {
             query?: never;
             header?: never;
@@ -4362,111 +4710,6 @@ export interface operations {
     list_2: {
         parameters: {
             query?: {
-                category?: string;
-                assigneeId?: string;
-                typeId?: string;
-                serviceId?: string;
-            };
-            header?: never;
-            path: {
-                projectId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskView"][];
-                };
-            };
-        };
-    };
-    create_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projectId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TaskCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskView"];
-                };
-            };
-        };
-    };
-    create_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projectId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WorkShiftCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WorkShiftView"];
-                };
-            };
-        };
-    };
-    generate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projectId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GenerateShiftsRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["GenerateShiftsResponse"];
-                };
-            };
-        };
-    };
-    list_3: {
-        parameters: {
-            query?: {
                 status?: string;
                 typeId?: string;
             };
@@ -4489,7 +4732,7 @@ export interface operations {
             };
         };
     };
-    create_3: {
+    create_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -4887,7 +5130,7 @@ export interface operations {
             };
         };
     };
-    create_4: {
+    create_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -4955,7 +5198,7 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    list_3: {
         parameters: {
             query?: {
                 q?: string;
@@ -4979,7 +5222,7 @@ export interface operations {
             };
         };
     };
-    create_5: {
+    create_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -5095,7 +5338,7 @@ export interface operations {
             };
         };
     };
-    list_5: {
+    list_4: {
         parameters: {
             query?: {
                 q?: string;
@@ -5118,7 +5361,7 @@ export interface operations {
             };
         };
     };
-    create_6: {
+    create_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -5328,96 +5571,6 @@ export interface operations {
             };
         };
     };
-    items: {
-        parameters: {
-            query?: {
-                includeArchived?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ConsumableItemView"][];
-                };
-            };
-        };
-    };
-    createItem: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConsumableItemRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ConsumableItemView"];
-                };
-            };
-        };
-    };
-    restoreItem: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ConsumableItemView"];
-                };
-            };
-        };
-    };
-    archiveItem: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ConsumableItemView"];
-                };
-            };
-        };
-    };
     token: {
         parameters: {
             query?: never;
@@ -5552,7 +5705,7 @@ export interface operations {
             };
         };
     };
-    list_6: {
+    list_5: {
         parameters: {
             query?: {
                 typeId?: string;
@@ -5580,7 +5733,7 @@ export interface operations {
             };
         };
     };
-    create_7: {
+    create_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -5648,7 +5801,7 @@ export interface operations {
             };
         };
     };
-    list_7: {
+    list_6: {
         parameters: {
             query?: {
                 includeArchived?: boolean;
@@ -5670,7 +5823,7 @@ export interface operations {
             };
         };
     };
-    create_8: {
+    create_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -5738,28 +5891,6 @@ export interface operations {
             };
         };
     };
-    installFromLibrary: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                sourceId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AssetTypeView"];
-                };
-            };
-        };
-    };
     installTemplate: {
         parameters: {
             query?: never;
@@ -5780,253 +5911,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["InstallTemplateResponse"];
-                };
-            };
-        };
-    };
-    read: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readAll: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    codes: {
-        parameters: {
-            query?: {
-                includeArchived?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityCodeView"][];
-                };
-            };
-        };
-    };
-    createCode: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ActivityCodeRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityCodeView"];
-                };
-            };
-        };
-    };
-    restoreCode: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityCodeView"];
-                };
-            };
-        };
-    };
-    archiveCode: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityCodeView"];
-                };
-            };
-        };
-    };
-    history: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskHistoryEntry"][];
-                };
-            };
-        };
-    };
-    mine: {
-        parameters: {
-            query?: {
-                includeClosed?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskView"][];
-                };
-            };
-        };
-    };
-    get_7: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["WorkShiftView"];
-                };
-            };
-        };
-    };
-    summary: {
-        parameters: {
-            query: {
-                projectId?: string;
-                assetId?: string;
-                from: string;
-                to: string;
-                period?: string;
-                depthStep?: number;
-                includeDrafts?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SummaryView"];
-                };
-            };
-        };
-    };
-    board: {
-        parameters: {
-            query?: {
-                from?: string;
-                to?: string;
-            };
-            header?: never;
-            path: {
-                projectId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ShiftBoardView"];
                 };
             };
         };
@@ -6098,7 +5982,7 @@ export interface operations {
             };
         };
     };
-    list_8: {
+    list_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -6160,69 +6044,6 @@ export interface operations {
             };
         };
     };
-    library: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["LibraryTypeView"][];
-                };
-            };
-        };
-    };
-    mine_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["AlertsView"];
-                };
-            };
-        };
-    };
-    removeLink: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                linkId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TaskLinksView"];
-                };
-            };
-        };
-    };
     deleteSchedule: {
         parameters: {
             query?: never;
@@ -6265,6 +6086,364 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ProjectAccessView"][];
+                };
+            };
+        };
+    };
+    op701: {
+        parameters: {
+            query?: {
+                includeArchived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"][];
+                };
+            };
+        };
+    };
+    op702: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskTypeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"];
+                };
+            };
+        };
+    };
+    op703: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskTypeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"];
+                };
+            };
+        };
+    };
+    op704: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"];
+                };
+            };
+        };
+    };
+    op705: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskTypeView"];
+                };
+            };
+        };
+    };
+    op706: {
+        parameters: {
+            query?: {
+                category?: string;
+                assigneeId?: string;
+                typeId?: string;
+                serviceId?: string;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"][];
+                };
+            };
+        };
+    };
+    op707: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"];
+                };
+            };
+        };
+    };
+    op708: {
+        parameters: {
+            query?: {
+                includeClosed?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"][];
+                };
+            };
+        };
+    };
+    op709: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"];
+                };
+            };
+        };
+    };
+    op710: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"];
+                };
+            };
+        };
+    };
+    op711: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskView"];
+                };
+            };
+        };
+    };
+    op712: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskLinksView"];
+                };
+            };
+        };
+    };
+    op713: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskLinksView"];
+                };
+            };
+        };
+    };
+    op714: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                linkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskLinksView"];
+                };
+            };
+        };
+    };
+    op715: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaskHistoryEntry"][];
                 };
             };
         };

@@ -84,6 +84,12 @@ public class ShiftController {
         return reports.reopen(id, request.version());
     }
 
+    /** Погодитись з правкою замовника: значення замовника — у рапорт, «Перевірено». */
+    @PostMapping("/shifts/{id}/report/agree")
+    public ShiftReportView agreeReport(@PathVariable("id") UUID id, @Valid @RequestBody ReportActionRequest request) {
+        return reports.agree(id, request.version());
+    }
+
     @GetMapping("/projects/{projectId}/shift-board")
     public ShiftBoardView board(
             @PathVariable("projectId") UUID projectId,

@@ -8,7 +8,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import com.safetics.shifts.ShiftDtos.CrewMemberView;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -107,14 +110,44 @@ public final class ShiftReportDtos {
             @NotNull BigDecimal depthFrom) {
     }
 
+    /** Задача проєкту для рядка журналу часу (буріння свердловини, переїзд, ТО…). */
+    public record ReportTaskOption(
+            @NotNull UUID id,
+            @NotNull long number,
+            @NotNull String title,
+            @NotNull String statusCategory) {
+    }
+
+    /** Подія рапорту: подано, повернуто / виправлено / перевірено замовником, погоджено, повернуто в чернетку. */
+    public record ReportEventView(
+            @NotNull @Schema(allowableValues = {"submitted", "returned", "corrected", "agreed", "accepted", "reopened"})
+            String kind,
+            String comment,
+            String authorName,
+            @NotNull OffsetDateTime createdAt) {
+    }
+
+    /** Правка замовника: запропоновані журнал часу, інтервали й обсяги (рапорт не змінено, доки підрядник не погодиться). */
+    public record CorrectionView(
+            @NotNull String comment,
+            String authorName,
+            @NotNull OffsetDateTime createdAt,
+            @NotNull List<TimeEntryView> times,
+            @NotNull List<IntervalView> intervals,
+            @NotNull List<QuantityView> quantities,
+            @NotNull ReportTotals totals) {
+    }
+
     /**
      * status: new — ще не збережено (поля заповнені з попередньої зміни), draft — чернетка,
-     * submitted — подано. reportTaskId — задача «Змінний рапорт» зміни.
+     * submitted — подано, returned — повернуто замовником, corrected — виправлено замовником (чекає
+     * згоди), accepted — перевірено. reportTaskId — задача «Змінний рапорт» зміни. Для порталу
+     * витрати й лічильники порожні.
      */
     public record ShiftReportView(
             @NotNull UUID shiftId,
             UUID reportId,
-            @NotNull @Schema(allowableValues = {"new", "draft", "submitted"}) String status,
+            @NotNull @Schema(allowableValues = {"new", "draft", "submitted", "returned", "corrected", "accepted"}) String status,
             @NotNull LocalDate date,
             @NotNull OffsetDateTime startsAt,
             @NotNull int durationMinutes,
@@ -133,7 +166,12 @@ public final class ShiftReportDtos {
             UUID reportTaskId,
             OffsetDateTime submittedAt,
             String submittedByName,
-            @NotNull int version) {
+            @NotNull int version,
+            OffsetDateTime acceptedAt,
+            @NotNull List<ReportEventView> events,
+            CorrectionView correction,
+            @NotNull boolean canAgree,
+            @NotNull List<ReportTaskOption> taskOptions) {
     }
 
     public record TimeEntryRequest(
@@ -183,6 +221,45 @@ public final class ShiftReportDtos {
     }
 
     public record ReportActionRequest(@NotNull Integer version) {
+    }
+
+    /** Повернути рапорт: коментар обов'язковий. */
+    public record ReportReturnRequest(@NotNull Integer version, @NotBlank String comment) {
+    }
+
+    /** Правка замовника: коментар обов'язковий; витрати й лічильники лишаються підрядника. */
+    public record ReportCorrectionRequest(
+            @NotNull Integer version,
+            @NotBlank String comment,
+            @NotNull @Valid List<TimeEntryRequest> times,
+            @NotNull @Valid List<IntervalRequest> intervals,
+            @NotNull @Valid List<QuantityRequest> quantities) {
+    }
+
+    /** Рядок списку «Рапорти на перевірку» (портал). */
+    public record ReviewListItem(
+            @NotNull UUID shiftId,
+            @NotNull UUID projectId,
+            @NotNull String projectCode,
+            @NotNull String assetCode,
+            @NotNull LocalDate date,
+            @NotNull String shiftName,
+            @NotNull String status,
+            OffsetDateTime submittedAt,
+            @NotNull BigDecimal meters,
+            @NotNull int billableMinutes) {
+    }
+
+    /** Рапорт для замовника: без витрат і лічильників; canReview — можна прийняти / повернути / виправити. */
+    public record ReviewReportView(
+            @NotNull ShiftReportView report,
+            @NotNull UUID projectId,
+            @NotNull String projectCode,
+            @NotNull String projectName,
+            @NotNull String assetCode,
+            @NotNull String shiftName,
+            @NotNull List<CrewMemberView> crew,
+            @NotNull boolean canReview) {
     }
 
     /** Зміни за період за графіком (не пізніше сьогодні, до 62 днів); assetId порожній — усе основне обладнання. */

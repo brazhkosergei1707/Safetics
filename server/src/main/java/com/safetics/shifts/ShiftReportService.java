@@ -22,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.safetics.alerts.AlertService;
 import com.safetics.core.audit.AuditService;
 import com.safetics.core.tenancy.TenantContext;
 import com.safetics.core.web.ApiException;
@@ -32,6 +33,7 @@ import com.safetics.shifts.ShiftDtos.WorkShiftView;
 import com.safetics.shifts.ShiftReportDtos.CodeTotal;
 import com.safetics.shifts.ShiftReportDtos.ConsumableRequest;
 import com.safetics.shifts.ShiftReportDtos.ConsumableView;
+import com.safetics.shifts.ShiftReportDtos.CorrectionView;
 import com.safetics.shifts.ShiftReportDtos.IntervalRequest;
 import com.safetics.shifts.ShiftReportDtos.IntervalStart;
 import com.safetics.shifts.ShiftReportDtos.IntervalView;
@@ -39,6 +41,9 @@ import com.safetics.shifts.ShiftReportDtos.MeterRequest;
 import com.safetics.shifts.ShiftReportDtos.MeterView;
 import com.safetics.shifts.ShiftReportDtos.QuantityRequest;
 import com.safetics.shifts.ShiftReportDtos.QuantityView;
+import com.safetics.shifts.ShiftReportDtos.ReportCorrectionRequest;
+import com.safetics.shifts.ShiftReportDtos.ReportEventView;
+import com.safetics.shifts.ShiftReportDtos.ReportTaskOption;
 import com.safetics.shifts.ShiftReportDtos.ReportIssue;
 import com.safetics.shifts.ShiftReportDtos.ReportTotals;
 import com.safetics.shifts.ShiftReportDtos.ShiftReportRequest;
@@ -52,7 +57,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Змінний рапорт: чернетка → подано (перевірка замовником — крок 6).
+ * Змінний рапорт: чернетка → подано → перевірено / повернуто / виправлено замовником (крок 6а).
  *
  * <p>Заповнюють бурильник зміни (виконавець задачі «Змінний рапорт»), супервайзер проєкту й
  * менеджер. Збереження переводить задачу рапорту в «Чернетка» (якщо її не блокує чек-лист),
@@ -68,8 +73,16 @@ public class ShiftReportService {
     private static final TypeReference<Map<String, String>> NAME = new TypeReference<>() {
     };
 
+    /** Статуси, у яких рапорт редагує підрядник (повернутий і виправлений замовником — теж). */
+    static final Set<String> EDITABLE = Set.of("draft", "returned", "corrected");
+
     private record ReportRow(UUID id, String status, String notes, int version, OffsetDateTime submittedAt,
-                             String submittedByName) {
+                             String submittedByName, OffsetDateTime acceptedAt, UUID correctionId) {
+    }
+
+    /** Запропоновані замовником значення (payload події corrected). */
+    public record CorrectionPayload(List<TimeEntryRequest> times, List<IntervalRequest> intervals,
+                             List<QuantityRequest> quantities) {
     }
 
     private final JdbcClient db;
@@ -79,9 +92,10 @@ public class ShiftReportService {
     private final WorkShiftService shifts;
     private final TaskWorkflow tasks;
     private final AuditService audit;
+    private final AlertService alerts;
 
     public ShiftReportService(JdbcClient db, JsonMapper json, ProjectService projects, ProjectRoles roles,
-                              WorkShiftService shifts, TaskWorkflow tasks, AuditService audit) {
+                              WorkShiftService shifts, TaskWorkflow tasks, AuditService audit, AlertService alerts) {
         this.db = db;
         this.json = json;
         this.projects = projects;
@@ -89,10 +103,12 @@ public class ShiftReportService {
         this.shifts = shifts;
         this.tasks = tasks;
         this.audit = audit;
+        this.alerts = alerts;
     }
 
     // ---------------------------------------------------------------- читання
 
+    @Transactional(readOnly = true)
     public ShiftReportView get(UUID shiftId) {
         WorkShiftView shift = shifts.get(shiftId);
         ProjectView project = projects.get(shift.projectId());
@@ -114,13 +130,18 @@ public class ShiftReportService {
         boolean onSite = manage() || roles.isSupervisor(project);
         boolean assignee = reportTask != null && tasks.find(reportTask)
                 .map(t -> t.assigneeId() != null && t.assigneeId().equals(currentUserId())).orElse(false);
+        boolean editable = "new".equals(status) || EDITABLE.contains(status);
+        UUID correctionId = report.map(ReportRow::correctionId).orElse(null);
         return new ShiftReportView(shiftId, reportId, status, shift.date(), shift.startsAt(), shift.durationMinutes(),
                 report.map(ReportRow::notes).orElse(null), times, intervals, quantities, consumables, meters,
                 totals(times, intervals), errors, warnings, reportId == null ? prefill(shift, lastDepth) : List.of(),
-                open && !"submitted".equals(status) && (onSite || assignee),
-                open && "submitted".equals(status) && onSite,
+                open && editable && (onSite || assignee),
+                open && (("submitted".equals(status) && onSite) || ("accepted".equals(status) && manage())),
                 reportTask, report.map(ReportRow::submittedAt).orElse(null),
-                report.map(ReportRow::submittedByName).orElse(null), report.map(ReportRow::version).orElse(0));
+                report.map(ReportRow::submittedByName).orElse(null), report.map(ReportRow::version).orElse(0),
+                report.map(ReportRow::acceptedAt).orElse(null), reportId == null ? List.of() : events(reportId),
+                "corrected".equals(status) && correctionId != null ? correction(correctionId) : null,
+                open && "corrected".equals(status) && (onSite || assignee), taskOptions(shift.projectId(), times));
     }
 
     // ---------------------------------------------------------------- зміни
@@ -131,7 +152,7 @@ public class ShiftReportService {
         ProjectView project = openProject(shift.projectId());
         requireEditor(project, shiftId);
         Optional<ReportRow> existing = row(shiftId);
-        if (existing.map(r -> "submitted".equals(r.status())).orElse(false)) {
+        if (existing.map(r -> !EDITABLE.contains(r.status())).orElse(false)) {
             throw ApiException.conflict("report_submitted");
         }
         int version = existing.map(ReportRow::version).orElse(0);
@@ -154,7 +175,7 @@ public class ShiftReportService {
             reportId = existing.get().id();
             int updated = db.sql("""
                             update shift_report set notes = ?, version = version + 1, updated_at = now()
-                            where id = ? and version = ? and status = 'draft'
+                            where id = ? and version = ? and status in ('draft', 'returned', 'corrected')
                             """)
                     .params(blankToNull(request.notes()), reportId, version).update();
             if (updated == 0) {
@@ -168,8 +189,10 @@ public class ShiftReportService {
         insertRows(companyId, reportId, request);
         audit.record("shift_report", reportId, existing.isEmpty() ? "create" : "update",
                 Map.of("shiftId", shiftId, "times", request.times().size(), "intervals", request.intervals().size()));
-        // Чернетка: задача рапорту «в роботі», якщо чек-лист уже не блокує
-        reportTaskId(shiftId).ifPresent(task -> tasks.moveToStatus(task, "draft", "active", false));
+        // Чернетка: задача рапорту «в роботі», якщо чек-лист уже не блокує (повернутий — лишається «Повернуто»)
+        if (existing.map(r -> "draft".equals(r.status())).orElse(true)) {
+            reportTaskId(shiftId).ifPresent(task -> tasks.moveToStatus(task, "draft", "active", false));
+        }
         return get(shiftId);
     }
 
@@ -179,7 +202,7 @@ public class ShiftReportService {
         ProjectView project = openProject(shift.projectId());
         requireEditor(project, shiftId);
         ReportRow report = row(shiftId).orElseThrow(() -> ApiException.conflict("report_not_saved"));
-        if (!"draft".equals(report.status())) {
+        if (!EDITABLE.contains(report.status())) {
             throw ApiException.conflict("report_submitted");
         }
         if (report.version() != version) {
@@ -194,17 +217,18 @@ public class ShiftReportService {
         }
         db.sql("""
                         update shift_report set status = 'submitted', submitted_at = now(), submitted_by = ?,
-                                                version = version + 1, updated_at = now()
+                                                correction_id = null, version = version + 1, updated_at = now()
                         where id = ?
                         """)
                 .params(currentUserId(), report.id()).update();
+        event(report.id(), "submitted", null, snapshot(report.id()));
         reportTask.ifPresent(task -> tasks.moveToStatus(task, "submitted", "active", true));
         updateEngineHours(report.id());
         audit.record("shift_report", report.id(), "submit", Map.of("shiftId", shiftId));
         return get(shiftId);
     }
 
-    /** Подано → чернетка: менеджер або супервайзер проєкту (до перевірки замовником у кроці 6). */
+    /** Подано → чернетка: менеджер або супервайзер проєкту; перевірено → чернетка — лише менеджер (переробка місяця). */
     @Transactional
     public ShiftReportView reopen(UUID shiftId, int version) {
         WorkShiftView shift = shifts.get(shiftId);
@@ -213,26 +237,262 @@ public class ShiftReportService {
             throw forbidden();
         }
         ReportRow report = row(shiftId).orElseThrow(ApiException::notFound);
-        if (!"submitted".equals(report.status())) {
+        boolean accepted = "accepted".equals(report.status());
+        if (!"submitted".equals(report.status()) && !accepted) {
             throw ApiException.conflict("report_not_submitted");
+        }
+        if (accepted && !manage()) {
+            throw forbidden();
         }
         if (report.version() != version) {
             throw ApiException.conflict("stale_version");
         }
         db.sql("""
                         update shift_report set status = 'draft', submitted_at = null, submitted_by = null,
+                                                accepted_at = null, accepted_by = null, correction_id = null,
                                                 version = version + 1, updated_at = now()
                         where id = ?
                         """)
                 .param(report.id()).update();
-        reportTaskId(shiftId).ifPresent(task -> tasks.moveToStatus(task, "draft", "active", false));
+        event(report.id(), "reopened", null, null);
+        reportTaskId(shiftId).ifPresent(task -> tasks.moveToStatus(task, "draft", "active", false, true));
         audit.record("shift_report", report.id(), "reopen", Map.of("shiftId", shiftId));
         return get(shiftId);
     }
 
-    /** Подано — бригаду зміни вже не змінити. */
+    /** Подано або перевірено — бригаду зміни вже не змінити. */
     public boolean isSubmitted(UUID shiftId) {
-        return row(shiftId).map(r -> "submitted".equals(r.status())).orElse(false);
+        return row(shiftId).map(r -> "submitted".equals(r.status()) || "accepted".equals(r.status())).orElse(false);
+    }
+
+    // ---------------------------------------------------------------- перевірка замовником (6а)
+
+    /** Замовник прийняв подане: «Перевірено», задача рапорту закривається. Права — у ReportReviewService. */
+    @Transactional
+    public void accept(UUID shiftId, int version) {
+        ReportRow report = forReview(shiftId, version);
+        db.sql("""
+                        update shift_report set status = 'accepted', accepted_at = now(), accepted_by = ?,
+                                                version = version + 1, updated_at = now()
+                        where id = ?
+                        """)
+                .params(currentUserId(), report.id()).update();
+        event(report.id(), "accepted", null, null);
+        reportTaskId(shiftId).ifPresent(task -> tasks.moveToStatus(task, "reviewed", "done", false));
+        audit.record("shift_report", report.id(), "accept", Map.of("shiftId", shiftId));
+    }
+
+    /** Замовник повернув з коментарем: підрядник править і подає знову. */
+    @Transactional
+    public void returnReport(UUID shiftId, int version, String comment) {
+        ReportRow report = forReview(shiftId, version);
+        db.sql("update shift_report set status = 'returned', version = version + 1, updated_at = now() where id = ?")
+                .param(report.id()).update();
+        event(report.id(), "returned", comment.trim(), null);
+        afterClientChange(shiftId, "report_returned", comment);
+        audit.record("shift_report", report.id(), "return", Map.of("shiftId", shiftId));
+    }
+
+    /**
+     * Замовник виправив журнал часу, інтервали чи обсяги: значення зберігаються окремо (рапорт не
+     * змінюється), підрядник погоджується або править і подає знову.
+     */
+    @Transactional
+    public void correct(UUID shiftId, ReportCorrectionRequest request) {
+        ReportRow report = forReview(shiftId, request.version());
+        WorkShiftView shift = shifts.get(shiftId);
+        // Перевірка тими ж правилами; витрати й лічильники — з рапорту як є
+        validate(shift, new ShiftReportRequest(null, request.times(), request.intervals(), request.quantities(),
+                consumableRequests(report.id()), meterRequests(report.id()), report.version()));
+        if (!timeErrors(previewTimes(request.times()), shift.durationMinutes()).isEmpty()) {
+            throw ApiException.validation("times", "incomplete");
+        }
+        UUID eventId = event(report.id(), "corrected", request.comment().trim(),
+                json.writeValueAsString(new CorrectionPayload(request.times(), request.intervals(), request.quantities())));
+        db.sql("""
+                        update shift_report set status = 'corrected', correction_id = ?, version = version + 1, updated_at = now()
+                        where id = ?
+                        """)
+                .params(eventId, report.id()).update();
+        afterClientChange(shiftId, "report_corrected", request.comment());
+        audit.record("shift_report", report.id(), "correct", Map.of("shiftId", shiftId));
+    }
+
+    /** Підрядник погоджується з правкою замовника: значення замовника переносяться в рапорт, «Перевірено». */
+    @Transactional
+    public ShiftReportView agree(UUID shiftId, int version) {
+        WorkShiftView shift = shifts.get(shiftId);
+        ProjectView project = openProject(shift.projectId());
+        requireEditor(project, shiftId);
+        ReportRow report = row(shiftId).orElseThrow(ApiException::notFound);
+        if (!"corrected".equals(report.status()) || report.correctionId() == null) {
+            throw ApiException.conflict("report_not_corrected");
+        }
+        if (report.version() != version) {
+            throw ApiException.conflict("stale_version");
+        }
+        CorrectionPayload payload = json.readValue(db.sql("select payload from shift_report_event where id = ?")
+                .param(report.correctionId()).query(String.class).single(), CorrectionPayload.class);
+        UUID clientId = db.sql("select author_id from shift_report_event where id = ?").param(report.correctionId())
+                .query(UUID.class).optional().orElse(null);
+        UUID companyId = TenantContext.requireCompanyId();
+        for (String table : List.of("shift_report_time", "shift_report_interval", "shift_report_quantity")) {
+            db.sql("delete from " + table + " where report_id = ?").param(report.id()).update();
+        }
+        insertRows(companyId, report.id(), new ShiftReportRequest(null, payload.times(), payload.intervals(),
+                payload.quantities(), List.of(), List.of(), version));
+        db.sql("""
+                        update shift_report set status = 'accepted', accepted_at = now(), accepted_by = ?,
+                                                version = version + 1, updated_at = now()
+                        where id = ?
+                        """)
+                .params(clientId, report.id()).update();
+        event(report.id(), "agreed", null, null);
+        reportTaskId(shiftId).ifPresent(task -> tasks.moveToStatus(task, "reviewed", "done", false));
+        audit.record("shift_report", report.id(), "agree", Map.of("shiftId", shiftId));
+        return get(shiftId);
+    }
+
+    private ReportRow forReview(UUID shiftId, int version) {
+        WorkShiftView shift = shifts.get(shiftId);
+        openProject(shift.projectId());
+        ReportRow report = row(shiftId).orElseThrow(ApiException::notFound);
+        if (!"submitted".equals(report.status())) {
+            throw ApiException.conflict("report_not_submitted");
+        }
+        if (report.version() != version) {
+            throw ApiException.conflict("stale_version");
+        }
+        return report;
+    }
+
+    /** Повернуто / виправлено замовником: задача рапорту — «Повернуто», алерт її виконавцю й супервайзерам проєкту. */
+    private void afterClientChange(UUID shiftId, String kind, String comment) {
+        WorkShiftView shift = shifts.get(shiftId);
+        Optional<UUID> task = reportTaskId(shiftId);
+        task.ifPresent(id -> tasks.moveToStatus(id, "returned", "active", false));
+        Set<UUID> users = new HashSet<>(db.sql("""
+                        select distinct p.user_id
+                        from personnel_assignment a
+                                 join personnel p on p.id = a.personnel_id
+                                 join position pos on pos.id = a.position_id
+                                 join membership m on m.company_id = p.company_id and m.user_id = p.user_id and m.status = 'active'
+                        where a.project_id = ? and pos.project_role = 'supervisor' and p.user_id is not null
+                          and a.start_date <= ? and (a.end_date is null or a.end_date >= ?)
+                        """)
+                .params(shift.projectId(), shift.date(), shift.date()).query(UUID.class).list());
+        task.flatMap(tasks::find).map(TaskView::assigneeId).ifPresent(users::add);
+        String text = shift.assetCode() + " · " + shift.date() + " · " + shift.shiftName() + ": " + comment.trim();
+        alerts.notifyUsers(shift.projectId(), kind, text, task.orElse(null), users);
+    }
+
+    private UUID event(UUID reportId, String kind, String comment, String payload) {
+        return db.sql("""
+                        insert into shift_report_event (company_id, report_id, kind, comment, payload, author_id)
+                        values (?, ?, ?, ?, cast(? as jsonb), ?)
+                        returning id
+                        """)
+                .params(TenantContext.requireCompanyId(), reportId, kind, comment, payload, currentUserId())
+                .query(UUID.class).single();
+    }
+
+    /** Знімок рапорту на момент подання (версія). */
+    private String snapshot(UUID reportId) {
+        Map<String, Object> content = new LinkedHashMap<>();
+        content.put("times", times(reportId));
+        content.put("intervals", intervals(reportId));
+        content.put("quantities", quantities(reportId));
+        content.put("consumables", consumables(reportId));
+        content.put("meters", meterRequests(reportId));
+        return json.writeValueAsString(content);
+    }
+
+    private List<ReportEventView> events(UUID reportId) {
+        return db.sql("""
+                        select e.kind, e.comment, u.full_name, e.created_at
+                        from shift_report_event e left join app_user u on u.id = e.author_id
+                        where e.report_id = ?
+                        order by e.created_at, e.id
+                        """)
+                .param(reportId)
+                .query((rs, n) -> new ReportEventView(rs.getString("kind"), rs.getString("comment"), rs.getString("full_name"),
+                        rs.getObject("created_at", OffsetDateTime.class)))
+                .list();
+    }
+
+    private CorrectionView correction(UUID eventId) {
+        return db.sql("""
+                        select e.comment, e.payload, u.full_name, e.created_at
+                        from shift_report_event e left join app_user u on u.id = e.author_id
+                        where e.id = ?
+                        """)
+                .param(eventId)
+                .query((rs, n) -> {
+                    CorrectionPayload payload = json.readValue(rs.getString("payload"), CorrectionPayload.class);
+                    List<TimeEntryView> times = previewTimes(payload.times());
+                    List<IntervalView> intervals = previewIntervals(payload.intervals());
+                    return new CorrectionView(rs.getString("comment"), rs.getString("full_name"),
+                            rs.getObject("created_at", OffsetDateTime.class), times, intervals,
+                            previewQuantities(payload.quantities()), totals(times, intervals));
+                })
+                .single();
+    }
+
+    /** Рядки з запиту (правки замовника) у вигляді рапорту — з назвами кодів, задач і свердловин. */
+    private List<TimeEntryView> previewTimes(List<TimeEntryRequest> requests) {
+        List<TimeEntryView> result = new ArrayList<>();
+        for (TimeEntryRequest time : requests) {
+            Object[] code = db.sql("select code, name, category, billable from activity_code where id = ?")
+                    .param(time.activityCodeId())
+                    .query((rs, n) -> new Object[] {rs.getString("code"), rs.getString("name"), rs.getString("category"),
+                            rs.getBoolean("billable")})
+                    .optional().orElse(new Object[] {"?", "{}", "other", false});
+            Object[] task = time.taskId() == null ? null : asSystem(() -> db.sql("select number, title from task where id = ?")
+                    .param(time.taskId()).query((rs, n) -> new Object[] {rs.getLong("number"), rs.getString("title")})
+                    .optional().orElse(null));
+            result.add(new TimeEntryView(time.startMinute(), time.endMinute(), time.activityCodeId(), (String) code[0],
+                    json.readValue((String) code[1], NAME), (String) code[2], (Boolean) code[3], time.taskId(),
+                    task == null ? null : (Long) task[0], task == null ? null : (String) task[1], time.comment()));
+        }
+        result.sort(Comparator.comparingInt(TimeEntryView::startMinute));
+        return result;
+    }
+
+    private List<IntervalView> previewIntervals(List<IntervalRequest> requests) {
+        List<IntervalView> result = new ArrayList<>();
+        for (IntervalRequest interval : requests) {
+            String code = db.sql("select code from service where id = ?").param(interval.serviceId()).query(String.class)
+                    .optional().orElse("?");
+            BigDecimal meters = interval.depthTo().subtract(interval.depthFrom());
+            result.add(new IntervalView(interval.serviceId(), code, interval.depthFrom(), interval.depthTo(), meters,
+                    interval.coreSize(), interval.coreLength(), recovery(interval.coreLength(), meters), interval.comment()));
+        }
+        return result;
+    }
+
+    private List<QuantityView> previewQuantities(List<QuantityRequest> requests) {
+        List<QuantityView> result = new ArrayList<>();
+        for (QuantityRequest quantity : requests) {
+            Object[] service = db.sql("""
+                            select s.code, st.unit from service s join service_type st on st.id = s.service_type_id where s.id = ?
+                            """)
+                    .param(quantity.serviceId()).query((rs, n) -> new Object[] {rs.getString("code"), rs.getString("unit")})
+                    .optional().orElse(new Object[] {"?", null});
+            result.add(new QuantityView(quantity.serviceId(), (String) service[0], (String) service[1], quantity.quantity(),
+                    quantity.comment()));
+        }
+        return result;
+    }
+
+    private List<ConsumableRequest> consumableRequests(UUID reportId) {
+        return consumables(reportId).stream().map(c -> new ConsumableRequest(c.itemId(), c.quantity(), c.comment())).toList();
+    }
+
+    private List<MeterRequest> meterRequests(UUID reportId) {
+        return db.sql("select asset_id, start_value, end_value from shift_report_meter where report_id = ?").param(reportId)
+                .query((rs, n) -> new MeterRequest(rs.getObject("asset_id", UUID.class), rs.getBigDecimal("start_value"),
+                        rs.getBigDecimal("end_value")))
+                .list();
     }
 
     // ---------------------------------------------------------------- перевірки
@@ -257,8 +517,9 @@ public class ShiftReportService {
             } else if (archived.get()) {
                 errors.put(prefix + "activityCodeId", "archived");
             }
-            if (time.taskId() != null && !exists("select 1 from task where id = ? and project_id = ?", time.taskId(),
-                    shift.projectId())) {
+            // Задачі проєкту — від імені системи: відповідальний виконавець не бачить задач свердловин (RLS), але пише на них час
+            if (time.taskId() != null && !asSystem(() -> exists("select 1 from task where id = ? and project_id = ?",
+                    time.taskId(), shift.projectId()))) {
                 errors.put(prefix + "taskId", "not_found");
             }
         }
@@ -391,8 +652,8 @@ public class ShiftReportService {
             }
         });
         for (Map.Entry<UUID, String> service : codes.entrySet()) {
-            List<UUID> serviceTasks = db.sql("select id from task where service_id = ?").param(service.getKey())
-                    .query(UUID.class).list();
+            List<UUID> serviceTasks = asSystem(() -> db.sql("select id from task where service_id = ?").param(service.getKey())
+                    .query(UUID.class).list());
             if (serviceTasks.stream().noneMatch(timeTasks::contains)) {
                 warnings.add(new ReportIssue("interval_without_time", Map.of("service", service.getValue())));
             }
@@ -438,18 +699,19 @@ public class ShiftReportService {
 
     private Optional<ReportRow> row(UUID shiftId) {
         return db.sql("""
-                        select r.id, r.status, r.notes, r.version, r.submitted_at, u.full_name
+                        select r.id, r.status, r.notes, r.version, r.submitted_at, u.full_name, r.accepted_at, r.correction_id
                         from shift_report r left join app_user u on u.id = r.submitted_by
                         where r.shift_id = ?
                         """)
                 .param(shiftId)
                 .query((rs, n) -> new ReportRow(rs.getObject("id", UUID.class), rs.getString("status"), rs.getString("notes"),
-                        rs.getInt("version"), rs.getObject("submitted_at", OffsetDateTime.class), rs.getString("full_name")))
+                        rs.getInt("version"), rs.getObject("submitted_at", OffsetDateTime.class), rs.getString("full_name"),
+                        rs.getObject("accepted_at", OffsetDateTime.class), rs.getObject("correction_id", UUID.class)))
                 .optional();
     }
 
     private List<TimeEntryView> times(UUID reportId) {
-        return db.sql("""
+        return asSystem(() -> db.sql("""
                         select r.start_minute, r.end_minute, r.activity_code_id, ac.code, ac.name, ac.category, ac.billable,
                                r.task_id, t.number, t.title, r.comment
                         from shift_report_time r
@@ -464,7 +726,7 @@ public class ShiftReportService {
                         json.readValue(rs.getString("name"), NAME), rs.getString("category"), rs.getBoolean("billable"),
                         rs.getObject("task_id", UUID.class), rs.getObject("number") == null ? null : rs.getLong("number"),
                         rs.getString("title"), rs.getString("comment")))
-                .list();
+                .list());
     }
 
     private List<IntervalView> intervals(UUID reportId) {
@@ -680,6 +942,41 @@ public class ShiftReportService {
                 .map(t -> user != null && user.equals(t.assigneeId())).orElse(false);
         if (!assignee) {
             throw forbidden();
+        }
+    }
+
+    /**
+     * Задачі для журналу часу: відкриті задачі проєкту (крім задач змін) і ті, що вже є в рапорті. Від імені
+     * системи — відповідальний виконавець заповнює рапорт, не бачачи всіх задач проєкту.
+     */
+    private List<ReportTaskOption> taskOptions(UUID projectId, List<TimeEntryView> times) {
+        Set<UUID> used = new HashSet<>();
+        times.forEach(t -> {
+            if (t.taskId() != null) {
+                used.add(t.taskId());
+            }
+        });
+        return asSystem(() -> db.sql("""
+                        select id, number, title, status_category from task
+                        where project_id = ? and work_shift_id is null
+                        order by number
+                        """)
+                .param(projectId)
+                .query((rs, n) -> new ReportTaskOption(rs.getObject("id", UUID.class), rs.getLong("number"),
+                        rs.getString("title"), rs.getString("status_category")))
+                .list().stream()
+                .filter(o -> "new".equals(o.statusCategory()) || "active".equals(o.statusCategory()) || used.contains(o.id()))
+                .toList());
+    }
+
+    /** Від імені системи (app.system у межах транзакції), попереднє значення відновлюється. */
+    private <T> T asSystem(java.util.function.Supplier<T> action) {
+        String previous = db.sql("select coalesce(current_setting('app.system', true), '')").query(String.class).single();
+        db.sql("select set_config('app.system', 'on', true)").query(String.class).single();
+        try {
+            return action.get();
+        } finally {
+            db.sql("select set_config('app.system', ?, true)").param(previous).query(String.class).single();
         }
     }
 

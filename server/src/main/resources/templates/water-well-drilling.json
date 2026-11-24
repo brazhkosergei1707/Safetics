@@ -751,6 +751,16 @@
           "color": "orange"
         },
         {
+          "code": "returned",
+          "label": {
+            "en": "Returned",
+            "uk": "Повернуто",
+            "pt": "Devolvido"
+          },
+          "category": "active",
+          "color": "red"
+        },
+        {
           "code": "reviewed",
           "label": {
             "en": "Reviewed",

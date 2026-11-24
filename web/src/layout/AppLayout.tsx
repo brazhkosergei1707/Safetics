@@ -8,6 +8,7 @@ import {
   LogoutOutlined,
   ProjectOutlined,
   CheckSquareOutlined,
+  FileDoneOutlined,
   SolutionOutlined,
   TeamOutlined,
   UserOutlined,
@@ -48,6 +49,9 @@ export function AppLayout() {
       : []),
     ...(hasPermission(session, 'asset.view')
       ? [{ key: '/assets', icon: <AppstoreOutlined />, label: t('nav.assets') }]
+      : []),
+    ...(hasPermission(session, 'report.review') || hasPermission(session, 'monthly_report.approve')
+      ? [{ key: '/review', icon: <FileDoneOutlined />, label: t('nav.review') }]
       : []),
     { key: '/reports', icon: <FileTextOutlined />, label: t('nav.reports') },
     { key: '/stock', icon: <InboxOutlined />, label: t('nav.stock') },

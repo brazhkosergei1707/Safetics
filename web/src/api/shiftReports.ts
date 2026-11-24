@@ -34,8 +34,9 @@ export function useSaveShiftReport() {
 export function useShiftReportAction() {
   const invalidate = useInvalidate()
   return useMutation({
-    mutationFn: ({ shiftId, action, version }: { shiftId: string; action: 'submit' | 'reopen'; version: number }) => {
+    mutationFn: ({ shiftId, action, version }: { shiftId: string; action: 'submit' | 'reopen' | 'agree'; version: number }) => {
       const options = { params: { path: { id: shiftId } }, body: { version } }
+      if (action === 'agree') return unwrap(api.POST('/api/v1/shifts/{id}/report/agree', options))
       return action === 'submit'
         ? unwrap(api.POST('/api/v1/shifts/{id}/report/submit', options))
         : unwrap(api.POST('/api/v1/shifts/{id}/report/reopen', options))

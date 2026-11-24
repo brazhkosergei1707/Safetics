@@ -234,7 +234,7 @@ public class WorkShiftService {
         if (request.version() != shift.version()) {
             throw ApiException.conflict("stale_version");
         }
-        Boolean submitted = db.sql("select exists (select 1 from shift_report where shift_id = ? and status = 'submitted')")
+        Boolean submitted = db.sql("select exists (select 1 from shift_report where shift_id = ? and status in ('submitted', 'accepted'))")
                 .param(id).query(Boolean.class).single();
         if (Boolean.TRUE.equals(submitted)) {
             throw ApiException.conflict("report_submitted");

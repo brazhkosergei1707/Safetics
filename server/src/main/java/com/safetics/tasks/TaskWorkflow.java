@@ -487,9 +487,14 @@ public class TaskWorkflow {
      */
     @Transactional
     public boolean moveToStatus(UUID taskId, String code, String category, boolean failIfBlocked) {
+        return moveToStatus(taskId, code, category, failIfBlocked, false);
+    }
+
+    /** reopen — можна повернути й закриту задачу (рапорт, перевірений замовником, менеджер повертає в чернетку). */
+    public boolean moveToStatus(UUID taskId, String code, String category, boolean failIfBlocked, boolean reopen) {
         return asSystem(() -> {
             TaskView existing = get(taskId);
-            if (CLOSED.contains(existing.statusCategory())) {
+            if (CLOSED.contains(existing.statusCategory()) && !reopen) {
                 return false;
             }
             TaskTypeView type = types.get(existing.typeId());

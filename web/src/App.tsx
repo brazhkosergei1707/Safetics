@@ -17,6 +17,7 @@ import { SummaryReportPage } from './pages/reports/SummaryReportPage'
 import { ProjectDetailPage } from './pages/projects/ProjectDetailPage'
 import { ProjectsPage } from './pages/projects/ProjectsPage'
 import { MyTasksPage } from './pages/tasks/MyTasksPage'
+import { ReviewPage } from './pages/review/ReviewPage'
 import { UsersPage } from './pages/users/UsersPage'
 
 const router = createBrowserRouter([
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
       { path: 'platform', element: <PlatformCompaniesPage /> },
       { path: 'assets', element: <AssetsPage /> },
       { path: 'reports', element: <SummaryReportPage /> },
+      { path: 'review', element: <ReviewPage /> },
       { path: 'stock', element: <PlaceholderPage titleKey="nav.stock" /> },
       { path: 'hse', element: <PlaceholderPage titleKey="nav.hse" /> },
       { path: 'audit-log', element: <AuditLogPage /> },

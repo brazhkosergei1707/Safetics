@@ -110,7 +110,9 @@ public class SummaryService {
             visible = projects.stream().map(id -> "'" + id + "'").collect(java.util.stream.Collectors.joining(", "));
             db.sql("select set_config('app.system', 'on', true)").query(String.class).single();
         }
-        String statuses = includeDrafts ? "('submitted', 'draft')" : "('submitted')";
+        // Подані (зокрема перевірені й виправлені замовником); чернетки — також повернуті замовником
+        String statuses = includeDrafts ? "('submitted', 'accepted', 'corrected', 'draft', 'returned')"
+                : "('submitted', 'accepted', 'corrected')";
         String where = "s.shift_date between :from and :to"
                 + (projectId != null ? " and s.project_id = :project" : "")
                 + (assetId != null ? " and s.asset_id = :asset" : "")
@@ -121,8 +123,8 @@ public class SummaryService {
         // Зміни й стан рапортів
         query("""
                 select s.asset_id, a.code, a.name, %s as bucket, count(*) as shifts,
-                       count(*) filter (where r.status = 'submitted') as submitted,
-                       count(*) filter (where r.status = 'draft') as draft,
+                       count(*) filter (where r.status in ('submitted', 'accepted', 'corrected')) as submitted,
+                       count(*) filter (where r.status in ('draft', 'returned')) as draft,
                        count(*) filter (where r.id is null) as missing
                 from work_shift s
                          join asset a on a.id = s.asset_id

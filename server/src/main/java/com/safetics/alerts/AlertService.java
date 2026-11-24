@@ -1,6 +1,8 @@
 package com.safetics.alerts;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,6 +66,31 @@ public class AlertService {
                     .params(projectId, kind, title.length() > 300 ? title.substring(0, 300) : title, taskId,
                             TenantContext.requireCompanyId(), projectId)
                     .update();
+        } finally {
+            db.sql("select set_config('app.system', ?, true)").param(previous).query(String.class).single();
+        }
+    }
+
+    /** Алерт конкретним користувачам (від імені системи). Повертає кількість отримувачів. */
+    @Transactional
+    public int notifyUsers(UUID projectId, String kind, String title, UUID taskId, Collection<UUID> users) {
+        if (users.isEmpty()) {
+            return 0;
+        }
+        String previous = db.sql("select coalesce(current_setting('app.system', true), '')").query(String.class).single();
+        db.sql("select set_config('app.system', 'on', true)").query(String.class).single();
+        try {
+            int count = 0;
+            for (UUID user : new LinkedHashSet<>(users)) {
+                count += db.sql("""
+                                insert into alert (company_id, user_id, project_id, kind, title, task_id)
+                                values (?, ?, ?, ?, ?, ?)
+                                """)
+                        .params(TenantContext.requireCompanyId(), user, projectId, kind,
+                                title.length() > 300 ? title.substring(0, 300) : title, taskId)
+                        .update();
+            }
+            return count;
         } finally {
             db.sql("select set_config('app.system', ?, true)").param(previous).query(String.class).single();
         }

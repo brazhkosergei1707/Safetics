@@ -29,8 +29,9 @@ import type { Project } from '../../api/projects'
 import { useActivityCodes, useConsumableItems } from '../../api/reportCatalogs'
 import { useProjectServices, useServiceTypes } from '../../api/services'
 import { type ReportIssue, type ShiftReport, useSaveShiftReport, useShiftReport, useShiftReportAction } from '../../api/shiftReports'
-import { useProjectTasks } from '../../api/tasks'
 import { localized } from '../../i18n/localized'
+import { ReportHistory } from '../review/ReportHistory'
+import { REPORT_STATUS_COLORS } from '../review/reportStatus'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -107,7 +108,6 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
   const items = useConsumableItems(false, !!shiftId)
   const services = useProjectServices(project.id)
   const serviceTypes = useServiceTypes(true)
-  const tasks = useProjectTasks(project.id, !!shiftId)
   const save = useSaveShiftReport()
   const action = useShiftReportAction()
   const data = report.data
@@ -174,9 +174,8 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
   }
   const values = Form.useWatch([], form) as FormValues | undefined
   const usedServices = [...(values?.intervals ?? []), ...(values?.quantities ?? [])].map((r) => r?.serviceId ?? '')
-  const taskOptions = (tasks.data ?? [])
-    .filter((task) => task.statusCategory === 'new' || task.statusCategory === 'active' || data?.times.some((x) => x.taskId === task.id))
-    .map((task) => ({ value: task.id, label: `#${task.number} ${task.title}` }))
+  // Задачі для журналу — із сервера (відповідальний виконавець не бачить усіх задач проєкту)
+  const taskOptions = (data?.taskOptions ?? []).map((task) => ({ value: task.id, label: `#${task.number} ${task.title}` }))
   const codeOptions = (codes.data ?? []).map((c) => ({ value: c.id, label: `${c.code} · ${localized(c.name, lang)}` }))
   const itemById = new Map((items.data ?? []).map((i) => [i.id, i]))
 
@@ -226,13 +225,14 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
     )
   }
 
-  const run = (kind: 'submit' | 'reopen') =>
+  const run = (kind: 'submit' | 'reopen' | 'agree') =>
     shiftId &&
     data &&
     action.mutate(
       { shiftId, action: kind, version: data.version },
       {
-        onSuccess: () => message.success(t(kind === 'submit' ? 'reports.submitted' : 'reports.reopened')),
+        onSuccess: () =>
+          message.success(t(kind === 'submit' ? 'reports.submitted' : kind === 'agree' ? 'review.agreed' : 'reports.reopened')),
         onError: (e) => message.error(errorMessage(e, t)),
       },
     )
@@ -263,13 +263,20 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
         <Flex gap={8} align="center">
           {t('reports.title')}
           {title && <Typography.Text type="secondary">{title}</Typography.Text>}
-          {data && <Tag color={data.status === 'submitted' ? 'orange' : data.status === 'draft' ? 'blue' : undefined}>{t(`reports.status.${data.status}`)}</Tag>}
+          {data && <Tag color={REPORT_STATUS_COLORS[data.status]}>{t(`reports.status.${data.status}`)}</Tag>}
         </Flex>
       }
       footer={
         data && (
           <Flex justify="flex-end" gap={8}>
             <Button onClick={onClose}>{t('common.cancel')}</Button>
+            {data.canAgree && (
+              <Popconfirm title={t('review.agreeConfirm')} onConfirm={() => run('agree')}>
+                <Button type="primary" ghost loading={action.isPending}>
+                  {t('review.agree')}
+                </Button>
+              </Popconfirm>
+            )}
             {data.canReopen && (
               <Popconfirm title={t('reports.reopenConfirm')} onConfirm={() => run('reopen')}>
                 <Button loading={action.isPending}>{t('reports.reopen')}</Button>
@@ -304,6 +311,7 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
         <Spin />
       ) : (
         <Form<FormValues> form={form} onFinish={onSave} disabled={!editable} layout="vertical" requiredMark={false}>
+          <ReportHistory report={data} clock={clock} />
           <Descriptions
             size="small"
             column={3}

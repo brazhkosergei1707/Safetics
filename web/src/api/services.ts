@@ -14,11 +14,12 @@ export function useServiceTypes(includeArchived = false) {
   })
 }
 
-export function useProjectServices(projectId: string) {
+export function useProjectServices(projectId: string, enabled = true) {
   return useQuery({
     queryKey: ['services', projectId],
     queryFn: () =>
       unwrap(api.GET('/api/v1/projects/{projectId}/services', { params: { path: { projectId } } })),
+    enabled: enabled && !!projectId,
   })
 }
 

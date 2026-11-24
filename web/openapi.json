@@ -1555,6 +1555,47 @@
         }
       }
     },
+    "/api/v1/shifts/{id}/report/agree": {
+      "post": {
+        "tags": [
+          "shifts"
+        ],
+        "operationId": "agreeReport",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/shifts/{id}/checklist": {
       "get": {
         "tags": [
@@ -1885,6 +1926,129 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/ServiceTypeView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review/reports/{shiftId}/return": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "operationId": "returnReport",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportReturnRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review/reports/{shiftId}/correct": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "operationId": "correct",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportCorrectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review/reports/{shiftId}/accept": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "operationId": "accept",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewReportView"
                 }
               }
             }
@@ -4347,6 +4511,97 @@
         }
       }
     },
+    "/api/v1/review/reports": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "operationId": "list_8",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review/reports/{shiftId}": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "operationId": "get_8",
+        "parameters": [
+          {
+            "name": "shiftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/reports/summary": {
       "get": {
         "tags": [
@@ -4596,7 +4851,7 @@
         "tags": [
           "members"
         ],
-        "operationId": "list_8",
+        "operationId": "list_9",
         "responses": {
           "200": {
             "description": "OK",
@@ -5609,6 +5864,50 @@
           "unit"
         ]
       },
+      "CorrectionView": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeEntryView"
+            }
+          },
+          "intervals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntervalView"
+            }
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityView"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/ReportTotals"
+          }
+        },
+        "required": [
+          "comment",
+          "createdAt",
+          "intervals",
+          "quantities",
+          "times",
+          "totals"
+        ]
+      },
       "IntervalStart": {
         "type": "object",
         "properties": {
@@ -5720,6 +6019,36 @@
           "serviceId"
         ]
       },
+      "ReportEventView": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "returned",
+              "corrected",
+              "agreed",
+              "accepted",
+              "reopened"
+            ]
+          },
+          "comment": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "createdAt",
+          "kind"
+        ]
+      },
       "ReportIssue": {
         "type": "object",
         "properties": {
@@ -5789,7 +6118,10 @@
             "enum": [
               "new",
               "draft",
-              "submitted"
+              "submitted",
+              "returned",
+              "corrected",
+              "accepted"
             ]
           },
           "date": {
@@ -5878,15 +6210,33 @@
           "version": {
             "type": "integer",
             "format": "int32"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportEventView"
+            }
+          },
+          "correction": {
+            "$ref": "#/components/schemas/CorrectionView"
+          },
+          "canAgree": {
+            "type": "boolean"
           }
         },
         "required": [
+          "canAgree",
           "canEdit",
           "canReopen",
           "consumables",
           "date",
           "durationMinutes",
           "errors",
+          "events",
           "intervals",
           "meters",
           "prefill",
@@ -7775,6 +8125,104 @@
           "reason"
         ]
       },
+      "ReportReturnRequest": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "comment": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "comment",
+          "version"
+        ]
+      },
+      "ReviewReportView": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "$ref": "#/components/schemas/ShiftReportView"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectCode": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "shiftName": {
+            "type": "string"
+          },
+          "crew": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrewMemberView"
+            }
+          },
+          "canReview": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assetCode",
+          "canReview",
+          "crew",
+          "projectCode",
+          "projectId",
+          "projectName",
+          "report",
+          "shiftName"
+        ]
+      },
+      "ReportCorrectionRequest": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "comment": {
+            "type": "string",
+            "minLength": 1
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeEntryRequest"
+            }
+          },
+          "intervals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntervalRequest"
+            }
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityRequest"
+            }
+          }
+        },
+        "required": [
+          "comment",
+          "intervals",
+          "quantities",
+          "times",
+          "version"
+        ]
+      },
       "ProjectCreateRequest": {
         "type": "object",
         "properties": {
@@ -8593,6 +9041,57 @@
           "action",
           "createdAt",
           "id"
+        ]
+      },
+      "ReviewListItem": {
+        "type": "object",
+        "properties": {
+          "shiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectCode": {
+            "type": "string"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "shiftName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "meters": {
+            "type": "number"
+          },
+          "billableMinutes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "assetCode",
+          "billableMinutes",
+          "date",
+          "meters",
+          "projectCode",
+          "projectId",
+          "shiftId",
+          "shiftName",
+          "status"
         ]
       },
       "CategoryMinutes": {
