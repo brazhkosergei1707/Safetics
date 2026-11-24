@@ -230,6 +230,10 @@ public class WorkShiftService {
     public WorkShiftView updateCrew(UUID id, CrewUpdateRequest request) {
         WorkShiftView shift = get(id);
         ProjectView project = openProject(shift.projectId());
+        if (Boolean.TRUE.equals(db.sql("select exists (select 1 from project_month_close where project_id = ? and month = ?)")
+                .params(shift.projectId(), shift.date().withDayOfMonth(1)).query(Boolean.class).single())) {
+            throw ApiException.conflict("month_closed");
+        }
         requireEditor(project);
         if (request.version() != shift.version()) {
             throw ApiException.conflict("stale_version");

@@ -7,6 +7,7 @@ import {
   InboxOutlined,
   LogoutOutlined,
   ProjectOutlined,
+  CalendarOutlined,
   CheckSquareOutlined,
   FileDoneOutlined,
   SolutionOutlined,
@@ -51,7 +52,10 @@ export function AppLayout() {
       ? [{ key: '/assets', icon: <AppstoreOutlined />, label: t('nav.assets') }]
       : []),
     ...(hasPermission(session, 'report.review') || hasPermission(session, 'monthly_report.approve')
-      ? [{ key: '/review', icon: <FileDoneOutlined />, label: t('nav.review') }]
+      ? [
+          { key: '/review', icon: <FileDoneOutlined />, label: t('nav.review') },
+          { key: '/monthly', icon: <CalendarOutlined />, label: t('nav.monthly') },
+        ]
       : []),
     { key: '/reports', icon: <FileTextOutlined />, label: t('nav.reports') },
     { key: '/stock', icon: <InboxOutlined />, label: t('nav.stock') },

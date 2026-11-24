@@ -2056,6 +2056,78 @@
         }
       }
     },
+    "/api/v1/review/monthly-reports/{id}/return": {
+      "post": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "returnReport_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MonthlyReturnRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review/monthly-reports/{id}/approve": {
+      "post": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "approve",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects": {
       "get": {
         "tags": [
@@ -2407,6 +2479,143 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/ServiceView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/months/{month}/inclusions": {
+      "post": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "include",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InclusionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/months/{month}/generate": {
+      "post": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "generate_1",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/months/{month}/adjustments": {
+      "post": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "addAdjustment",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthView"
                 }
               }
             }
@@ -3256,6 +3465,37 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/PersonnelView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/monthly-reports/{id}/send": {
+      "post": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "send",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyReportView"
                 }
               }
             }
@@ -4602,6 +4842,60 @@
         }
       }
     },
+    "/api/v1/review/monthly-reports": {
+      "get": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "portalList",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MonthlyReportView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review/monthly-reports/{id}": {
+      "get": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "portalGet",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyReportView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/reports/summary": {
       "get": {
         "tags": [
@@ -4737,6 +5031,45 @@
         }
       }
     },
+    "/api/v1/projects/{projectId}/months/{month}": {
+      "get": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "month",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{id}/available-equipment": {
       "get": {
         "tags": [
@@ -4839,6 +5172,37 @@
                   "items": {
                     "$ref": "#/components/schemas/PersonnelAssignmentView"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/monthly-reports/{id}": {
+      "get": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "get_9",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyReportView"
                 }
               }
             }
@@ -5000,6 +5364,54 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/TaskLinksView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/months/{month}/adjustments/{adjustmentId}": {
+      "delete": {
+        "tags": [
+          "monthly-reports"
+        ],
+        "operationId": "deleteAdjustment",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "adjustmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthView"
                 }
               }
             }
@@ -6067,6 +6479,31 @@
           "params"
         ]
       },
+      "ReportTaskOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "statusCategory": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "statusCategory",
+          "title"
+        ]
+      },
       "ReportTotals": {
         "type": "object",
         "properties": {
@@ -6226,6 +6663,12 @@
           },
           "canAgree": {
             "type": "boolean"
+          },
+          "taskOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportTaskOption"
+            }
           }
         },
         "required": [
@@ -6244,6 +6687,7 @@
           "shiftId",
           "startsAt",
           "status",
+          "taskOptions",
           "times",
           "totals",
           "version",
@@ -8223,6 +8667,374 @@
           "version"
         ]
       },
+      "MonthlyReturnRequest": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "comment"
+        ]
+      },
+      "AdjustmentView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "hours",
+              "quantity"
+            ]
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "correctsShiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "correctsLabel": {
+            "type": "string"
+          },
+          "createdByName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "amount",
+          "comment",
+          "createdAt",
+          "id",
+          "kind"
+        ]
+      },
+      "AssetBlock": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "reports": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "meters": {
+            "type": "number"
+          },
+          "metersByHole": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetersLine"
+            }
+          },
+          "billableMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HoursLine"
+            }
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityLine"
+            }
+          }
+        },
+        "required": [
+          "assetCode",
+          "assetId",
+          "billableMinutes",
+          "hours",
+          "meters",
+          "metersByHole",
+          "quantities",
+          "reports"
+        ]
+      },
+      "HoursLine": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "minutes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "code",
+          "minutes",
+          "name"
+        ]
+      },
+      "MetersLine": {
+        "type": "object",
+        "properties": {
+          "serviceCode": {
+            "type": "string"
+          },
+          "coreSize": {
+            "type": "string"
+          },
+          "meters": {
+            "type": "number"
+          },
+          "coreLength": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "meters",
+          "serviceCode"
+        ]
+      },
+      "MonthlyContent": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetBlock"
+            }
+          },
+          "unreviewed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnreviewedReport"
+            }
+          },
+          "adjustments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentView"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/MonthlyTotals"
+          },
+          "acceptedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "draftCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "acceptedCount",
+          "adjustments",
+          "assets",
+          "draftCount",
+          "totals",
+          "unreviewed"
+        ]
+      },
+      "MonthlyReportView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectCode": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "month": {
+            "type": "string",
+            "format": "date"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "sent",
+              "approved",
+              "returned",
+              "superseded"
+            ]
+          },
+          "content": {
+            "$ref": "#/components/schemas/MonthlyContent"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "generatedByName": {
+            "type": "string"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decidedByName": {
+            "type": "string"
+          },
+          "decisionComment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "generatedAt",
+          "id",
+          "month",
+          "projectCode",
+          "projectId",
+          "projectName",
+          "status",
+          "version"
+        ]
+      },
+      "MonthlyTotals": {
+        "type": "object",
+        "properties": {
+          "meters": {
+            "type": "number"
+          },
+          "billableMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityLine"
+            }
+          },
+          "adjustmentMeters": {
+            "type": "number"
+          },
+          "adjustmentHours": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "adjustmentHours",
+          "adjustmentMeters",
+          "billableMinutes",
+          "meters",
+          "quantities"
+        ]
+      },
+      "QuantityLine": {
+        "type": "object",
+        "properties": {
+          "serviceCode": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "quantity"
+        ]
+      },
+      "UnreviewedReport": {
+        "type": "object",
+        "properties": {
+          "shiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "assetCode": {
+            "type": "string"
+          },
+          "shiftName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "meters": {
+            "type": "number"
+          },
+          "billableMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "included": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assetCode",
+          "billableMinutes",
+          "date",
+          "included",
+          "meters",
+          "shiftId",
+          "shiftName",
+          "status"
+        ]
+      },
       "ProjectCreateRequest": {
         "type": "object",
         "properties": {
@@ -8423,6 +9235,117 @@
           "attributes",
           "code",
           "typeId"
+        ]
+      },
+      "InclusionRequest": {
+        "type": "object",
+        "properties": {
+          "shiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "included": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "included",
+          "shiftId"
+        ]
+      },
+      "MonthView": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "month": {
+            "type": "string",
+            "format": "date"
+          },
+          "closed": {
+            "type": "boolean"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/MonthlyContent"
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonthlyReportView"
+            }
+          },
+          "canManage": {
+            "type": "boolean"
+          },
+          "correctableShifts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShiftOption"
+            }
+          }
+        },
+        "required": [
+          "canManage",
+          "closed",
+          "correctableShifts",
+          "month",
+          "preview",
+          "projectId",
+          "versions"
+        ]
+      },
+      "ShiftOption": {
+        "type": "object",
+        "properties": {
+          "shiftId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "shiftId"
+        ]
+      },
+      "AdjustmentRequest": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "meters",
+              "hours",
+              "quantity"
+            ]
+          },
+          "assetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string",
+            "minLength": 1
+          },
+          "correctsShiftId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "amount",
+          "comment",
+          "kind"
         ]
       },
       "ShiftScheduleRequest": {

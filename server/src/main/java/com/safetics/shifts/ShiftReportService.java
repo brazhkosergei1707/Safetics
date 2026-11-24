@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.safetics.alerts.AlertService;
 import com.safetics.core.audit.AuditService;
+import com.safetics.monthly.MonthCloses;
 import com.safetics.core.tenancy.TenantContext;
 import com.safetics.core.web.ApiException;
 import com.safetics.projects.ProjectDtos.ProjectView;
@@ -93,9 +94,11 @@ public class ShiftReportService {
     private final TaskWorkflow tasks;
     private final AuditService audit;
     private final AlertService alerts;
+    private final MonthCloses months;
 
     public ShiftReportService(JdbcClient db, JsonMapper json, ProjectService projects, ProjectRoles roles,
-                              WorkShiftService shifts, TaskWorkflow tasks, AuditService audit, AlertService alerts) {
+                              WorkShiftService shifts, TaskWorkflow tasks, AuditService audit, AlertService alerts,
+                              MonthCloses months) {
         this.db = db;
         this.json = json;
         this.projects = projects;
@@ -104,6 +107,7 @@ public class ShiftReportService {
         this.tasks = tasks;
         this.audit = audit;
         this.alerts = alerts;
+        this.months = months;
     }
 
     // ---------------------------------------------------------------- читання
@@ -126,7 +130,8 @@ public class ShiftReportService {
         List<ReportIssue> warnings = warnings(intervals, times, meters, lastDepth);
         UUID reportTask = reportTaskId(shiftId).orElse(null);
         String status = report.map(ReportRow::status).orElse("new");
-        boolean open = "active".equals(project.status());
+        // Закритий місяць (звіт затверджено) — рапорт лише для читання
+        boolean open = "active".equals(project.status()) && !months.isClosed(shift.projectId(), shift.date());
         boolean onSite = manage() || roles.isSupervisor(project);
         boolean assignee = reportTask != null && tasks.find(reportTask)
                 .map(t -> t.assigneeId() != null && t.assigneeId().equals(currentUserId())).orElse(false);
@@ -150,6 +155,7 @@ public class ShiftReportService {
     public ShiftReportView save(UUID shiftId, ShiftReportRequest request) {
         WorkShiftView shift = shifts.get(shiftId);
         ProjectView project = openProject(shift.projectId());
+        months.requireOpen(shift.projectId(), shift.date());
         requireEditor(project, shiftId);
         Optional<ReportRow> existing = row(shiftId);
         if (existing.map(r -> !EDITABLE.contains(r.status())).orElse(false)) {
@@ -200,6 +206,7 @@ public class ShiftReportService {
     public ShiftReportView submit(UUID shiftId, int version) {
         WorkShiftView shift = shifts.get(shiftId);
         ProjectView project = openProject(shift.projectId());
+        months.requireOpen(shift.projectId(), shift.date());
         requireEditor(project, shiftId);
         ReportRow report = row(shiftId).orElseThrow(() -> ApiException.conflict("report_not_saved"));
         if (!EDITABLE.contains(report.status())) {
@@ -233,6 +240,7 @@ public class ShiftReportService {
     public ShiftReportView reopen(UUID shiftId, int version) {
         WorkShiftView shift = shifts.get(shiftId);
         ProjectView project = openProject(shift.projectId());
+        months.requireOpen(shift.projectId(), shift.date());
         if (!manage() && !roles.isSupervisor(project)) {
             throw forbidden();
         }
@@ -323,6 +331,7 @@ public class ShiftReportService {
     public ShiftReportView agree(UUID shiftId, int version) {
         WorkShiftView shift = shifts.get(shiftId);
         ProjectView project = openProject(shift.projectId());
+        months.requireOpen(shift.projectId(), shift.date());
         requireEditor(project, shiftId);
         ReportRow report = row(shiftId).orElseThrow(ApiException::notFound);
         if (!"corrected".equals(report.status()) || report.correctionId() == null) {
@@ -356,6 +365,7 @@ public class ShiftReportService {
     private ReportRow forReview(UUID shiftId, int version) {
         WorkShiftView shift = shifts.get(shiftId);
         openProject(shift.projectId());
+        months.requireOpen(shift.projectId(), shift.date());
         ReportRow report = row(shiftId).orElseThrow(ApiException::notFound);
         if (!"submitted".equals(report.status())) {
             throw ApiException.conflict("report_not_submitted");
