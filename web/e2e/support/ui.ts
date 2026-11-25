@@ -101,10 +101,12 @@ export function button(text: string): RegExp {
 }
 
 /**
- * Чекає, поки закриється саме це вікно. dialog(page) — «останнє видиме», тож після закриття модалки
- * він перескочив би на шухляду під нею; тут елемент фіксується до закриття.
+ * Натиснути кнопку у вікні й дочекатися, поки закриється саме це вікно. Елемент фіксується ДО
+ * натискання: dialog(page) — «останнє видиме», тож після закриття він перескочив би на шухляду під
+ * вікном або не знайшов би нічого, якщо вікно закрилося швидше за перевірку (CI).
  */
-export async function expectClosed(scope: Locator): Promise<void> {
+export async function submitAndClose(scope: Locator, buttonName: string | RegExp): Promise<void> {
   const el = await scope.elementHandle()
+  await scope.getByRole('button', { name: buttonName }).click()
   await expect.poll(async () => (el ? await el.isVisible().catch(() => false) : false)).toBe(false)
 }

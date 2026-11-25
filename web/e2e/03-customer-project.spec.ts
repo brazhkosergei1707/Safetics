@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { t } from './support/i18n.ts'
 import { PASSWORD, PEOPLE, type Person, phone, save, state } from './support/state.ts'
-import { as, choose, dialog, firstOfLastMonth, options, pickDate, row, label, expectClosed } from './support/ui.ts'
+import { as, choose, dialog, firstOfLastMonth, options, pickDate, row, label, submitAndClose } from './support/ui.ts'
 
 // Розділ 3 регресійного плану: замовник, контактні особи з порталом, проєкт з відповідальним менеджером.
 test.describe.configure({ mode: 'serial' })
@@ -34,8 +34,7 @@ async function addContact(page: import('@playwright/test').Page, person: Person,
   const contact = dialog(page)
   await contact.getByLabel(label(t('customers.fullName'))).fill(PEOPLE[person].name)
   await contact.getByLabel(label(t('customers.phone'))).fill(phone(person))
-  await contact.getByRole('button', { name: t('common.save') }).click()
-  await expectClosed(contact)
+  await submitAndClose(contact, t('common.save'))
   const item = row(dialog(page), PEOPLE[person].name)
   await item.getByRole('button', { name: t('customers.portalAccess') }).click()
   const portal = dialog(page)
@@ -67,8 +66,7 @@ test('3.3–3.4 проєкт: відповідальним — лише роль
     }
     await pickDate(form.getByLabel(label(t('projects.startDate'))), firstOfLastMonth())
     await form.getByRole('button', { name: '2×12', exact: true }).click()
-    await form.getByRole('button', { name: t('common.save') }).click()
-    await expectClosed(form)
+    await submitAndClose(form, t('common.save'))
     await expect(page.getByRole('heading', { level: 2 })).toContainText(code)
   }
   await page.goto('/projects')

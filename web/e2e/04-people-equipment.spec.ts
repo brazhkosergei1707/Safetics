@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { t } from './support/i18n.ts'
 import { PASSWORD, PEOPLE, type Person, phone, save, state } from './support/state.ts'
-import { as, choose, dialog, firstOfLastMonth, openProject, pickDate, row, tab, label, expectClosed } from './support/ui.ts'
+import { as, choose, dialog, firstOfLastMonth, openProject, pickDate, row, tab, label, submitAndClose } from './support/ui.ts'
 
 // Розділ 4 регресійного плану: виконавці, призначення людей і обладнання, послуги.
 test.describe.configure({ mode: 'serial' })
@@ -21,8 +21,7 @@ test('4.1–4.2 менеджер додає виконавців і дає вх�
     await form.getByLabel(label(t('customers.fullName'))).fill(PEOPLE[person].name)
     await choose(page, form.getByLabel(label(t('personnel.position'))), position)
     if (login) await form.getByLabel(label(t('customers.phone'))).fill(phone(person))
-    await form.getByRole('button', { name: t('common.save') }).click()
-    await expectClosed(form)
+    await submitAndClose(form, t('common.save'))
     await expect(row(page, PEOPLE[person].name)).toContainText(position)
   }
   for (const { person } of CREW.filter((c) => c.login)) {
@@ -32,8 +31,7 @@ test('4.1–4.2 менеджер додає виконавців і дає вх�
     await expect(modal).toContainText(t('roles.worker'))
     await expect(modal.getByLabel(label(t('session.role')))).toHaveCount(0)
     await modal.getByLabel(label(t('customers.initialPassword'))).fill(PASSWORD)
-    await modal.getByRole('button', { name: t('customers.grantPortal') }).click()
-    await expectClosed(modal)
+    await submitAndClose(modal, t('customers.grantPortal'))
     await page.keyboard.press('Escape')
   }
   await page.context().close()
@@ -50,8 +48,7 @@ test('4.3–4.4 призначення людей і обладнання на �
     const form = dialog(page)
     await choose(page, form.getByLabel(label(t('assignments.person'))), PEOPLE[person].name)
     await pickDate(form.getByLabel(label(t('assignments.from'))), firstOfLastMonth())
-    await form.getByRole('button', { name: t('common.save') }).click()
-    await expectClosed(form)
+    await submitAndClose(form, t('common.save'))
     await expect(row(page, PEOPLE[person].name)).toBeVisible()
   }
 
@@ -61,8 +58,7 @@ test('4.3–4.4 призначення людей і обладнання на �
     const form = dialog(page)
     await choose(page, form.getByLabel(label(t('assignments.equipment'))), code)
     await pickDate(form.getByLabel(label(t('assignments.from'))), firstOfLastMonth())
-    await form.getByRole('button', { name: t('common.save') }).click()
-    await expectClosed(form)
+    await submitAndClose(form, t('common.save'))
   }
   await expect(row(page, s.rig)).toContainText(t('assets.primary'))
 
@@ -82,8 +78,7 @@ test('4.5 свердловини з головними задачами', async 
     const form = dialog(page)
     await form.getByLabel(label(t('services.code'))).fill(code)
     await form.getByLabel(label('Проєктна глибина')).fill('300')
-    await form.getByRole('button', { name: t('common.save') }).click()
-    await expectClosed(form)
+    await submitAndClose(form, t('common.save'))
     await expect(row(page, code)).toContainText(t('services.status.planned'))
   }
   save({ hole1: holes[0], hole2: holes[1] })
