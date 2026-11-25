@@ -226,7 +226,7 @@ export function ProjectPeopleTab({ project }: { project: Project }) {
         confirmLoading={assign.isPending || addCrew.isPending || update.isPending}
         destroyOnHidden
       >
-        <Form<FormValues> form={form} layout="vertical" onFinish={onFinish} requiredMark="optional">
+        <Form<FormValues> name="assignPerson" form={form} layout="vertical" onFinish={onFinish} requiredMark="optional">
           {mode?.kind === 'assign' && (
             <Form.Item name="personnelId" label={t('assignments.person')} rules={[{ required: true, message: t('validation.required') }]}>
               <Select

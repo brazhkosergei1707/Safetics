@@ -1,0 +1,19 @@
+# Профіль для автотестів інтерфейсу (Playwright): окрема база на 5434, сервер на 8081.
+# Запуск: cd web && npm run e2e (сам підніме базу й сервер).
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: ${SAFETICS_DB_URL:jdbc:postgresql://localhost:5434/safetics}
+  flyway:
+    # Лише суперадмін (+380500000000, пароль safetics-dev); компанії створюють самі тести
+    locations: classpath:db/migration,classpath:db/e2e
+
+safetics:
+  security:
+    jwt-secret: ZTJlLW9ubHktc2VjcmV0LWNoYW5nZS1tZS1zYWZldGljcy0yMDI2LWxvbmctZW5vdWdo
+    secure-cookies: false
+  # Планувальник змін вимкнено: тести створюють зміни самі, без випадкових змін «зараз»
+  scheduler:
+    enabled: false

@@ -210,7 +210,7 @@ function LoginModal({ person, onClose }: { person?: Personnel; onClose: () => vo
       destroyOnHidden
     >
       <Typography.Paragraph type="secondary">{t('personnel.loginHint', { phone: person?.phone ?? '—' })}</Typography.Paragraph>
-      <Form<LoginValues> form={form} layout="vertical" onFinish={onFinish}>
+      <Form<LoginValues> name="login" form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item label={t('session.role')}>
           <Typography.Text>{t('roles.worker')}</Typography.Text>
         </Form.Item>

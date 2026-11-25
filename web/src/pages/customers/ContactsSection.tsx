@@ -121,7 +121,7 @@ export function ContactsSection({ customer, canEdit }: { customer: Customer; can
         confirmLoading={save.isPending}
         destroyOnHidden
       >
-        <Form<ContactRequest> form={contactForm} layout="vertical" onFinish={onSaveContact} requiredMark="optional">
+        <Form<ContactRequest> name="contact" form={contactForm} layout="vertical" onFinish={onSaveContact} requiredMark="optional">
           <Form.Item
             name="fullName"
             label={t('customers.fullName')}
@@ -187,7 +187,7 @@ function PortalAccessModal({ contact, onClose }: { contact?: Contact; onClose: (
       <Typography.Paragraph type="secondary">
         {t('customers.portalHint', { phone: contact?.phone ?? '—' })}
       </Typography.Paragraph>
-      <Form<PortalValues> form={form} layout="vertical" onFinish={onFinish} initialValues={{ role: 'client_rep' }}>
+      <Form<PortalValues> name="portal" form={form} layout="vertical" onFinish={onFinish} initialValues={{ role: 'client_rep' }}>
         <Form.Item name="role" label={t('session.role')} rules={[{ required: true }]}>
           <Select
             options={[

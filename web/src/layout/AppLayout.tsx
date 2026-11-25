@@ -92,11 +92,13 @@ export function AppLayout() {
                 style={{ minWidth: 200 }}
               />
             ) : (
-              <Typography.Text strong>{session?.company?.name}</Typography.Text>
+              <Typography.Text strong data-testid="header-company">
+                {session?.company?.name}
+              </Typography.Text>
             )}
             <Flex vertical align="flex-end" style={{ lineHeight: 1.3 }}>
               <Typography.Text>{session?.user.fullName}</Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }} data-testid="header-role">
                 {[
                   session?.company?.role ? t(`roles.${session.company.role}`, { defaultValue: session.company.role }) : null,
                   session?.position ? localized(session.position, i18n.language) : null,

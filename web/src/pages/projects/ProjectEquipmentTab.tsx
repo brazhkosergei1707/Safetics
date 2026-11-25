@@ -160,7 +160,7 @@ export function ProjectEquipmentTab({ project }: { project: Project }) {
         confirmLoading={assign.isPending || update.isPending}
         destroyOnHidden
       >
-        <Form<FormValues> form={form} layout="vertical" onFinish={onFinish} requiredMark="optional">
+        <Form<FormValues> name="assignEquipment" form={form} layout="vertical" onFinish={onFinish} requiredMark="optional">
           <AssignmentDates />
           {!editing.assignment && (
             <Form.Item
