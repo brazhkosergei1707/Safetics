@@ -37,18 +37,24 @@ test('2.3 адмін не керує виконавцями: у «Виконав
 })
 
 test('2.4–2.7 типи: порядок вкладок, бібліотека, видалення', async ({ browser }) => {
-  // Друга компанія з іншим шаблоном — її типи потрапляють у бібліотеку
+  // Інші компанії — джерело бібліотеки. База може бути чистою (CI), тож створюємо обидві самі:
+  // «будівництво» дає «Генератор», «розвідувальне буріння» — ту саму «Бурову установку», що вже є в нас
   const platform = await as(browser, 'platform')
-  const other = await platform.request.post('/api/v1/platform/companies', {
-    data: {
-      name: `E2E Library ${state().run}`,
-      templateKey: 'construction',
-      adminFullName: 'Library Admin',
-      adminPhone: `+38063${state().run}099`,
-      adminPassword: PASSWORD,
-    },
-  })
-  expect(other.ok()).toBeTruthy()
+  for (const [no, templateKey] of [
+    ['098', 'exploration-drilling'],
+    ['099', 'construction'],
+  ] as const) {
+    const other = await platform.request.post('/api/v1/platform/companies', {
+      data: {
+        name: `E2E Library ${state().run}-${no}`,
+        templateKey,
+        adminFullName: `Library Admin ${no}`,
+        adminPhone: `+38063${state().run}${no}`,
+        adminPassword: PASSWORD,
+      },
+    })
+    expect(other.ok()).toBeTruthy()
+  }
   await platform.context().close()
 
   const page = await as(browser, 'admin')
