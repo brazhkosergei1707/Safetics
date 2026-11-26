@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,8 +138,8 @@ class ReportReviewTest extends AbstractIntegrationTest {
         Map<String, Object> correction = new HashMap<>();
         correction.put("version", client.get(review(shiftId)).at("report.version"));
         correction.put("comment", "DRL until 11:40");
-        correction.put("times", List.of(time(0, 700, "DRL", holeTask), time(700, DURATION, "MAINT", null)));
-        correction.put("intervals", List.of(interval(0, 36, 35)));
+        correction.put("times", withIntervals(List.of(time(0, 700, "DRL", holeTask), time(700, DURATION, "MAINT", null)),
+                List.of(interval(0, 36, 35))));
         correction.put("quantities", List.of());
         Response corrected = client.post(review(shiftId) + "/correct", correction);
         assertThat(corrected.str("report.status")).isEqualTo("corrected");
@@ -187,12 +188,12 @@ class ReportReviewTest extends AbstractIntegrationTest {
         assertThat(admin.get("/api/v1/tasks/" + reportTask).str("status")).isEqualTo("reviewed");
         assertThat(client.post(review(shiftId) + "/return", Map.of("version", accepted.at("report.version"), "comment", "late"))
                 .str("error")).isEqualTo("report_not_submitted");
-        assertThat(admin.put(report(shiftId), body(List.of(time(0, DURATION, "DRL", null)), List.of(),
+        assertThat(admin.put(report(shiftId), body(List.of(time(0, DURATION, "MAINT", null)), List.of(),
                 accepted.at("report.version"))).str("error")).as("перевірений не редагується").isEqualTo("report_submitted");
 
         // Чернетку замовник не бачить
         String draft = shift(today().minusDays(13));
-        admin.put(report(draft), body(List.of(time(0, DURATION, "DRL", null)), List.of(), 0));
+        admin.put(report(draft), body(List.of(time(0, DURATION, "MAINT", null)), List.of(), 0));
         assertThat(client.get(review(draft)).status()).isEqualTo(404);
         assertThat(client.get("/api/v1/review/reports").list()).extracting(r -> (Object) ((Map<?, ?>) r).get("shiftId"))
                 .doesNotContain(draft);
@@ -247,13 +248,26 @@ class ReportReviewTest extends AbstractIntegrationTest {
 
     private Map<String, Object> body(List<Map<String, Object>> times, List<Map<String, Object>> intervals, Object version) {
         Map<String, Object> body = new HashMap<>();
-        body.put("times", times);
-        body.put("intervals", intervals);
+        body.put("times", withIntervals(times, intervals));
         body.put("quantities", List.of());
         body.put("consumables", List.of(Map.of("itemId", items.get("diesel"), "quantity", 120)));
         body.put("meters", List.of(Map.of("assetId", rig, "startValue", 1000, "endValue", 1012)));
         body.put("version", version);
         return body;
+    }
+
+    /** Інтервали — у рядки буріння (DRL) по черзі: рядок часу = один інтервал. */
+    private List<Map<String, Object>> withIntervals(List<Map<String, Object>> times, List<Map<String, Object>> intervals) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        int next = 0;
+        for (Map<String, Object> time : times) {
+            Map<String, Object> row = new HashMap<>(time);
+            if (next < intervals.size() && codes.get("DRL").equals(time.get("activityCodeId"))) {
+                row.put("interval", intervals.get(next++));
+            }
+            rows.add(row);
+        }
+        return rows;
     }
 
     private Map<String, Object> time(int start, int end, String code, String task) {
@@ -267,7 +281,6 @@ class ReportReviewTest extends AbstractIntegrationTest {
 
     private Map<String, Object> interval(double from, double to, double core) {
         Map<String, Object> interval = new HashMap<>();
-        interval.put("serviceId", hole);
         interval.put("depthFrom", from);
         interval.put("depthTo", to);
         interval.put("coreSize", "HQ");

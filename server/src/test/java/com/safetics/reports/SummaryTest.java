@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,8 +168,20 @@ class SummaryTest extends AbstractIntegrationTest {
         assertThat(shift.status()).isEqualTo(201);
         String shiftId = shift.str("id");
         Map<String, Object> body = new HashMap<>();
-        body.put("times", times);
-        body.put("intervals", List.of(interval));
+        // Інтервал — у перший рядок буріння (рядок часу = один інтервал)
+        List<Map<String, Object>> rows = new ArrayList<>();
+        boolean placed = false;
+        for (Map<String, Object> time : times) {
+            Map<String, Object> row = new HashMap<>(time);
+            if (!placed && codes.get("DRL").equals(time.get("activityCodeId"))) {
+                Map<String, Object> drill = new HashMap<>(interval);
+                drill.remove("serviceId");
+                row.put("interval", drill);
+                placed = true;
+            }
+            rows.add(row);
+        }
+        body.put("times", rows);
         body.put("quantities", List.of());
         body.put("consumables", List.of(Map.of("itemId", items.get("diesel"), "quantity", 100)));
         body.put("meters", List.of());

@@ -35,6 +35,7 @@ import com.safetics.shifts.ShiftReportDtos.CodeTotal;
 import com.safetics.shifts.ShiftReportDtos.ConsumableRequest;
 import com.safetics.shifts.ShiftReportDtos.ConsumableView;
 import com.safetics.shifts.ShiftReportDtos.CorrectionView;
+import com.safetics.shifts.ShiftReportDtos.DrillIntervalRequest;
 import com.safetics.shifts.ShiftReportDtos.IntervalRequest;
 import com.safetics.shifts.ShiftReportDtos.IntervalStart;
 import com.safetics.shifts.ShiftReportDtos.IntervalView;
@@ -81,9 +82,16 @@ public class ShiftReportService {
                              String submittedByName, OffsetDateTime acceptedAt, UUID correctionId) {
     }
 
-    /** Запропоновані замовником значення (payload події corrected). */
+    /**
+     * Запропоновані замовником значення (payload події corrected). intervals — старий формат (до V25),
+     * нові правки несуть інтервали в рядках часу.
+     */
     public record CorrectionPayload(List<TimeEntryRequest> times, List<IntervalRequest> intervals,
                              List<QuantityRequest> quantities) {
+
+        List<IntervalRequest> legacyIntervals() {
+            return intervals == null ? List.of() : intervals;
+        }
     }
 
     private final JdbcClient db;
@@ -119,8 +127,8 @@ public class ShiftReportService {
         Optional<ReportRow> report = row(shiftId);
         UUID reportId = report.map(ReportRow::id).orElse(null);
 
-        List<TimeEntryView> times = reportId == null ? List.of() : times(reportId);
         List<IntervalView> intervals = reportId == null ? List.of() : intervals(reportId);
+        List<TimeEntryView> times = reportId == null ? List.of() : times(reportId);
         List<QuantityView> quantities = reportId == null ? List.of() : quantities(reportId);
         List<ConsumableView> consumables = reportId == null ? List.of() : consumables(reportId);
         List<MeterView> meters = meters(shift, reportId);
@@ -194,7 +202,7 @@ public class ShiftReportService {
         }
         insertRows(companyId, reportId, request);
         audit.record("shift_report", reportId, existing.isEmpty() ? "create" : "update",
-                Map.of("shiftId", shiftId, "times", request.times().size(), "intervals", request.intervals().size()));
+                Map.of("shiftId", shiftId, "times", request.times().size()));
         // Чернетка: задача рапорту «в роботі», якщо чек-лист уже не блокує (повернутий — лишається «Повернуто»)
         if (existing.map(r -> "draft".equals(r.status())).orElse(true)) {
             reportTaskId(shiftId).ifPresent(task -> tasks.moveToStatus(task, "draft", "active", false));
@@ -310,13 +318,13 @@ public class ShiftReportService {
         ReportRow report = forReview(shiftId, request.version());
         WorkShiftView shift = shifts.get(shiftId);
         // Перевірка тими ж правилами; витрати й лічильники — з рапорту як є
-        validate(shift, new ShiftReportRequest(null, request.times(), request.intervals(), request.quantities(),
+        validate(shift, new ShiftReportRequest(null, request.times(), request.quantities(),
                 consumableRequests(report.id()), meterRequests(report.id()), report.version()));
         if (!timeErrors(previewTimes(request.times()), shift.durationMinutes()).isEmpty()) {
             throw ApiException.validation("times", "incomplete");
         }
         UUID eventId = event(report.id(), "corrected", request.comment().trim(),
-                json.writeValueAsString(new CorrectionPayload(request.times(), request.intervals(), request.quantities())));
+                json.writeValueAsString(new CorrectionPayload(request.times(), List.of(), request.quantities())));
         db.sql("""
                         update shift_report set status = 'corrected', correction_id = ?, version = version + 1, updated_at = now()
                         where id = ?
@@ -348,8 +356,9 @@ public class ShiftReportService {
         for (String table : List.of("shift_report_time", "shift_report_interval", "shift_report_quantity")) {
             db.sql("delete from " + table + " where report_id = ?").param(report.id()).update();
         }
-        insertRows(companyId, report.id(), new ShiftReportRequest(null, payload.times(), payload.intervals(),
-                payload.quantities(), List.of(), List.of(), version));
+        insertRows(companyId, report.id(), new ShiftReportRequest(null, payload.times(), payload.quantities(),
+                List.of(), List.of(), version));
+        insertLegacyIntervals(companyId, report.id(), payload.legacyIntervals());
         db.sql("""
                         update shift_report set status = 'accepted', accepted_at = now(), accepted_by = ?,
                                                 version = version + 1, updated_at = now()
@@ -440,7 +449,13 @@ public class ShiftReportService {
                 .query((rs, n) -> {
                     CorrectionPayload payload = json.readValue(rs.getString("payload"), CorrectionPayload.class);
                     List<TimeEntryView> times = previewTimes(payload.times());
-                    List<IntervalView> intervals = previewIntervals(payload.intervals());
+                    List<IntervalView> intervals = new ArrayList<>();
+                    times.forEach(t -> {
+                        if (t.interval() != null) {
+                            intervals.add(t.interval());
+                        }
+                    });
+                    intervals.addAll(previewIntervals(payload.legacyIntervals()));
                     return new CorrectionView(rs.getString("comment"), rs.getString("full_name"),
                             rs.getObject("created_at", OffsetDateTime.class), times, intervals,
                             previewQuantities(payload.quantities()), totals(times, intervals));
@@ -452,17 +467,30 @@ public class ShiftReportService {
     private List<TimeEntryView> previewTimes(List<TimeEntryRequest> requests) {
         List<TimeEntryView> result = new ArrayList<>();
         for (TimeEntryRequest time : requests) {
-            Object[] code = db.sql("select code, name, category, billable from activity_code where id = ?")
+            Object[] code = db.sql("select code, name, category, billable, drilling from activity_code where id = ?")
                     .param(time.activityCodeId())
                     .query((rs, n) -> new Object[] {rs.getString("code"), rs.getString("name"), rs.getString("category"),
-                            rs.getBoolean("billable")})
-                    .optional().orElse(new Object[] {"?", "{}", "other", false});
-            Object[] task = time.taskId() == null ? null : asSystem(() -> db.sql("select number, title from task where id = ?")
-                    .param(time.taskId()).query((rs, n) -> new Object[] {rs.getLong("number"), rs.getString("title")})
+                            rs.getBoolean("billable"), rs.getBoolean("drilling")})
+                    .optional().orElse(new Object[] {"?", "{}", "other", false, false});
+            Object[] task = time.taskId() == null ? null : asSystem(() -> db.sql("""
+                            select t.number, t.title, t.service_id, s.code
+                            from task t left join service s on s.id = t.service_id
+                            where t.id = ?
+                            """)
+                    .param(time.taskId()).query((rs, n) -> new Object[] {rs.getLong("number"), rs.getString("title"),
+                            rs.getObject("service_id", UUID.class), rs.getString("code")})
                     .optional().orElse(null));
+            IntervalView interval = null;
+            DrillIntervalRequest drill = time.interval();
+            if (drill != null && task != null && task[2] != null) {
+                BigDecimal meters = drill.depthTo().subtract(drill.depthFrom());
+                interval = new IntervalView(true, (UUID) task[2], (String) task[3], drill.depthFrom(), drill.depthTo(),
+                        meters, drill.coreSize(), drill.coreLength(), recovery(drill.coreLength(), meters), drill.comment());
+            }
             result.add(new TimeEntryView(time.startMinute(), time.endMinute(), time.activityCodeId(), (String) code[0],
-                    json.readValue((String) code[1], NAME), (String) code[2], (Boolean) code[3], time.taskId(),
-                    task == null ? null : (Long) task[0], task == null ? null : (String) task[1], time.comment()));
+                    json.readValue((String) code[1], NAME), (String) code[2], (Boolean) code[3], (Boolean) code[4],
+                    time.taskId(), task == null ? null : (Long) task[0], task == null ? null : (String) task[1],
+                    time.comment(), interval));
         }
         result.sort(Comparator.comparingInt(TimeEntryView::startMinute));
         return result;
@@ -474,7 +502,7 @@ public class ShiftReportService {
             String code = db.sql("select code from service where id = ?").param(interval.serviceId()).query(String.class)
                     .optional().orElse("?");
             BigDecimal meters = interval.depthTo().subtract(interval.depthFrom());
-            result.add(new IntervalView(interval.serviceId(), code, interval.depthFrom(), interval.depthTo(), meters,
+            result.add(new IntervalView(false, interval.serviceId(), code, interval.depthFrom(), interval.depthTo(), meters,
                     interval.coreSize(), interval.coreLength(), recovery(interval.coreLength(), meters), interval.comment()));
         }
         return result;
@@ -520,33 +548,44 @@ public class ShiftReportService {
             } else if (time.endMinute() > shift.durationMinutes()) {
                 errors.put(prefix + "endMinute", "outside_shift");
             }
-            Optional<Boolean> archived = db.sql("select archived_at is not null from activity_code where id = ?")
-                    .param(time.activityCodeId()).query(Boolean.class).optional();
-            if (archived.isEmpty()) {
+            Optional<boolean[]> code = db.sql("select archived_at is not null as archived, drilling from activity_code where id = ?")
+                    .param(time.activityCodeId())
+                    .query((rs, n) -> new boolean[] {rs.getBoolean("archived"), rs.getBoolean("drilling")}).optional();
+            if (code.isEmpty()) {
                 errors.put(prefix + "activityCodeId", "not_found");
-            } else if (archived.get()) {
+            } else if (code.get()[0]) {
                 errors.put(prefix + "activityCodeId", "archived");
             }
-            // Задачі проєкту — від імені системи: відповідальний виконавець не бачить задач свердловин (RLS), але пише на них час
-            if (time.taskId() != null && !asSystem(() -> exists("select 1 from task where id = ? and project_id = ?",
-                    time.taskId(), shift.projectId()))) {
+            boolean drilling = code.map(c -> c[1]).orElse(false);
+            // Задачі проєкту — від імені системи: відповідальний виконавець не бачить задач свердловин (RLS), але пише на них час.
+            // Значення — свердловина задачі (порожньо, якщо задача не про свердловину).
+            Optional<Optional<UUID>> task = time.taskId() == null ? Optional.empty() : asSystem(() -> db.sql(
+                            "select service_id from task where id = ? and project_id = ?")
+                    .params(time.taskId(), shift.projectId())
+                    .query((rs, n) -> Optional.ofNullable(rs.getObject("service_id", UUID.class))).optional());
+            if (time.taskId() != null && task.isEmpty()) {
                 errors.put(prefix + "taskId", "not_found");
             }
-        }
-        for (int i = 0; i < request.intervals().size(); i++) {
-            IntervalRequest interval = request.intervals().get(i);
-            String prefix = "intervals[" + i + "].";
-            if (!exists("select 1 from service where id = ? and project_id = ?", interval.serviceId(), shift.projectId())) {
-                errors.put(prefix + "serviceId", "not_found");
+            // Буріння: задача свердловини обов'язкова — з неї свердловина інтервалу
+            if (drilling && time.taskId() == null) {
+                errors.put(prefix + "taskId", "required");
+            } else if (drilling && task.isPresent() && task.get().isEmpty()) {
+                errors.put(prefix + "taskId", "no_service");
             }
-            if (interval.depthFrom().signum() < 0) {
-                errors.put(prefix + "depthFrom", "too_small");
-            }
-            if (interval.depthTo().compareTo(interval.depthFrom()) <= 0) {
-                errors.put(prefix + "depthTo", "before_from");
-            }
-            if (interval.coreLength() != null && interval.coreLength().signum() < 0) {
-                errors.put(prefix + "coreLength", "too_small");
+            DrillIntervalRequest interval = time.interval();
+            if (interval != null) {
+                if (code.isPresent() && !drilling) {
+                    errors.put(prefix + "interval", "not_drilling");
+                }
+                if (interval.depthFrom().signum() < 0) {
+                    errors.put(prefix + "interval.depthFrom", "too_small");
+                }
+                if (interval.depthTo().compareTo(interval.depthFrom()) <= 0) {
+                    errors.put(prefix + "interval.depthTo", "before_from");
+                }
+                if (interval.coreLength() != null && interval.coreLength().signum() < 0) {
+                    errors.put(prefix + "interval.coreLength", "too_small");
+                }
             }
         }
         for (int i = 0; i < request.quantities().size(); i++) {
@@ -631,9 +670,7 @@ public class ShiftReportService {
                                        Map<UUID, BigDecimal> lastDepth) {
         List<ReportIssue> warnings = new ArrayList<>();
         Map<UUID, BigDecimal> cursor = new HashMap<>(lastDepth);
-        Map<UUID, String> codes = new LinkedHashMap<>();
         for (IntervalView interval : intervals) {
-            codes.put(interval.serviceId(), interval.serviceCode());
             BigDecimal expected = cursor.get(interval.serviceId());
             if (expected != null && expected.compareTo(interval.depthFrom()) != 0) {
                 warnings.add(new ReportIssue("depth_gap", Map.of("service", interval.serviceCode(),
@@ -654,18 +691,11 @@ public class ShiftReportService {
                         "actual", meter.startValue().stripTrailingZeros().toPlainString())));
             }
         }
-        // Інтервали по свердловині, а в журналі немає часу на її задачу
-        Set<UUID> timeTasks = new HashSet<>();
-        times.forEach(t -> {
-            if (t.taskId() != null) {
-                timeTasks.add(t.taskId());
-            }
-        });
-        for (Map.Entry<UUID, String> service : codes.entrySet()) {
-            List<UUID> serviceTasks = asSystem(() -> db.sql("select id from task where service_id = ?").param(service.getKey())
-                    .query(UUID.class).list());
-            if (serviceTasks.stream().noneMatch(timeTasks::contains)) {
-                warnings.add(new ReportIssue("interval_without_time", Map.of("service", service.getValue())));
+        // Буріння без інтервалу (розбурювання цементу, без керна) — попередження, не блок
+        for (TimeEntryView time : times) {
+            if (time.drilling() && time.interval() == null) {
+                warnings.add(new ReportIssue("drilling_without_interval", Map.of("from", String.valueOf(time.startMinute()),
+                        "to", String.valueOf(time.endMinute()))));
             }
         }
         return warnings;
@@ -721,9 +751,15 @@ public class ShiftReportService {
     }
 
     private List<TimeEntryView> times(UUID reportId) {
+        Map<UUID, IntervalView> byTime = new HashMap<>();
+        intervalRows(reportId).forEach(r -> {
+            if (r.timeId() != null) {
+                byTime.put(r.timeId(), r.view());
+            }
+        });
         return asSystem(() -> db.sql("""
-                        select r.start_minute, r.end_minute, r.activity_code_id, ac.code, ac.name, ac.category, ac.billable,
-                               r.task_id, t.number, t.title, r.comment
+                        select r.id, r.start_minute, r.end_minute, r.activity_code_id, ac.code, ac.name, ac.category,
+                               ac.billable, ac.drilling, r.task_id, t.number, t.title, r.comment
                         from shift_report_time r
                                  join activity_code ac on ac.id = r.activity_code_id
                                  left join task t on t.id = r.task_id
@@ -734,17 +770,28 @@ public class ShiftReportService {
                 .query((rs, n) -> new TimeEntryView(rs.getInt("start_minute"), rs.getInt("end_minute"),
                         rs.getObject("activity_code_id", UUID.class), rs.getString("code"),
                         json.readValue(rs.getString("name"), NAME), rs.getString("category"), rs.getBoolean("billable"),
-                        rs.getObject("task_id", UUID.class), rs.getObject("number") == null ? null : rs.getLong("number"),
-                        rs.getString("title"), rs.getString("comment")))
+                        rs.getBoolean("drilling"), rs.getObject("task_id", UUID.class),
+                        rs.getObject("number") == null ? null : rs.getLong("number"), rs.getString("title"),
+                        rs.getString("comment"), byTime.get(rs.getObject("id", UUID.class))))
                 .list());
     }
 
+    /** Усі інтервали рапорту: за часом рядка журналу, старі (без рядка) — у кінці. */
     private List<IntervalView> intervals(UUID reportId) {
+        return intervalRows(reportId).stream().map(IntervalRow::view).toList();
+    }
+
+    private record IntervalRow(UUID timeId, IntervalView view) {
+    }
+
+    private List<IntervalRow> intervalRows(UUID reportId) {
         return db.sql("""
-                        select i.service_id, s.code, i.depth_from, i.depth_to, i.core_size, i.core_length, i.comment
-                        from shift_report_interval i join service s on s.id = i.service_id
+                        select i.time_id, i.service_id, s.code, i.depth_from, i.depth_to, i.core_size, i.core_length, i.comment
+                        from shift_report_interval i
+                                 join service s on s.id = i.service_id
+                                 left join shift_report_time t on t.id = i.time_id
                         where i.report_id = ?
-                        order by i.sort_order
+                        order by t.start_minute nulls last, i.sort_order
                         """)
                 .param(reportId)
                 .query((rs, n) -> {
@@ -752,8 +799,10 @@ public class ShiftReportService {
                     BigDecimal to = rs.getBigDecimal("depth_to");
                     BigDecimal meters = to.subtract(from);
                     BigDecimal core = rs.getBigDecimal("core_length");
-                    return new IntervalView(rs.getObject("service_id", UUID.class), rs.getString("code"), from, to, meters,
-                            rs.getString("core_size"), core, recovery(core, meters), rs.getString("comment"));
+                    UUID timeId = rs.getObject("time_id", UUID.class);
+                    return new IntervalRow(timeId, new IntervalView(timeId != null, rs.getObject("service_id", UUID.class),
+                            rs.getString("code"), from, to, meters, rs.getString("core_size"), core, recovery(core, meters),
+                            rs.getString("comment")));
                 })
                 .list();
     }
@@ -849,9 +898,10 @@ public class ShiftReportService {
     /** Новий рапорт: свердловини з попереднього рапорту цієї бурової, що ще не завершені, від останнього «до». */
     private List<IntervalStart> prefill(WorkShiftView shift, Map<UUID, BigDecimal> lastDepth) {
         return db.sql("""
-                        select distinct i.service_id, sv.code
+                        select distinct on (i.service_id) i.service_id, sv.code, coalesce(t.task_id, sv.main_task_id) as task_id
                         from shift_report_interval i
                                  join service sv on sv.id = i.service_id
+                                 left join shift_report_time t on t.id = i.time_id
                         where sv.status in ('planned', 'in_progress')
                           and i.report_id = (select r.id from shift_report r join work_shift s on s.id = r.shift_id
                                              where s.asset_id = ? and s.starts_at < ?
@@ -861,7 +911,8 @@ public class ShiftReportService {
                 .params(shift.assetId(), shift.startsAt())
                 .query((rs, n) -> {
                     UUID service = rs.getObject("service_id", UUID.class);
-                    return new IntervalStart(service, rs.getString("code"), lastDepth.getOrDefault(service, BigDecimal.ZERO));
+                    return new IntervalStart(service, rs.getString("code"), lastDepth.getOrDefault(service, BigDecimal.ZERO),
+                            rs.getObject("task_id", UUID.class));
                 })
                 .list();
     }
@@ -869,23 +920,28 @@ public class ShiftReportService {
     private void insertRows(UUID companyId, UUID reportId, ShiftReportRequest request) {
         for (int i = 0; i < request.times().size(); i++) {
             TimeEntryRequest time = request.times().get(i);
-            db.sql("""
+            UUID timeId = db.sql("""
                             insert into shift_report_time (company_id, report_id, start_minute, end_minute, activity_code_id,
                                                            task_id, comment, sort_order)
                             values (?, ?, ?, ?, ?, ?, ?, ?)
+                            returning id
                             """)
                     .params(companyId, reportId, time.startMinute(), time.endMinute(), time.activityCodeId(), time.taskId(),
                             blankToNull(time.comment()), i)
-                    .update();
-        }
-        for (int i = 0; i < request.intervals().size(); i++) {
-            IntervalRequest interval = request.intervals().get(i);
+                    .query(UUID.class).single();
+            DrillIntervalRequest interval = time.interval();
+            if (interval == null) {
+                continue;
+            }
+            // Свердловина — із задачі рядка (перевірено у validate); від імені системи, як і задачі в журналі
+            UUID serviceId = asSystem(() -> db.sql("select service_id from task where id = ?").param(time.taskId())
+                    .query(UUID.class).single());
             db.sql("""
-                            insert into shift_report_interval (company_id, report_id, service_id, depth_from, depth_to,
+                            insert into shift_report_interval (company_id, report_id, time_id, service_id, depth_from, depth_to,
                                                                core_size, core_length, comment, sort_order)
-                            values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             """)
-                    .params(companyId, reportId, interval.serviceId(), interval.depthFrom(), interval.depthTo(),
+                    .params(companyId, reportId, timeId, serviceId, interval.depthFrom(), interval.depthTo(),
                             blankToNull(interval.coreSize()), interval.coreLength(), blankToNull(interval.comment()), i)
                     .update();
         }
@@ -914,6 +970,22 @@ public class ShiftReportService {
                             values (?, ?, ?, ?, ?)
                             """)
                     .params(companyId, reportId, meter.assetId(), meter.startValue(), meter.endValue()).update();
+        }
+    }
+
+    /** Інтервали зі старої правки замовника (до V25) — без рядка часу. */
+    private void insertLegacyIntervals(UUID companyId, UUID reportId, List<IntervalRequest> intervals) {
+        for (int i = 0; i < intervals.size(); i++) {
+            IntervalRequest interval = intervals.get(i);
+            db.sql("""
+                            insert into shift_report_interval (company_id, report_id, service_id, depth_from, depth_to,
+                                                               core_size, core_length, comment, sort_order)
+                            values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """)
+                    .params(companyId, reportId, interval.serviceId(), interval.depthFrom(), interval.depthTo(),
+                            blankToNull(interval.coreSize()), interval.coreLength(), blankToNull(interval.comment()),
+                            1000 + i)
+                    .update();
         }
     }
 
@@ -967,13 +1039,15 @@ public class ShiftReportService {
             }
         });
         return asSystem(() -> db.sql("""
-                        select id, number, title, status_category from task
-                        where project_id = ? and work_shift_id is null
-                        order by number
+                        select t.id, t.number, t.title, t.status_category, t.service_id, s.code
+                        from task t left join service s on s.id = t.service_id
+                        where t.project_id = ? and t.work_shift_id is null
+                        order by t.number
                         """)
                 .param(projectId)
                 .query((rs, n) -> new ReportTaskOption(rs.getObject("id", UUID.class), rs.getLong("number"),
-                        rs.getString("title"), rs.getString("status_category")))
+                        rs.getString("title"), rs.getString("status_category"), rs.getObject("service_id", UUID.class),
+                        rs.getString("code")))
                 .list().stream()
                 .filter(o -> "new".equals(o.statusCategory()) || "active".equals(o.statusCategory()) || used.contains(o.id()))
                 .toList());

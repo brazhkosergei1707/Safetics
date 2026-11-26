@@ -29,6 +29,7 @@ interface CodeForm {
   name: string
   category: ActivityCategory
   billable: boolean
+  drilling: boolean
   sortOrder?: number
 }
 
@@ -62,8 +63,8 @@ export function ReportCatalogsDrawer({ open, onClose }: { open: boolean; onClose
     codeForm.resetFields()
     codeForm.setFieldsValue(
       code
-        ? { code: code.code, name: localized(code.name, lang), category: code.category, billable: code.billable, sortOrder: code.sortOrder }
-        : { category: 'productive', billable: true },
+        ? { code: code.code, name: localized(code.name, lang), category: code.category, billable: code.billable, drilling: code.drilling, sortOrder: code.sortOrder }
+        : { category: 'productive', billable: true, drilling: false },
     )
     setEditingCode({ code })
   }
@@ -91,6 +92,7 @@ export function ReportCatalogsDrawer({ open, onClose }: { open: boolean; onClose
           name: { ...(editingCode?.code?.name ?? {}), [lang]: values.name },
           category: values.category,
           billable: values.billable,
+          drilling: values.drilling,
           sortOrder: values.sortOrder,
         },
       },
@@ -180,6 +182,11 @@ export function ReportCatalogsDrawer({ open, onClose }: { open: boolean; onClose
             render: (billable: boolean) => (billable ? t('common.yes') : t('common.no')),
           },
           {
+            title: t('reportCatalogs.drilling'),
+            dataIndex: 'drilling',
+            render: (drilling: boolean) => (drilling ? t('common.yes') : ''),
+          },
+          {
             key: 'actions',
             align: 'right',
             render: (_, c) => (
@@ -217,6 +224,9 @@ export function ReportCatalogsDrawer({ open, onClose }: { open: boolean; onClose
           />
         </Form.Item>
         <Form.Item name="billable" label={t('reportCatalogs.billable')} valuePropName="checked">
+          <Switch />
+        </Form.Item>
+        <Form.Item name="drilling" label={t('reportCatalogs.drilling')} tooltip={t('reportCatalogs.drillingHint')} valuePropName="checked">
           <Switch />
         </Form.Item>
         <Form.Item name="sortOrder" label={t('reportCatalogs.sortOrder')}>

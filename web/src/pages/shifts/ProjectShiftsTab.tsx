@@ -114,6 +114,7 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
       return (
         <Button
           key={shift.code}
+          data-testid={`shift-${row.code}-${date}-${shift.code}`}
           size="small"
           block
           type={existing.state === 'running' ? 'primary' : 'default'}
@@ -146,6 +147,7 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
     return (
       <Tooltip key={shift.code} title={t('shifts.addManual')}>
         <Button
+          data-testid={`shift-new-${row.code}-${date}-${shift.code}`}
           size="small"
           block
           type="dashed"
@@ -166,7 +168,9 @@ export function ProjectShiftsTab({ project }: { project: Project }) {
         <Typography.Text type="secondary">{t('shifts.hint', { timeZone: project.timeZone })}</Typography.Text>
         <Flex gap={8}>
           <Button icon={<LeftOutlined />} onClick={() => setEnd(end.subtract(DAYS, 'day'))} />
-          <DatePicker value={end} onChange={(d) => d && setEnd(d)} allowClear={false} format="DD.MM.YYYY" />
+          <span data-testid="shift-board-end">
+            <DatePicker value={end} onChange={(d) => d && setEnd(d)} allowClear={false} format="DD.MM.YYYY" />
+          </span>
           <Button icon={<RightOutlined />} onClick={() => setEnd(end.add(DAYS, 'day'))} />
           <Button onClick={() => setEnd(dayjs())}>{t('shifts.today')}</Button>
           {rights.full && (

@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import type { ShiftReport } from '../../api/shiftReports'
 import { localized } from '../../i18n/localized'
+import { intervalText } from '../shifts/timeLog'
 
 const EVENT_COLORS: Record<string, string> = {
   submitted: 'blue',
@@ -67,15 +68,19 @@ export function ReportHistory({ report, clock }: Props) {
                   { title: t('reports.from'), render: (_, r) => clock(r.startMinute), width: 80 },
                   { title: t('reports.to'), render: (_, r) => clock(r.endMinute), width: 80 },
                   { title: t('reports.activityCode'), render: (_, r) => `${r.activityCode} · ${localized(r.activityName, lang)}` },
+                  {
+                    title: t('reports.interval'),
+                    render: (_, r) => (r.interval ? `${r.interval.serviceCode}: ${intervalText(r.interval, t)}` : ''),
+                  },
                   { title: t('reports.comment'), dataIndex: 'comment' },
                 ]}
               />
-              {correction.intervals.length > 0 && (
+              {correction.intervals.some((x) => !x.linked) && (
                 <Table
                   size="small"
                   pagination={false}
                   rowKey={(r) => `${r.serviceId}-${r.depthFrom}`}
-                  dataSource={correction.intervals}
+                  dataSource={correction.intervals.filter((x) => !x.linked)}
                   columns={[
                     { title: t('reports.hole'), dataIndex: 'serviceCode' },
                     { title: t('reports.depthFrom'), dataIndex: 'depthFrom' },

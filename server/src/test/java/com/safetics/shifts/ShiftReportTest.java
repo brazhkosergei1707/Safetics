@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,7 +140,7 @@ class ShiftReportTest extends AbstractIntegrationTest {
         assertThat(admin.get("/api/v1/assets/" + rig).str("attributes.engineHours")).as("мотогодини в обладнання")
                 .isEqualTo("1012.0");
 
-        Map<String, Object> again = body(List.of(time(0, DURATION, "DRL", null)), List.of(), submitted.at("version"));
+        Map<String, Object> again = body(List.of(time(0, DURATION, "MAINT", null)), List.of(), submitted.at("version"));
         assertThat(admin.put(report(shiftId), again).str("error")).isEqualTo("report_submitted");
         assertThat(admin.put("/api/v1/shifts/" + shiftId + "/crew", Map.of("version", shift.at("version"), "crew", List.of()))
                 .str("error")).isEqualTo("report_submitted");
@@ -153,6 +154,7 @@ class ShiftReportTest extends AbstractIntegrationTest {
         List<?> prefill = (List<?>) fresh.at("prefill");
         assertThat(prefill).hasSize(1);
         assertThat(((Map<?, ?>) prefill.getFirst()).get("depthFrom").toString()).isEqualTo("35.5");
+        assertThat(((Map<?, ?>) prefill.getFirst()).get("taskId")).as("задача буріння з попередньої зміни").isEqualTo(holeTask);
         Map<?, ?> meter = (Map<?, ?>) ((List<?>) fresh.at("meters")).getFirst();
         assertThat(meter.get("startValue").toString()).isEqualTo("1012.0");
 
@@ -177,13 +179,49 @@ class ShiftReportTest extends AbstractIntegrationTest {
         quantity.put("quantities", List.of(Map.of("serviceId", hole, "quantity", 10)));
         assertThat(admin.put(report(shiftId), quantity).field("quantities[0].serviceId")).isEqualTo("use_intervals");
 
-        Map<String, Object> ok = body(List.of(time(0, DURATION, "DRL", null)), List.of(), 0);
+        Map<String, Object> ok = body(List.of(time(0, DURATION, "MAINT", null)), List.of(), 0);
         assertThat(other.put(report(shiftId), ok).status()).as("не в бригаді — зміни не видно").isEqualTo(404);
         // Бурильник зміни заповнює свій рапорт
         Response shift = admin.get("/api/v1/shifts/" + shiftId);
         admin.put("/api/v1/shifts/" + shiftId + "/crew", Map.of("version", shift.at("version"),
                 "crew", List.of(Map.of("personnelId", drillerPerson, "lead", true))));
         assertThat(driller.put(report(shiftId), ok).status()).isEqualTo(200);
+    }
+
+    @Test
+    void drillingRowCarriesInterval() {
+        String shiftId = shift(today().minusDays(3)).str("id");
+        // Буріння без задачі — помилка; задача не про свердловину — помилка; інтервал на не-бурінні — помилка
+        Map<String, Object> noTask = body(List.of(time(0, DURATION, "DRL", null)), List.of(), 0);
+        assertThat(admin.put(report(shiftId), noTask).field("times[0].taskId")).isEqualTo("required");
+        String reportTask = (String) ((List<?>) admin.get("/api/v1/shifts/" + shiftId).at("tasks")).stream()
+                .<Map<?, ?>>map(t -> (Map<?, ?>) t).filter(t -> "shift_report".equals(t.get("typeCode")))
+                .findFirst().orElseThrow().get("id");
+        Map<String, Object> notHole = body(List.of(time(0, DURATION, "DRL", reportTask)), List.of(), 0);
+        assertThat(admin.put(report(shiftId), notHole).field("times[0].taskId")).isEqualTo("no_service");
+        Map<String, Object> maint = time(0, DURATION, "MAINT", null);
+        maint.put("interval", interval(0, 5, 5));
+        Map<String, Object> wrongCode = body(List.of(maint), List.of(), 0);
+        assertThat(admin.put(report(shiftId), wrongCode).field("times[0].interval")).isEqualTo("not_drilling");
+        Map<String, Object> reversed = body(List.of(time(0, DURATION, "DRL", holeTask)), List.of(interval(10, 5, 5)), 0);
+        assertThat(admin.put(report(shiftId), reversed).field("times[0].interval.depthTo")).isEqualTo("before_from");
+
+        // Рядок буріння з інтервалом: свердловина — із задачі; другий рядок без інтервалу — попередження
+        Map<String, Object> ok = body(List.of(time(0, 400, "DRL", holeTask), time(400, DURATION, "DRL", holeTask)),
+                List.of(interval(100, 106, 6)), 0);
+        Response saved = admin.put(report(shiftId), ok);
+        assertThat(saved.status()).isEqualTo(200);
+        assertThat(saved.str("times[0].interval.serviceId")).isEqualTo(hole);
+        assertThat(saved.str("times[0].interval.serviceCode")).isEqualTo("RP-BH1");
+        assertThat(saved.at("times[0].drilling")).isEqualTo(true);
+        assertThat(saved.at("times[1].interval")).isNull();
+        assertThat(saved.at("intervals[0].linked")).isEqualTo(true);
+        assertThat(saved.str("totals.meters")).isEqualTo("6.0");
+        assertThat(((List<?>) saved.at("warnings")).stream().<Map<?, ?>>map(e -> (Map<?, ?>) e).map(e -> (Object) e.get("code")))
+                .contains("drilling_without_interval");
+        // Задачі для журналу — зі свердловиною (веб підставляє задачу буріння)
+        assertThat(((List<?>) saved.at("taskOptions")).stream().<Map<?, ?>>map(o -> (Map<?, ?>) o)
+                .filter(o -> holeTask.equals(o.get("id"))).findFirst().orElseThrow().get("serviceId")).isEqualTo(hole);
     }
 
     @Test
@@ -220,13 +258,26 @@ class ShiftReportTest extends AbstractIntegrationTest {
 
     private Map<String, Object> body(List<Map<String, Object>> times, List<Map<String, Object>> intervals, Object version) {
         Map<String, Object> body = new HashMap<>();
-        body.put("times", times);
-        body.put("intervals", intervals);
+        body.put("times", withIntervals(times, intervals));
         body.put("quantities", List.of());
         body.put("consumables", List.of(Map.of("itemId", items.get("diesel"), "quantity", 120)));
         body.put("meters", List.of(Map.of("assetId", rig, "startValue", 1000, "endValue", 1012)));
         body.put("version", version);
         return body;
+    }
+
+    /** Інтервали — у рядки буріння (DRL) по черзі: рядок часу = один інтервал. */
+    private List<Map<String, Object>> withIntervals(List<Map<String, Object>> times, List<Map<String, Object>> intervals) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        int next = 0;
+        for (Map<String, Object> time : times) {
+            Map<String, Object> row = new HashMap<>(time);
+            if (next < intervals.size() && codes.get("DRL").equals(time.get("activityCodeId"))) {
+                row.put("interval", intervals.get(next++));
+            }
+            rows.add(row);
+        }
+        return rows;
     }
 
     private Map<String, Object> time(int start, int end, String code, String task) {
@@ -240,7 +291,6 @@ class ShiftReportTest extends AbstractIntegrationTest {
 
     private Map<String, Object> interval(double from, double to, double core) {
         Map<String, Object> interval = new HashMap<>();
-        interval.put("serviceId", hole);
         interval.put("depthFrom", from);
         interval.put("depthTo", to);
         interval.put("coreSize", "HQ");

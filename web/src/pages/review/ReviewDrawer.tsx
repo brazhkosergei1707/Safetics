@@ -1,7 +1,6 @@
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { DeleteOutlined } from '@ant-design/icons'
 import {
   App,
-  AutoComplete,
   Button,
   Descriptions,
   Divider,
@@ -16,7 +15,6 @@ import {
   Spin,
   Table,
   Tag,
-  TimePicker,
   Typography,
 } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
@@ -30,31 +28,13 @@ import { useActivityCodes } from '../../api/reportCatalogs'
 import { type ReviewReport, useReviewAction, useReviewReport } from '../../api/reportReview'
 import { useProjectServices } from '../../api/services'
 import { localized } from '../../i18n/localized'
+import { intervalText, type TimeRow, timeRowsFromReport, timeRowsToRequest } from '../shifts/timeLog'
+import { TimeLogFields } from '../shifts/TimeLogFields'
 import { ReportHistory } from './ReportHistory'
 import { REPORT_STATUS_COLORS } from './reportStatus'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
-
-const CORE_SIZES = ['AQ', 'BQ', 'NQ', 'HQ', 'PQ', 'RC'].map((value) => ({ value }))
-
-interface TimeRow {
-  from?: Dayjs
-  to?: Dayjs
-  activityCodeId?: string
-  /** Задача з рядка підрядника (замовник задач не обирає) */
-  taskId?: string
-  comment?: string
-}
-
-interface IntervalRow {
-  serviceId?: string
-  depthFrom?: number
-  depthTo?: number
-  coreSize?: string
-  coreLength?: number
-  comment?: string
-}
 
 interface QuantityRow {
   serviceId?: string
@@ -65,7 +45,6 @@ interface QuantityRow {
 interface CorrectionValues {
   comment: string
   times: TimeRow[]
-  intervals: IntervalRow[]
   quantities: QuantityRow[]
 }
 
@@ -183,18 +162,22 @@ export function ReviewDrawer({ shiftId, onClose }: { shiftId?: string; onClose: 
                 ),
               },
               { title: t('reports.task'), render: (_, r) => (r.taskNumber ? `#${r.taskNumber} ${r.taskTitle ?? ''}` : '') },
+              {
+                title: t('reports.interval'),
+                render: (_, r) => (r.interval ? `${r.interval.serviceCode}: ${intervalText(r.interval, t)}` : ''),
+              },
               { title: t('reports.comment'), dataIndex: 'comment' },
             ]}
           />
 
-          {data.report.intervals.length > 0 && (
+          {data.report.intervals.some((x) => !x.linked) && (
             <>
-              <Divider titlePlacement="start">{t('reports.intervals')}</Divider>
+              <Divider titlePlacement="start">{t('reports.legacyIntervalsTitle')}</Divider>
               <Table
                 size="small"
                 pagination={false}
                 rowKey={(r) => `${r.serviceId}-${r.depthFrom}`}
-                dataSource={data.report.intervals}
+                dataSource={data.report.intervals.filter((x) => !x.linked)}
                 columns={[
                   { title: t('reports.hole'), dataIndex: 'serviceCode' },
                   { title: t('reports.depthFrom'), dataIndex: 'depthFrom' },
@@ -296,15 +279,14 @@ function ReturnModal({ open, loading, onCancel, onOk }: {
   )
 }
 
-/** Правка замовника: журнал часу, інтервали й обсяги; коментар обов'язковий. */
+/** Правка замовника: журнал часу з інтервалами й обсяги; коментар обов'язковий. */
 function CorrectionModal({ data, startsAt, onCancel, onDone }: {
   data: ReviewReport
   startsAt: Dayjs
   onCancel: () => void
   onDone: () => void
 }) {
-  const { t, i18n } = useTranslation()
-  const lang = i18n.language
+  const { t } = useTranslation()
   const { message } = App.useApp()
   const [form] = Form.useForm<CorrectionValues>()
   const action = useReviewAction()
@@ -318,26 +300,12 @@ function CorrectionModal({ data, startsAt, onCancel, onDone }: {
     return isEnd && offset === 0 ? Math.min(report.durationMinutes, 1440) : offset
   }
   const required = [{ required: true, message: t('validation.required') }]
-  const codeOptions = (codes.data ?? []).map((c) => ({ value: c.id, label: `${c.code} · ${localized(c.name, lang)}` }))
+  const drillingCodes = new Set((codes.data ?? []).filter((c) => c.drilling).map((c) => c.id))
   const serviceOptions = (services.data ?? []).map((s) => ({ value: s.id, label: s.code }))
 
   const initial: CorrectionValues = {
     comment: '',
-    times: report.times.map((x) => ({
-      from: toClock(x.startMinute),
-      to: toClock(x.endMinute),
-      activityCodeId: x.activityCodeId,
-      taskId: x.taskId ?? undefined,
-      comment: x.comment ?? undefined,
-    })),
-    intervals: report.intervals.map((x) => ({
-      serviceId: x.serviceId,
-      depthFrom: x.depthFrom,
-      depthTo: x.depthTo,
-      coreSize: x.coreSize ?? undefined,
-      coreLength: x.coreLength ?? undefined,
-      comment: x.comment ?? undefined,
-    })),
+    times: timeRowsFromReport(report.times, toClock),
     quantities: report.quantities.map((x) => ({ serviceId: x.serviceId, quantity: x.quantity, comment: x.comment ?? undefined })),
   }
 
@@ -350,25 +318,7 @@ function CorrectionModal({ data, startsAt, onCancel, onDone }: {
           body: {
             version: report.version,
             comment: v.comment,
-            times: (v.times ?? [])
-              .filter((x) => x.from && x.to && x.activityCodeId)
-              .map((x) => ({
-                startMinute: toOffset(x.from!, false),
-                endMinute: toOffset(x.to!, true),
-                activityCodeId: x.activityCodeId!,
-                taskId: x.taskId,
-                comment: x.comment,
-              })),
-            intervals: (v.intervals ?? [])
-              .filter((x) => x.serviceId && x.depthFrom != null && x.depthTo != null)
-              .map((x) => ({
-                serviceId: x.serviceId!,
-                depthFrom: x.depthFrom!,
-                depthTo: x.depthTo!,
-                coreSize: x.coreSize,
-                coreLength: x.coreLength,
-                comment: x.comment,
-              })),
+            times: timeRowsToRequest(v.times, drillingCodes, toOffset),
             quantities: (v.quantities ?? [])
               .filter((x) => x.serviceId && x.quantity != null)
               .map((x) => ({ serviceId: x.serviceId!, quantity: x.quantity!, comment: x.comment })),
@@ -397,66 +347,15 @@ function CorrectionModal({ data, startsAt, onCancel, onDone }: {
       <Typography.Paragraph type="secondary">{t('review.correctHint')}</Typography.Paragraph>
       <Form<CorrectionValues> form={form} layout="vertical" initialValues={initial} onFinish={onFinish} requiredMark={false}>
         <Divider titlePlacement="start">{t('reports.timeLog')}</Divider>
-        <Form.List name="times">
-          {(fields, { add, remove }) => (
-            <>
-              {fields.map((field) => (
-                <Flex key={field.key} gap={8} align="start" wrap>
-                  <Form.Item name={[field.name, 'from']} rules={required} style={{ marginBottom: 8 }}>
-                    <TimePicker format="HH:mm" minuteStep={5} needConfirm={false} style={{ width: 100 }} />
-                  </Form.Item>
-                  <Form.Item name={[field.name, 'to']} rules={required} style={{ marginBottom: 8 }}>
-                    <TimePicker format="HH:mm" minuteStep={5} needConfirm={false} style={{ width: 100 }} />
-                  </Form.Item>
-                  <Form.Item name={[field.name, 'activityCodeId']} rules={required} style={{ marginBottom: 8, width: 300 }}>
-                    <Select showSearch={{ optionFilterProp: 'label' }} options={codeOptions} />
-                  </Form.Item>
-                  <Form.Item name={[field.name, 'comment']} style={{ marginBottom: 8, flex: 1, minWidth: 140 }}>
-                    <Input placeholder={t('reports.comment')} />
-                  </Form.Item>
-                  <Button icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
-                </Flex>
-              ))}
-              <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({})}>
-                {t('reports.addTime')}
-              </Button>
-            </>
-          )}
-        </Form.List>
-
-        <Divider titlePlacement="start">{t('reports.intervals')}</Divider>
-        <Form.List name="intervals">
-          {(fields, { add, remove }) => (
-            <>
-              {fields.map((field) => (
-                <Flex key={field.key} gap={8} align="start" wrap>
-                  <Form.Item name={[field.name, 'serviceId']} rules={required} style={{ marginBottom: 8, width: 160 }}>
-                    <Select placeholder={t('reports.hole')} options={serviceOptions} />
-                  </Form.Item>
-                  <Form.Item name={[field.name, 'depthFrom']} rules={required} style={{ marginBottom: 8 }}>
-                    <InputNumber min={0} step={0.1} placeholder={t('reports.depthFrom')} suffix="m" decimalSeparator="," style={{ width: 120 }} />
-                  </Form.Item>
-                  <Form.Item name={[field.name, 'depthTo']} rules={required} style={{ marginBottom: 8 }}>
-                    <InputNumber min={0} step={0.1} placeholder={t('reports.depthTo')} suffix="m" decimalSeparator="," style={{ width: 120 }} />
-                  </Form.Item>
-                  <Form.Item name={[field.name, 'coreSize']} style={{ marginBottom: 8, width: 90 }}>
-                    <AutoComplete options={CORE_SIZES} placeholder={t('reports.coreSize')} />
-                  </Form.Item>
-                  <Form.Item name={[field.name, 'coreLength']} style={{ marginBottom: 8 }}>
-                    <InputNumber min={0} step={0.1} placeholder={t('reports.coreLength')} suffix="m" decimalSeparator="," style={{ width: 130 }} />
-                  </Form.Item>
-                  <Form.Item name={[field.name, 'comment']} style={{ marginBottom: 8, flex: 1, minWidth: 120 }}>
-                    <Input placeholder={t('reports.comment')} />
-                  </Form.Item>
-                  <Button icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
-                </Flex>
-              ))}
-              <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({})}>
-                {t('reports.addInterval')}
-              </Button>
-            </>
-          )}
-        </Form.List>
+        <TimeLogFields
+          form={form}
+          codes={codes.data ?? []}
+          taskOptions={report.taskOptions}
+          prefill={[]}
+          editable
+          client
+          firstFrom={() => toClock(0)}
+        />
 
         {report.quantities.length > 0 && (
           <>

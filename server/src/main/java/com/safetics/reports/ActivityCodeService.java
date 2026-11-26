@@ -33,7 +33,7 @@ public class ActivityCodeService {
     private static final TypeReference<Map<String, String>> NAME = new TypeReference<>() {
     };
     private static final String SELECT =
-            "select id, code, name, category, billable, sort_order, template_key, archived_at from activity_code";
+            "select id, code, name, category, billable, drilling, sort_order, template_key, archived_at from activity_code";
 
     private final JdbcClient db;
     private final JsonMapper json;
@@ -64,12 +64,13 @@ public class ActivityCodeService {
             throw ApiException.validation("code", "duplicate");
         }
         UUID id = db.sql("""
-                        insert into activity_code (company_id, code, name, category, billable, sort_order, template_key)
-                        values (?, ?, cast(? as jsonb), ?, ?, ?, ?)
+                        insert into activity_code (company_id, code, name, category, billable, drilling, sort_order, template_key)
+                        values (?, ?, cast(? as jsonb), ?, ?, ?, ?, ?)
                         returning id
                         """)
                 .params(TenantContext.requireCompanyId(), request.code(), json.writeValueAsString(request.name()),
-                        request.category(), billable(request), request.sortOrder() == null ? 0 : request.sortOrder(),
+                        request.category(), billable(request), Boolean.TRUE.equals(request.drilling()),
+                        request.sortOrder() == null ? 0 : request.sortOrder(),
                         templateKey)
                 .query(UUID.class).single();
         audit.record("activity_code", id, "create", Map.of("code", request.code()));
@@ -83,11 +84,12 @@ public class ActivityCodeService {
         }
         validate(request);
         db.sql("""
-                        update activity_code set name = cast(? as jsonb), category = ?, billable = ?, sort_order = ?,
+                        update activity_code set name = cast(? as jsonb), category = ?, billable = ?, drilling = ?, sort_order = ?,
                                                  updated_at = now()
                         where id = ?
                         """)
                 .params(json.writeValueAsString(request.name()), request.category(), billable(request),
+                        request.drilling() == null ? existing.drilling() : request.drilling(),
                         request.sortOrder() == null ? existing.sortOrder() : request.sortOrder(), id)
                 .update();
         audit.record("activity_code", id, "update", Map.of("code", request.code()));
@@ -137,6 +139,7 @@ public class ActivityCodeService {
                 json.readValue(rs.getString("name"), NAME),
                 rs.getString("category"),
                 rs.getBoolean("billable"),
+                rs.getBoolean("drilling"),
                 rs.getInt("sort_order"),
                 rs.getString("template_key"),
                 rs.getObject("archived_at") != null);

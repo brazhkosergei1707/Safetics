@@ -100,12 +100,19 @@ public final class TestApi {
             return (List<Object>) body;
         }
 
-        /** Значення за шляхом через крапку: "attributes.plannedDepth", "fields". */
+        /** Значення за шляхом через крапку: "attributes.plannedDepth", "fields", "times[0].interval". */
         @SuppressWarnings("unchecked")
         public Object at(String path) {
             Object current = body;
             for (String part : path.split("\\.")) {
-                current = current == null ? null : ((Map<String, Object>) current).get(part);
+                int bracket = part.indexOf('[');
+                String key = bracket < 0 ? part : part.substring(0, bracket);
+                current = current == null ? null : ((Map<String, Object>) current).get(key);
+                if (bracket >= 0 && current != null) {
+                    int index = Integer.parseInt(part.substring(bracket + 1, part.length() - 1));
+                    List<Object> list = (List<Object>) current;
+                    current = index < list.size() ? list.get(index) : null;
+                }
             }
             return current;
         }

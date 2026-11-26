@@ -31,10 +31,21 @@ export function dialog(page: Page): Locator {
 }
 
 /** Ant Design Select: відкрити поле й обрати варіант за текстом. */
-export async function choose(page: Page, field: Locator, option: string | RegExp) {
-  await field.click()
-  const dropdown = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)').last()
-  await dropdown.locator('.ant-select-item-option').filter({ hasText: option }).first().click()
+export async function choose(page: Page, field: Locator, option: string | RegExp, search?: string) {
+  // Форма могла перемалюватися (оновлення даних після збереження) і закрити список — тоді ще раз.
+  // search — текст для пошуку: довгий список віртуальний, далекі варіанти не намальовані, доки не відфільтруєш
+  for (let attempt = 1; ; attempt++) {
+    await field.click()
+    if (search) await page.keyboard.type(search)
+    const dropdown = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)').last()
+    try {
+      await dropdown.locator('.ant-select-item-option').filter({ hasText: option }).first().click({ timeout: 5_000 })
+      return
+    } catch (error) {
+      if (attempt >= 3) throw error
+      await page.keyboard.press('Escape')
+    }
+  }
 }
 
 /** Варіанти відкритого Select (тексти). */

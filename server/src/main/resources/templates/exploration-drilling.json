@@ -1016,6 +1016,7 @@
   "activityCodes": [
     {
       "code": "DRL",
+      "drilling": true,
       "name": {
         "en": "Drilling",
         "uk": "Буріння",

@@ -6064,13 +6064,9 @@
           "quantity"
         ]
       },
-      "IntervalRequest": {
+      "DrillIntervalRequest": {
         "type": "object",
         "properties": {
-          "serviceId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "depthFrom": {
             "type": "number"
           },
@@ -6089,8 +6085,7 @@
         },
         "required": [
           "depthFrom",
-          "depthTo",
-          "serviceId"
+          "depthTo"
         ]
       },
       "MeterRequest": {
@@ -6144,12 +6139,6 @@
               "$ref": "#/components/schemas/TimeEntryRequest"
             }
           },
-          "intervals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IntervalRequest"
-            }
-          },
           "quantities": {
             "type": "array",
             "items": {
@@ -6175,7 +6164,6 @@
         },
         "required": [
           "consumables",
-          "intervals",
           "meters",
           "quantities",
           "times",
@@ -6203,6 +6191,9 @@
           },
           "comment": {
             "type": "string"
+          },
+          "interval": {
+            "$ref": "#/components/schemas/DrillIntervalRequest"
           }
         },
         "required": [
@@ -6332,6 +6323,10 @@
           },
           "depthFrom": {
             "type": "number"
+          },
+          "taskId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -6343,6 +6338,9 @@
       "IntervalView": {
         "type": "object",
         "properties": {
+          "linked": {
+            "type": "boolean"
+          },
           "serviceId": {
             "type": "string",
             "format": "uuid"
@@ -6375,6 +6373,7 @@
         "required": [
           "depthFrom",
           "depthTo",
+          "linked",
           "meters",
           "serviceCode",
           "serviceId"
@@ -6494,6 +6493,13 @@
             "type": "string"
           },
           "statusCategory": {
+            "type": "string"
+          },
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceCode": {
             "type": "string"
           }
         },
@@ -6724,6 +6730,9 @@
           "billable": {
             "type": "boolean"
           },
+          "drilling": {
+            "type": "boolean"
+          },
           "taskId": {
             "type": "string",
             "format": "uuid"
@@ -6737,6 +6746,9 @@
           },
           "comment": {
             "type": "string"
+          },
+          "interval": {
+            "$ref": "#/components/schemas/IntervalView"
           }
         },
         "required": [
@@ -6745,6 +6757,7 @@
           "activityName",
           "billable",
           "category",
+          "drilling",
           "endMinute",
           "startMinute"
         ]
@@ -8207,6 +8220,9 @@
           "sortOrder": {
             "type": "integer",
             "format": "int32"
+          },
+          "drilling": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -8243,6 +8259,9 @@
           "billable": {
             "type": "boolean"
           },
+          "drilling": {
+            "type": "boolean"
+          },
           "sortOrder": {
             "type": "integer",
             "format": "int32"
@@ -8259,6 +8278,7 @@
           "billable",
           "category",
           "code",
+          "drilling",
           "id",
           "name",
           "sortOrder"
@@ -8646,12 +8666,6 @@
               "$ref": "#/components/schemas/TimeEntryRequest"
             }
           },
-          "intervals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IntervalRequest"
-            }
-          },
           "quantities": {
             "type": "array",
             "items": {
@@ -8661,7 +8675,6 @@
         },
         "required": [
           "comment",
-          "intervals",
           "quantities",
           "times",
           "version"

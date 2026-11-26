@@ -150,7 +150,9 @@ public class ReportReviewService {
                 full.startsAt(), full.durationMinutes(), full.notes(), full.times(), full.intervals(), full.quantities(),
                 List.of(), List.of(), full.totals(), full.errors(), List.of(), List.of(), false, false, null,
                 full.submittedAt(), full.submittedByName(), full.version(), full.acceptedAt(), full.events(),
-                full.correction(), false, List.of());
+                full.correction(), false,
+                // Для правки замовника — лише задачі свердловин (рядок буріння обирає свердловину)
+                full.taskOptions().stream().filter(o -> o.serviceId() != null).toList());
         ProjectView project = projects.get(shift.projectId());
         boolean canReview = "submitted".equals(full.status()) && "active".equals(project.status()) && hasAuthority("report.review");
         return new ReviewReportView(report, project.id(), project.code(), project.name(), shift.assetCode(), shift.shiftName(),

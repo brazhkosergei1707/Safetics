@@ -2119,9 +2119,7 @@ export interface components {
             quantity: number;
             comment?: string;
         };
-        IntervalRequest: {
-            /** Format: uuid */
-            serviceId: string;
+        DrillIntervalRequest: {
             depthFrom: number;
             depthTo: number;
             coreSize?: string;
@@ -2143,7 +2141,6 @@ export interface components {
         ShiftReportRequest: {
             notes?: string;
             times: components["schemas"]["TimeEntryRequest"][];
-            intervals: components["schemas"]["IntervalRequest"][];
             quantities: components["schemas"]["QuantityRequest"][];
             consumables: components["schemas"]["ConsumableRequest"][];
             meters: components["schemas"]["MeterRequest"][];
@@ -2160,6 +2157,7 @@ export interface components {
             /** Format: uuid */
             taskId?: string;
             comment?: string;
+            interval?: components["schemas"]["DrillIntervalRequest"];
         };
         CodeTotal: {
             activityCode: string;
@@ -2197,8 +2195,11 @@ export interface components {
             serviceId: string;
             serviceCode: string;
             depthFrom: number;
+            /** Format: uuid */
+            taskId?: string;
         };
         IntervalView: {
+            linked: boolean;
             /** Format: uuid */
             serviceId: string;
             serviceCode: string;
@@ -2247,6 +2248,9 @@ export interface components {
             number: number;
             title: string;
             statusCategory: string;
+            /** Format: uuid */
+            serviceId?: string;
+            serviceCode?: string;
         };
         ReportTotals: {
             /** Format: int32 */
@@ -2310,12 +2314,14 @@ export interface components {
             };
             category: string;
             billable: boolean;
+            drilling: boolean;
             /** Format: uuid */
             taskId?: string;
             /** Format: int64 */
             taskNumber?: number;
             taskTitle?: string;
             comment?: string;
+            interval?: components["schemas"]["IntervalView"];
         };
         CrewEntry: {
             /** Format: uuid */
@@ -2789,6 +2795,7 @@ export interface components {
             billable?: boolean;
             /** Format: int32 */
             sortOrder?: number;
+            drilling?: boolean;
         };
         ActivityCodeView: {
             /** Format: uuid */
@@ -2800,6 +2807,7 @@ export interface components {
             /** @enum {string} */
             category: "productive" | "contractor_npt" | "client_standby" | "other";
             billable: boolean;
+            drilling: boolean;
             /** Format: int32 */
             sortOrder: number;
             templateKey?: string;
@@ -2916,7 +2924,6 @@ export interface components {
             version: number;
             comment: string;
             times: components["schemas"]["TimeEntryRequest"][];
-            intervals: components["schemas"]["IntervalRequest"][];
             quantities: components["schemas"]["QuantityRequest"][];
         };
         MonthlyReturnRequest: {

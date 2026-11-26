@@ -16,7 +16,8 @@ public final class ReportCatalogDtos {
 
     /**
      * category: productive — продуктивний час, contractor_npt — непродуктивний з вини підрядника,
-     * client_standby — простій з вини замовника, other — інше. billable — оплачуваний.
+     * client_standby — простій з вини замовника, other — інше. billable — оплачуваний. drilling — «Буріння»:
+     * рядок журналу з цим кодом має задачу свердловини й інтервал (глибина від / до, керн).
      */
     public record ActivityCodeView(
             @NotNull UUID id,
@@ -24,18 +25,23 @@ public final class ReportCatalogDtos {
             @NotNull Map<String, String> name,
             @NotNull @Schema(allowableValues = {"productive", "contractor_npt", "client_standby", "other"}) String category,
             @NotNull boolean billable,
+            @NotNull boolean drilling,
             @NotNull int sortOrder,
             String templateKey,
             @NotNull boolean archived) {
     }
 
-    /** billable порожній — за категорією (продуктивний і простій замовника — так). code після створення не змінюється. */
+    /**
+     * billable порожній — за категорією (продуктивний і простій замовника — так); drilling порожній — ні.
+     * code після створення не змінюється.
+     */
     public record ActivityCodeRequest(
             @NotBlank String code,
             @NotNull Map<String, String> name,
             @NotBlank @Schema(allowableValues = {"productive", "contractor_npt", "client_standby", "other"}) String category,
             Boolean billable,
-            Integer sortOrder) {
+            Integer sortOrder,
+            Boolean drilling) {
     }
 
     /** serialTracked — облік за серійним номером (коронки, розширювачі). */

@@ -50,7 +50,9 @@ export function ProjectMonthlyTab({ project }: { project: Project }) {
     <>
       <Flex justify="space-between" align="center" gap={12} wrap style={{ marginBottom: 16 }}>
         <Flex gap={12} align="center">
-          <DatePicker picker="month" allowClear={false} value={month} format="MM.YYYY" onChange={(v) => v && setMonth(v.startOf('month'))} />
+          <span data-testid="monthly-month">
+            <DatePicker picker="month" allowClear={false} value={month} format="MM.YYYY" onChange={(v) => v && setMonth(v.startOf('month'))} />
+          </span>
           {data?.closed && <Tag color="green">{t('monthly.closed')}</Tag>}
         </Flex>
         {editable && (

@@ -47,7 +47,9 @@ export function ReviewPage() {
           onChange={setStatus}
           options={STATUSES.map((s) => ({ value: s, label: t(`reports.status.${s}`) }))}
         />
-        <DatePicker.RangePicker format="DD.MM.YYYY" value={range} onChange={(v) => setRange(v as [Dayjs, Dayjs] | null)} />
+        <span data-testid="review-range">
+          <DatePicker.RangePicker format="DD.MM.YYYY" value={range} onChange={(v) => setRange(v as [Dayjs, Dayjs] | null)} />
+        </span>
       </Flex>
       <Table<ReviewListItem>
         rowKey="shiftId"

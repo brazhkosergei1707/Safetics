@@ -2,7 +2,6 @@ import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import {
   Alert,
   App,
-  AutoComplete,
   Button,
   Descriptions,
   Divider,
@@ -16,7 +15,6 @@ import {
   Spin,
   Statistic,
   Tag,
-  TimePicker,
   Typography,
 } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
@@ -32,28 +30,11 @@ import { type ReportIssue, type ShiftReport, useSaveShiftReport, useShiftReport,
 import { localized } from '../../i18n/localized'
 import { ReportHistory } from '../review/ReportHistory'
 import { REPORT_STATUS_COLORS } from '../review/reportStatus'
+import { intervalText, type TimeRow, timeRowsFromReport, timeRowsToRequest } from './timeLog'
+import { TimeLogFields } from './TimeLogFields'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
-
-const CORE_SIZES = ['AQ', 'BQ', 'NQ', 'HQ', 'PQ', 'RC'].map((value) => ({ value }))
-
-interface TimeRow {
-  from?: Dayjs
-  to?: Dayjs
-  activityCodeId?: string
-  taskId?: string
-  comment?: string
-}
-
-interface IntervalRow {
-  serviceId?: string
-  depthFrom?: number
-  depthTo?: number
-  coreSize?: string
-  coreLength?: number
-  comment?: string
-}
 
 interface QuantityRow {
   serviceId?: string
@@ -76,7 +57,6 @@ interface MeterRow {
 
 interface FormValues {
   times: TimeRow[]
-  intervals: IntervalRow[]
   quantities: QuantityRow[]
   consumables: ConsumableRow[]
   meters: MeterRow[]
@@ -97,7 +77,7 @@ function clockToOffset(value: Dayjs, startClock: number, duration: number, isEnd
   return isEnd && offset === 0 ? Math.min(duration, 1440) : offset
 }
 
-/** Змінний рапорт: журнал часу, інтервали буріння, обсяги, витрати, лічильники, підсумки й перевірки. */
+/** Змінний рапорт: журнал часу з інтервалами буріння, обсяги, витрати, лічильники, підсумки й перевірки. */
 export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
@@ -130,25 +110,7 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
     const isNew = r.status === 'new'
     return {
       notes: r.notes ?? undefined,
-      times: isNew
-        ? [{ from: offsetToClock(0) }]
-        : r.times.map((x) => ({
-            from: offsetToClock(x.startMinute),
-            to: offsetToClock(x.endMinute),
-            activityCodeId: x.activityCodeId,
-            taskId: x.taskId ?? undefined,
-            comment: x.comment ?? undefined,
-          })),
-      intervals: isNew
-        ? r.prefill.map((p) => ({ serviceId: p.serviceId, depthFrom: p.depthFrom }))
-        : r.intervals.map((x) => ({
-            serviceId: x.serviceId,
-            depthFrom: x.depthFrom,
-            depthTo: x.depthTo,
-            coreSize: x.coreSize ?? undefined,
-            coreLength: x.coreLength ?? undefined,
-            comment: x.comment ?? undefined,
-          })),
+      times: isNew ? [{ from: offsetToClock(0) }] : timeRowsFromReport(r.times, offsetToClock),
       quantities: r.quantities.map((x) => ({ serviceId: x.serviceId, quantity: x.quantity, comment: x.comment ?? undefined })),
       consumables: r.consumables.map((x) => ({ itemId: x.itemId, quantity: x.quantity, comment: x.comment ?? undefined })),
       meters: r.meters.map((m) => ({
@@ -165,7 +127,6 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
     [serviceTypes.data],
   )
   const openServices = (services.data ?? []).filter((s) => s.status === 'planned' || s.status === 'in_progress')
-  const drillServices = openServices.filter((s) => unitByType.get(s.typeId) === 'm')
   const quantityServices = openServices.filter((s) => unitByType.get(s.typeId) !== 'm')
   const serviceOptions = (list: typeof openServices, current: string[]) => {
     const ids = new Set(list.map((s) => s.id))
@@ -173,34 +134,17 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
     return [...list, ...extra].map((s) => ({ value: s.id, label: s.code }))
   }
   const values = Form.useWatch([], form) as FormValues | undefined
-  const usedServices = [...(values?.intervals ?? []), ...(values?.quantities ?? [])].map((r) => r?.serviceId ?? '')
-  // Задачі для журналу — із сервера (відповідальний виконавець не бачить усіх задач проєкту)
-  const taskOptions = (data?.taskOptions ?? []).map((task) => ({ value: task.id, label: `#${task.number} ${task.title}` }))
-  const codeOptions = (codes.data ?? []).map((c) => ({ value: c.id, label: `${c.code} · ${localized(c.name, lang)}` }))
+  const usedServices = (values?.quantities ?? []).map((r) => r?.serviceId ?? '')
+  const drillingCodes = new Set((codes.data ?? []).filter((c) => c.drilling).map((c) => c.id))
+  const legacyIntervals = (data?.intervals ?? []).filter((x) => !x.linked)
   const itemById = new Map((items.data ?? []).map((i) => [i.id, i]))
 
   const toBody = (v: FormValues) => ({
     notes: v.notes,
     version: data?.version ?? 0,
-    times: (v.times ?? [])
-      .filter((x) => x.from && x.to && x.activityCodeId)
-      .map((x) => ({
-        startMinute: clockToOffset(x.from!, startClock, data!.durationMinutes, false),
-        endMinute: clockToOffset(x.to!, startClock, data!.durationMinutes, true),
-        activityCodeId: x.activityCodeId!,
-        taskId: x.taskId,
-        comment: x.comment,
-      })),
-    intervals: (v.intervals ?? [])
-      .filter((x) => x.serviceId && x.depthFrom != null && x.depthTo != null)
-      .map((x) => ({
-        serviceId: x.serviceId!,
-        depthFrom: x.depthFrom!,
-        depthTo: x.depthTo!,
-        coreSize: x.coreSize,
-        coreLength: x.coreLength,
-        comment: x.comment,
-      })),
+    times: timeRowsToRequest(v.times, drillingCodes, (value, isEnd) =>
+      clockToOffset(value, startClock, data!.durationMinutes, isEnd),
+    ),
     quantities: (v.quantities ?? [])
       .filter((x) => x.serviceId && x.quantity != null)
       .map((x) => ({ serviceId: x.serviceId!, quantity: x.quantity!, comment: x.comment })),
@@ -239,7 +183,7 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
 
   const issueText = (issue: ReportIssue) => {
     const p = { ...issue.params }
-    if (issue.code === 'time_gap' || issue.code === 'time_overlap') {
+    if (issue.code === 'time_gap' || issue.code === 'time_overlap' || issue.code === 'drilling_without_interval') {
       p.from = clock(Number(p.from))
       p.to = clock(Number(p.to))
     }
@@ -356,107 +300,40 @@ export function ShiftReportDrawer({ project, shiftId, title, onClose }: Props) {
           )}
 
           <Divider titlePlacement="start">{t('reports.timeLog')}</Divider>
-          <Form.List name="times">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map((field) => (
-                  <Flex key={field.key} gap={8} align="start" wrap>
-                    <Form.Item name={[field.name, 'from']} rules={required} style={{ marginBottom: 8 }}>
-                      <TimePicker format="HH:mm" minuteStep={5} needConfirm={false} placeholder={t('reports.from')} style={{ width: 100 }} />
-                    </Form.Item>
-                    <Form.Item name={[field.name, 'to']} rules={required} style={{ marginBottom: 8 }}>
-                      <TimePicker format="HH:mm" minuteStep={5} needConfirm={false} placeholder={t('reports.to')} style={{ width: 100 }} />
-                    </Form.Item>
-                    <Form.Item name={[field.name, 'activityCodeId']} rules={required} style={{ marginBottom: 8, width: 260 }}>
-                      <Select showSearch={{ optionFilterProp: 'label' }} placeholder={t('reports.activityCode')} options={codeOptions} />
-                    </Form.Item>
-                    <Form.Item name={[field.name, 'taskId']} style={{ marginBottom: 8, width: 260 }}>
-                      <Select allowClear showSearch={{ optionFilterProp: 'label' }} placeholder={t('reports.task')} options={taskOptions} />
-                    </Form.Item>
-                    <Form.Item name={[field.name, 'comment']} style={{ marginBottom: 8, flex: 1, minWidth: 140 }}>
-                      <Input placeholder={t('reports.comment')} />
-                    </Form.Item>
-                    {editable && <Button icon={<DeleteOutlined />} onClick={() => remove(field.name)} />}
-                  </Flex>
-                ))}
-                {editable && (
-                  <Button
-                    type="dashed"
-                    icon={<PlusOutlined />}
-                    onClick={() => {
-                      const rows = (form.getFieldValue('times') as TimeRow[]) ?? []
-                      const last = rows[rows.length - 1]
-                      add({ from: last?.to ?? offsetToClock(0), activityCodeId: last?.activityCodeId, taskId: last?.taskId })
-                    }}
-                  >
-                    {t('reports.addTime')}
-                  </Button>
-                )}
-              </>
-            )}
-          </Form.List>
-
-          {(drillServices.length > 0 || data.intervals.length > 0 || data.prefill.length > 0) && (
-            <>
-              <Divider titlePlacement="start">{t('reports.intervals')}</Divider>
-              <Form.List name="intervals">
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map((field) => {
-                      const row = values?.intervals?.[field.name]
-                      const meters = row?.depthFrom != null && row?.depthTo != null ? row.depthTo - row.depthFrom : undefined
-                      return (
-                        <Flex key={field.key} gap={8} align="start" wrap>
-                          <Form.Item name={[field.name, 'serviceId']} rules={required} style={{ marginBottom: 8, width: 160 }}>
-                            <Select placeholder={t('reports.hole')} options={serviceOptions(drillServices, usedServices)} />
-                          </Form.Item>
-                          <Form.Item name={[field.name, 'depthFrom']} rules={required} style={{ marginBottom: 8 }}>
-                            <InputNumber min={0} step={0.1} placeholder={t('reports.depthFrom')} suffix="m" decimalSeparator="," style={{ width: 120 }} />
-                          </Form.Item>
-                          <Form.Item name={[field.name, 'depthTo']} rules={required} style={{ marginBottom: 8 }}>
-                            <InputNumber min={0} step={0.1} placeholder={t('reports.depthTo')} suffix="m" decimalSeparator="," style={{ width: 120 }} />
-                          </Form.Item>
-                          <Form.Item name={[field.name, 'coreSize']} style={{ marginBottom: 8, width: 90 }}>
-                            <AutoComplete options={CORE_SIZES} placeholder={t('reports.coreSize')} />
-                          </Form.Item>
-                          <Form.Item name={[field.name, 'coreLength']} style={{ marginBottom: 8 }}>
-                            <InputNumber min={0} step={0.1} placeholder={t('reports.coreLength')} suffix="m" decimalSeparator="," style={{ width: 130 }} />
-                          </Form.Item>
-                          <Typography.Text type="secondary" style={{ lineHeight: '32px', minWidth: 110 }}>
-                            {meters != null && meters > 0
-                              ? `${Math.round(meters * 100) / 100} m` +
-                                (row?.coreLength != null ? ` · ${Math.round((row.coreLength / meters) * 1000) / 10}%` : '')
-                              : ''}
-                          </Typography.Text>
-                          <Form.Item name={[field.name, 'comment']} style={{ marginBottom: 8, flex: 1, minWidth: 120 }}>
-                            <Input placeholder={t('reports.comment')} />
-                          </Form.Item>
-                          {editable && <Button icon={<DeleteOutlined />} onClick={() => remove(field.name)} />}
-                        </Flex>
-                      )
-                    })}
-                    {editable && (
-                      <Button
-                        type="dashed"
-                        icon={<PlusOutlined />}
-                        onClick={() => {
-                          const rows = (form.getFieldValue('intervals') as IntervalRow[]) ?? []
-                          const last = rows[rows.length - 1]
-                          add({ serviceId: last?.serviceId, depthFrom: last?.depthTo, coreSize: last?.coreSize })
-                        }}
-                      >
-                        {t('reports.addInterval')}
-                      </Button>
-                    )}
-                  </>
-                )}
-              </Form.List>
-              <Flex gap={32} style={{ marginTop: 12 }}>
-                <Statistic title={t('reports.meters')} value={data.totals.meters} suffix="m" />
-                <Statistic title={t('reports.core')} value={data.totals.coreLength} suffix="m" />
-                <Statistic title={t('reports.recovery')} value={data.totals.recovery ?? '—'} suffix={data.totals.recovery != null ? '%' : undefined} />
-              </Flex>
-            </>
+          <TimeLogFields
+            form={form}
+            codes={codes.data ?? []}
+            taskOptions={data.taskOptions}
+            prefill={data.prefill}
+            editable={editable}
+            firstFrom={() => offsetToClock(0)}
+          />
+          {legacyIntervals.length > 0 && (
+            <Alert
+              type="warning"
+              showIcon
+              style={{ marginTop: 12 }}
+              title={t('reports.legacyIntervalsTitle')}
+              description={
+                <>
+                  {editable && <Typography.Paragraph>{t('reports.legacyIntervalsHint')}</Typography.Paragraph>}
+                  <ul style={{ margin: 0, paddingInlineStart: 18 }}>
+                    {legacyIntervals.map((x, i) => (
+                      <li key={i}>
+                        {x.serviceCode}: {intervalText(x, t)}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              }
+            />
+          )}
+          {(data.totals.meters > 0 || drillingCodes.size > 0) && (
+            <Flex gap={32} style={{ marginTop: 12 }}>
+              <Statistic title={t('reports.meters')} value={data.totals.meters} suffix="m" />
+              <Statistic title={t('reports.core')} value={data.totals.coreLength} suffix="m" />
+              <Statistic title={t('reports.recovery')} value={data.totals.recovery ?? '—'} suffix={data.totals.recovery != null ? '%' : undefined} />
+            </Flex>
           )}
 
           {(quantityServices.length > 0 || data.quantities.length > 0) && (

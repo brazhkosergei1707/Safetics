@@ -24,6 +24,7 @@ public final class ShiftReportDtos {
     private ShiftReportDtos() {
     }
 
+    /** drilling — код «Буріння»: у рядку інтервал (свердловина — із задачі рядка). */
     public record TimeEntryView(
             @NotNull int startMinute,
             @NotNull int endMinute,
@@ -32,14 +33,20 @@ public final class ShiftReportDtos {
             @NotNull Map<String, String> activityName,
             @NotNull String category,
             @NotNull boolean billable,
+            @NotNull boolean drilling,
             UUID taskId,
             Long taskNumber,
             String taskTitle,
-            String comment) {
+            String comment,
+            IntervalView interval) {
     }
 
-    /** meters = до − від; recovery — вихід керна, %. */
+    /**
+     * meters = до − від; recovery — вихід керна, %. linked — інтервал належить рядку журналу часу
+     * (false — старий інтервал, внесений до об'єднання з журналом).
+     */
     public record IntervalView(
+            @NotNull boolean linked,
             @NotNull UUID serviceId,
             @NotNull String serviceCode,
             @NotNull BigDecimal depthFrom,
@@ -79,7 +86,8 @@ public final class ShiftReportDtos {
 
     /**
      * Помилка (блокує подання) або попередження. code: time_empty, time_gap, time_overlap,
-     * time_total, depth_gap, core_over_100, meter_mismatch, interval_without_time.
+     * time_total, depth_gap, core_over_100, meter_mismatch, drilling_without_interval (буріння без інтервалу:
+     * params from, to — хвилини).
      */
     public record ReportIssue(
             @NotNull String code,
@@ -107,15 +115,18 @@ public final class ShiftReportDtos {
     public record IntervalStart(
             @NotNull UUID serviceId,
             @NotNull String serviceCode,
-            @NotNull BigDecimal depthFrom) {
+            @NotNull BigDecimal depthFrom,
+            UUID taskId) {
     }
 
-    /** Задача проєкту для рядка журналу часу (буріння свердловини, переїзд, ТО…). */
+    /** Задача проєкту для рядка журналу часу (буріння свердловини, переїзд, ТО…); serviceId — свердловина задачі. */
     public record ReportTaskOption(
             @NotNull UUID id,
             @NotNull long number,
             @NotNull String title,
-            @NotNull String statusCategory) {
+            @NotNull String statusCategory,
+            UUID serviceId,
+            String serviceCode) {
     }
 
     /** Подія рапорту: подано, повернуто / виправлено / перевірено замовником, погоджено, повернуто в чернетку. */
@@ -174,14 +185,25 @@ public final class ShiftReportDtos {
             @NotNull List<ReportTaskOption> taskOptions) {
     }
 
+    /** interval — лише для коду «Буріння» (без нього — попередження); свердловина — із задачі рядка. */
     public record TimeEntryRequest(
             @NotNull Integer startMinute,
             @NotNull Integer endMinute,
             @NotNull UUID activityCodeId,
             UUID taskId,
+            String comment,
+            @Valid DrillIntervalRequest interval) {
+    }
+
+    public record DrillIntervalRequest(
+            @NotNull BigDecimal depthFrom,
+            @NotNull BigDecimal depthTo,
+            String coreSize,
+            BigDecimal coreLength,
             String comment) {
     }
 
+    /** Старий формат інтервалу (окремо від журналу) — лише для читання правок, збережених до об'єднання. */
     public record IntervalRequest(
             @NotNull UUID serviceId,
             @NotNull BigDecimal depthFrom,
@@ -213,7 +235,6 @@ public final class ShiftReportDtos {
     public record ShiftReportRequest(
             String notes,
             @NotNull @Valid List<TimeEntryRequest> times,
-            @NotNull @Valid List<IntervalRequest> intervals,
             @NotNull @Valid List<QuantityRequest> quantities,
             @NotNull @Valid List<ConsumableRequest> consumables,
             @NotNull @Valid List<MeterRequest> meters,
@@ -232,7 +253,6 @@ public final class ShiftReportDtos {
             @NotNull Integer version,
             @NotBlank String comment,
             @NotNull @Valid List<TimeEntryRequest> times,
-            @NotNull @Valid List<IntervalRequest> intervals,
             @NotNull @Valid List<QuantityRequest> quantities) {
     }
 

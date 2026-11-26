@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +109,7 @@ class MonthlyReportTest extends AbstractIntegrationTest {
         assertThat(client.post("/api/v1/review/reports/" + accepted + "/accept", Map.of("version", version)).status()).isEqualTo(200);
         String unreviewed = submitted(month.atDay(5));
         String draft = shift(month.atDay(7));
-        admin.put(report(draft), body(List.of(time(0, DURATION, "DRL", null)), List.of(), 0));
+        admin.put(report(draft), body(List.of(time(0, DURATION, "MAINT", null)), List.of(), 0));
 
         // Перегляд місяця: основна частина — перевірений, окремо — неперевірений, чернетка — лише лічильник
         Response view = admin.get(monthPath());
@@ -172,7 +173,7 @@ class MonthlyReportTest extends AbstractIntegrationTest {
                 .isEqualTo("month_closed");
         Response draftReport = admin.get(report(draft));
         assertThat(draftReport.at("canEdit")).as("рапорт закритого місяця — лише читання").isEqualTo(false);
-        assertThat(admin.put(report(draft), body(List.of(time(0, DURATION, "DRL", null)), List.of(), draftReport.at("version")))
+        assertThat(admin.put(report(draft), body(List.of(time(0, DURATION, "MAINT", null)), List.of(), draftReport.at("version")))
                 .str("error")).isEqualTo("month_closed");
 
         // Коригувальний запис — у наступному місяці з посиланням на зміну закритого місяця
@@ -244,13 +245,26 @@ class MonthlyReportTest extends AbstractIntegrationTest {
 
     private Map<String, Object> body(List<Map<String, Object>> times, List<Map<String, Object>> intervals, Object version) {
         Map<String, Object> body = new HashMap<>();
-        body.put("times", times);
-        body.put("intervals", intervals);
+        body.put("times", withIntervals(times, intervals));
         body.put("quantities", List.of());
         body.put("consumables", List.of(Map.of("itemId", items.get("diesel"), "quantity", 120)));
         body.put("meters", List.of(Map.of("assetId", rig, "startValue", 1000, "endValue", 1012)));
         body.put("version", version);
         return body;
+    }
+
+    /** Інтервали — у рядки буріння (DRL) по черзі: рядок часу = один інтервал. */
+    private List<Map<String, Object>> withIntervals(List<Map<String, Object>> times, List<Map<String, Object>> intervals) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        int next = 0;
+        for (Map<String, Object> time : times) {
+            Map<String, Object> row = new HashMap<>(time);
+            if (next < intervals.size() && codes.get("DRL").equals(time.get("activityCodeId"))) {
+                row.put("interval", intervals.get(next++));
+            }
+            rows.add(row);
+        }
+        return rows;
     }
 
     private Map<String, Object> time(int start, int end, String code, String task) {
@@ -264,7 +278,6 @@ class MonthlyReportTest extends AbstractIntegrationTest {
 
     private Map<String, Object> interval(double from, double to, double core) {
         Map<String, Object> interval = new HashMap<>();
-        interval.put("serviceId", hole);
         interval.put("depthFrom", from);
         interval.put("depthTo", to);
         interval.put("coreSize", "HQ");
